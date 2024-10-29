@@ -31,17 +31,16 @@ export class FolderChangeHandlerService {
         if (isLeader) {
             this.options.logger.info('Leader detected, starting change handler process.');
 
-            // Start polling using setInterval
             setInterval(async () => {
                 try {
-                    this.options.logger.debug('Polling for change handler...');
+                    this.options.logger.debug('Polling for change handler');
                     await this.replicationProcess();
                 } catch (error) {
                     this.options.logger.error(`Error during change handler: ${error.message}`);
                 }
             }, this.options.interval);
         } else {
-            this.options.logger.info('Not a leader, skipping change handler.');
+            this.options.logger.info('Not a leader, skipping change handler');
         }
     }
 
@@ -109,7 +108,7 @@ export class FolderChangeHandlerService {
 
     private async saver(changedFolders: BasicFolder[]): Promise<void> {
         try {
-            await this.options.repository.saveFolderByIds(changedFolders);
+            await this.options.repository.saveBasicFolders(changedFolders);
             this.options.logger.info(`${changedFolders.length} changed folders saved to repository`);
         } catch (error) {
             this.options.logger.error(`Error saving folders: ${error.message}`);
@@ -120,7 +119,6 @@ export class FolderChangeHandlerService {
     private async recalculateTree(): Promise<void> {
         try {
             this.options.logger.info('Triggering tree recalculation');
-            // Implement the tree recalculation logic here
         } catch (error) {
             this.options.logger.error(`Error recalculating tree: ${error.message}`);
             throw error;

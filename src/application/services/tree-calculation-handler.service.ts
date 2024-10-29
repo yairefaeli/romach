@@ -1,7 +1,18 @@
+import { AppLoggerService } from "src/infra/logging/app-logger.service";
+import { BasicFolderChange } from "./basic-folder-change-detection.service";
+import { Result } from "rich-domain";
 
 export class TreeCalculationHandlerService {
+    constructor(
+        private readonly logger: AppLoggerService,
+    ) { }
 
-    execute() {
+    async execute(folderChangeDetectionResult: BasicFolderChange): Promise<Result<void>> {
+        // Step 3: Recalculate the tree
+        this.logger.info('Recalculating tree...');
+        // Recalculate the tree
+        // ...
+        this.logger.info('Tree recalculation completed.');
 
     }
     /* 

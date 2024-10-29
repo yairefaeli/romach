@@ -1,52 +1,52 @@
 import { AppLoggerService } from "src/infra/logging/app-logger.service";
-import { FolderChangeDetectionResult } from "./basic-folder-change-detection.service";
-import { BasicFolder } from "src/domain/entities/BasicFolder";
+import { BasicFolderChangeDetectionService } from "./basic-folder-change-detection.service";
 import { UpdateBasicFoldersRepositoryService } from "./update-basic-folder-repository.service";
 import { FoldersService } from "./folders.service";
 import { TreeCalculationHandlerService } from "./tree-calculation-handler.service";
+import { BasicFolder } from "src/domain/entities/BasicFolder";
+import { Result } from "rich-domain";
 
+export interface BasicFolderChangeHandlerServiceOptions {
+
+    logger: AppLoggerService,
+    foldersService: FoldersService,
+    updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService,
+    treeCalculatorService: TreeCalculationHandlerService,
+    basicFolderChangeDetectionService: BasicFolderChangeDetectionService
+}
 export class BasicFolderChangeHandlerService {
-    constructor(
-        private readonly logger: AppLoggerService,
-        private readonly foldersService: FoldersService,
-        private readonly updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService,
-        private readonly TreeCalculatorService: TreeCalculationHandlerService
+    constructor(private options: BasicFolderChangeHandlerServiceOptions
     ) { }
 
-    async execute(changes: FolderChangeDetectionResult): Promise<void> {
-        this.logger.info('Handling folder changes...');
+    async execute(folders: BasicFolder[]): Promise<Result<void>> {
 
-        // Step 1: Handle added folders
-        await this.updateBasicFolderService(changes.added);
+        const changesResult = await this.options.basicFolderChangeDetectionService.execute(folders);
 
-        // Step 2: Handle updated folders
-        await this.folders();
-
-        // Step 3: Handle deleted folders
-        await this.treeCalculator();
-
-        this.logger.info('Basic folders repository update completed.');
-    }
-
-    private async updateBasicFolderService(updatedFolders: BasicFolder[]): Promise<void> {
-        if (updatedFolders.length > 0) {
-            this.logger.info(`Updating ${updatedFolders.length} folders`);
-            try {
-                await this.updateBasicFoldersRepositoryService.execute(updatedFolders);
-                this.logger.info(`Successfully updated ${updatedFolders.length} folders.`);
-            } catch (error) {
-                this.logger.error(`Error updating folders: ${error.message}`);
-                throw error;
-            }
+        if (changesResult.isFail()) {
+            this.options.logger.error(
+                `error calculate change detection service: ${changesResult.error()}`,
+            );
+            return Result.fail();
         }
-    }
 
-    // Step 1: Handle added folders
-    private async folders(): Promise<void> {
-        this.foldersService.execute()
-    }
+        const changes = changesResult.value();
 
-    private async treeCalculator(): Promise<void> {
-        this.TreeCalculatorService.execute();
+        const res = await Promise.all([
+            this.options.foldersService.execute(changes),
+            this.options.treeCalculatorService.execute(changes),
+        ]);
+
+        if (Result.combine(res).isFail()) {
+            return Result.fail()
+        }
+
+        const saveResult = await this.options.updateBasicFoldersRepositoryService.execute(changes);
+
+        if (saveResult.isFail()) {
+            return Result.fail()
+        }
+
+        return Result.Ok()
+
     }
 }
