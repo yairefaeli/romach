@@ -1,7 +1,7 @@
 import { AppLoggerService } from "src/infra/logging/app-logger.service";
 import { RomachRepositoryInterface } from "../interfaces/romach-repository.interface";
-import { BasicFolderChange } from "./basic-folder-change-detection.service";
 import { Result } from "rich-domain";
+import { BasicFolderChange } from "../interfaces/basic-folder-changes.interface";
 
 export class UpdateBasicFoldersRepositoryService {
     constructor(

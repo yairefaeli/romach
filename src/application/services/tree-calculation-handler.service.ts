@@ -1,21 +1,14 @@
 import { AppLoggerService } from "src/infra/logging/app-logger.service";
-import { BasicFolderChange } from "./basic-folder-change-detection.service";
 import { Result } from "rich-domain";
+import { BasicFolderChange } from "../interfaces/basic-folder-changes.interface";
 
 export class TreeCalculationHandlerService {
     constructor(
         private readonly logger: AppLoggerService,
     ) { }
 
-    async execute(folderChangeDetectionResult: BasicFolderChange): Promise<Result<void>> {
-        // Step 3: Recalculate the tree
-        this.logger.info('Recalculating tree...');
-        // Recalculate the tree
-        // ...
-        this.logger.info('Tree recalculation completed.');
-
-    }
-    /* 
+    async execute(changes: BasicFolderChange): Promise<Result<void>> {
+        /* 
         replicate basic folders by timestamp
         compare (deep equal) every changed folder with the current folder in the database
         if the folder is not in the database, add it to changed folders
@@ -25,4 +18,7 @@ export class TreeCalculationHandlerService {
         else
             do nothing        
     */
+
+        return Result.Ok()
+    }
 }

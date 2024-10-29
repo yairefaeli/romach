@@ -3,12 +3,8 @@ import { AppLoggerService } from '../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../domain/entities/BasicFolder';
 import { Result } from 'rich-domain';
 import { differenceBy } from 'lodash';
-
-export interface BasicFolderChange {
-    inserted: BasicFolder[];
-    updated: BasicFolder[];
-    deleted: string[];
-}
+import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
+import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 
 export interface BasicFolderChangeDetectionServiceOptions {
     repository: RomachRepositoryInterface;
@@ -22,7 +18,7 @@ export class BasicFolderChangeDetectionService {
     constructor(
         private readonly repository: RomachRepositoryInterface,
         private readonly logger: AppLoggerService,
-
+        private readonly options: BasicFolderChangeDetectionServiceOptions
     ) { }
 
     // Execute method to detect changes in fetched folders
@@ -30,7 +26,7 @@ export class BasicFolderChangeDetectionService {
 
         const foldersIds = current.map(folder => folder.getProps().id)
 
-        const previousFoldersResult = await this.repository.getBasicFoldersIdsAndsUpdatedAt(foldersIds);
+        const previousFoldersResult = await this.foldersServiceChanges(foldersIds);
 
         if (previousFoldersResult.isFail()) {
             return Result.fail()
@@ -53,4 +49,29 @@ export class BasicFolderChangeDetectionService {
         })
 
     }
+
+
+    private async foldersServiceChanges(folderIds: string[]) {
+        const folderChanges = await RetryUtils.retry(
+            () =>
+                this.repository.getBasicFoldersIdsAndsUpdatedAt(
+                    folderIds,
+                ),
+            this.options.maxRetry,
+            this.options.logger,
+        );
+
+        if (folderChanges.isFail()) {
+            this.options.logger.error(
+                `error to calc folder changes: ${folderChanges.error()}`,
+            );
+        } else {
+            this.options.logger.debug(
+                `detect changes succses: ${folderChanges.toString()}`,
+            );
+        }
+
+        return folderChanges;
+    }
+
 }

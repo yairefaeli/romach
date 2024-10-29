@@ -5,14 +5,16 @@ import { FoldersService } from "./folders.service";
 import { TreeCalculationHandlerService } from "./tree-calculation-handler.service";
 import { BasicFolder } from "src/domain/entities/BasicFolder";
 import { Result } from "rich-domain";
+import { RetryUtils } from "src/utils/RetryUtils/RetryUtils";
+import { BasicFolderChange } from "../interfaces/basic-folder-changes.interface";
 
 export interface BasicFolderChangeHandlerServiceOptions {
-
-    logger: AppLoggerService,
-    foldersService: FoldersService,
-    updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService,
-    treeCalculatorService: TreeCalculationHandlerService,
-    basicFolderChangeDetectionService: BasicFolderChangeDetectionService
+    logger: AppLoggerService;
+    foldersService: FoldersService;
+    maxRetry: number;
+    updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService;
+    treeCalculatorService: TreeCalculationHandlerService;
+    basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
 }
 export class BasicFolderChangeHandlerService {
     constructor(private options: BasicFolderChangeHandlerServiceOptions
@@ -20,20 +22,17 @@ export class BasicFolderChangeHandlerService {
 
     async execute(folders: BasicFolder[]): Promise<Result<void>> {
 
-        const changesResult = await this.options.basicFolderChangeDetectionService.execute(folders);
+        const changesResult = await this.detectChanges(folders);
 
         if (changesResult.isFail()) {
-            this.options.logger.error(
-                `error calculate change detection service: ${changesResult.error()}`,
-            );
             return Result.fail();
         }
 
         const changes = changesResult.value();
 
         const res = await Promise.all([
-            this.options.foldersService.execute(changes),
-            this.options.treeCalculatorService.execute(changes),
+            this.treeCalculatorServiceChanges(changes),
+            this.foldersServiceChanges(changes),
         ]);
 
         if (Result.combine(res).isFail()) {
@@ -49,4 +48,74 @@ export class BasicFolderChangeHandlerService {
         return Result.Ok()
 
     }
+
+    private async detectChanges(folders: BasicFolder[]) {
+        const detectChanges = await RetryUtils.retry(
+            () =>
+                this.options.basicFolderChangeDetectionService.execute(
+                    folders,
+                ),
+            this.options.maxRetry,
+            this.options.logger,
+        );
+
+        if (detectChanges.isFail()) {
+            this.options.logger.error(
+                `error to detect changes: ${detectChanges.error()}`,
+            );
+        } else {
+            this.options.logger.debug(
+                `detect changes succses: ${this.detectChanges.toString()}`,
+            );
+        }
+
+        return detectChanges;
+    }
+
+    private async treeCalculatorServiceChanges(change: BasicFolderChange) {
+        const treeCalculatorChanges = await RetryUtils.retry(
+            () =>
+                this.options.treeCalculatorService.execute(
+                    change
+                ),
+            this.options.maxRetry,
+            this.options.logger,
+        );
+
+        if (treeCalculatorChanges.isFail()) {
+            this.options.logger.error(
+                `error to tree calculator Changes: ${treeCalculatorChanges.error()}`,
+            );
+        } else {
+            this.options.logger.debug(
+                `tree calculator changes succses: ${this.detectChanges.toString()}`,
+            );
+        }
+
+        return treeCalculatorChanges;
+    }
+
+    private async foldersServiceChanges(change: BasicFolderChange) {
+        const folderChanges = await RetryUtils.retry(
+            () =>
+                this.options.foldersService.execute(
+                    change,
+                ),
+            this.options.maxRetry,
+            this.options.logger,
+        );
+
+        if (folderChanges.isFail()) {
+            this.options.logger.error(
+                `error to calc folder changes: ${folderChanges.error()}`,
+            );
+        } else {
+            this.options.logger.debug(
+                `detect changes succses: ${this.detectChanges.toString()}`,
+            );
+        }
+
+        return folderChanges;
+    }
+
 }
