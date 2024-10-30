@@ -16,6 +16,7 @@ import { RxJsUtils } from '../../../utils/RxJsUtils/RxJsUtils';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { RealityId } from '../../entities/reality-id';
 import { isEqual } from 'lodash';
+import { Result } from 'rich-domain';
 
 export interface HierarchyReplicationServiceOptions {
   reality: RealityId;
@@ -24,15 +25,12 @@ export interface HierarchyReplicationServiceOptions {
   romachEntitiesApi: RomachEntitiesApiInterface;
   leaderElection: LeaderElectionInterface;
   romachRepository: RomachRepositoryInterface;
+  handler: (
+    hierarchies: Hierarchy[],
+  ) => Result<void> | Promise<Result<void>>;
+
 }
-export interface HierarchyReplicationServiceOptions {
-  reality: RealityId;
-  interval: number;
-  logger: AppLoggerService;
-  romachEntitiesApi: RomachEntitiesApiInterface;
-  leaderElection: LeaderElectionInterface;
-  romachRepository: RomachRepositoryInterface;
-}
+
 export class HierarchyReplicationService {
   constructor(private options: HierarchyReplicationServiceOptions) { }
 
@@ -186,4 +184,6 @@ export class HierarchyReplicationService {
       );
     };
   }
+
+  async 
 }

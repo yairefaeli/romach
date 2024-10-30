@@ -115,6 +115,7 @@ export class BasicFoldersReplicationUseCase {
 
     return saveTimestampResult;
   }
+  
   private async fetchBasicFolders() {
     const foldersResult = await RetryUtils.retry(
       () =>

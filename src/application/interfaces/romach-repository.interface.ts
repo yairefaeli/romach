@@ -13,6 +13,7 @@ export interface RomachRepositoryInterface {
   saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>>;
   getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
   getHierarchies(): Promise<Result<Hierarchy[]>>;
+  getBasicFolders(): Promise<Result<BasicFolder[]>>;
   saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<FoldersByIdResponse>>;
   saveBasicFoldersById(ids: string[]): Promise<Result<FoldersByIdResponse>>;
   getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse>>;
@@ -25,4 +26,5 @@ export interface RomachRepositoryInterface {
   updateFolderForUsersWithPassword(folder: Folder, password: string): Promise<void>;
   markPasswordInvalidForUsers(folderId: string, password: string): Promise<void>;
   getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<{ id: string, updatedAt: string }[]>>;
+
 }
