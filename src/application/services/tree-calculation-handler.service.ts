@@ -1,5 +1,5 @@
 import { Result } from 'rich-domain';
-import { isEmpty, isEqual } from 'lodash';
+import { differenceBy, isEmpty, isEqual } from 'lodash';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
 import { RomachRepositoryInterface } from '../interfaces/romach-repository.interface';
@@ -33,36 +33,22 @@ export class TreeCalculationHandlerService {
     }
 
     private compareFolders(currentFoldersFromRepository: BasicFolder[], changedFolders: BasicFolderChange): BasicFolder[] {
-        const deletedFolders = changedFolders.deleted;
-        const insertedFolders = changedFolders.inserted;
-        const updatedFolders = changedFolders.updated.filter(updatedFolder => {
-            const correspondingFolder = currentFoldersFromRepository.find(
-                folder => folder.getProps().id === updatedFolder.getProps().id
-            );
+        const { deleted: deletedFolderIds, inserted: insertedFolders, updated: updatedFolders } = changedFolders;
 
-            if (!correspondingFolder) {
-                return true;
-            }
-
-            const updatedProps = updatedFolder.getProps();
-            const currentProps = correspondingFolder.getProps();
-
-            return (
-                updatedProps.name !== currentProps.name ||
-                updatedProps.categoryId !== currentProps.categoryId
-            );
-        });
-
-        const updatedAndInsertedFolders = [
-            ...insertedFolders,
-            ...updatedFolders
-        ];
-
-        const filteredFolders = currentFoldersFromRepository.filter(folder =>
-            !deletedFolders.includes(folder.getProps().id)
+        const filteredFolders = currentFoldersFromRepository.filter(
+            folder => !deletedFolderIds.includes(folder.getProps().id),
         );
 
-        const resultFolders = [...filteredFolders, ...updatedAndInsertedFolders];
+        const updatedAndInsertedFolders = [...insertedFolders, ...updatedFolders];
+
+        const updatedFilteredFolders = differenceBy(
+            filteredFolders,
+            updatedAndInsertedFolders,
+            folder => folder.getProps().id,
+        );
+
+        const resultFolders = [...updatedFilteredFolders, ...updatedAndInsertedFolders];
+
         this.options.logger.info(`Filtered folders for tree calculation: ${resultFolders.length} folders.`);
         return resultFolders;
     }
