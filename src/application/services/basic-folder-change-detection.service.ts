@@ -9,8 +9,6 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 export interface BasicFolderChangeDetectionServiceOptions {
     repository: RomachRepositoryInterface;
     logger: AppLoggerService;
-    pollInterval: number;
-    retryInterval: number;
     maxRetry: number;
 }
 
