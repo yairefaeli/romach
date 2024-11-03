@@ -24,8 +24,7 @@ export type PasswordProtectedValidSpecificationProps = Pick<
 >;
 
 class PasswordProtectedValidSpecification
-  implements ISpecification<PasswordProtectedValidSpecificationProps>
-{
+  implements ISpecification<PasswordProtectedValidSpecificationProps> {
   isSatisfiedBy(
     candidate: PasswordProtectedValidSpecificationProps,
   ): Result<boolean, string> {
@@ -42,7 +41,11 @@ class PasswordProtectedValidSpecification
 }
 
 export class RegisteredFolder {
-  private constructor(private readonly props: RegisteredFolderProps) {}
+  private constructor(private readonly props: RegisteredFolderProps) { }
+
+  getProps(): RegisteredFolderProps {
+    return this.props;
+  }
 
   static createValidRegisteredFolder(
     input: Pick<
