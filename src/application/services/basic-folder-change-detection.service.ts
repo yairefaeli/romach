@@ -9,19 +9,14 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 export interface BasicFolderChangeDetectionServiceOptions {
     repository: RomachRepositoryInterface;
     logger: AppLoggerService;
-    pollInterval: number;
-    retryInterval: number;
     maxRetry: number;
 }
 
 export class BasicFolderChangeDetectionService {
     constructor(
-        private readonly repository: RomachRepositoryInterface,
-        private readonly logger: AppLoggerService,
         private readonly options: BasicFolderChangeDetectionServiceOptions
     ) { }
 
-    // Execute method to detect changes in fetched folders
     async execute(current: BasicFolder[]): Promise<Result<BasicFolderChange>> {
 
         const foldersIds = current.map(folder => folder.getProps().id)
@@ -40,8 +35,6 @@ export class BasicFolderChangeDetectionService {
 
         const inserted = differenceBy(current, [...deleted, ...updated], 'id');
 
-
-
         return Result.Ok({
             inserted,
             deleted,
@@ -52,9 +45,12 @@ export class BasicFolderChangeDetectionService {
 
 
     private async foldersServiceChanges(folderIds: string[]) {
+        this.options.logger.debug(
+            `starting to fetch basic folders ids and updated at`
+        )
         const folderChanges = await RetryUtils.retry(
             () =>
-                this.repository.getBasicFoldersIdsAndsUpdatedAt(
+                this.options.repository.getBasicFoldersIdsAndsUpdatedAt(
                     folderIds,
                 ),
             this.options.maxRetry,

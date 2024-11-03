@@ -11,11 +11,15 @@ import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api
 import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
-import { EMPTY, Observable, OperatorFunction, from, timer } from 'rxjs';
+import { EMPTY, Observable, OperatorFunction, from, of, timer } from 'rxjs';
 import { RxJsUtils } from '../../../utils/RxJsUtils/RxJsUtils';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { RealityId } from '../../entities/reality-id';
 import { isEqual } from 'lodash';
+import { Result } from 'rich-domain';
+import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
+import { BasicFolder } from '../../../domain/entities/BasicFolder';
+import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 
 export interface HierarchyReplicationServiceOptions {
   reality: RealityId;
@@ -24,15 +28,10 @@ export interface HierarchyReplicationServiceOptions {
   romachEntitiesApi: RomachEntitiesApiInterface;
   leaderElection: LeaderElectionInterface;
   romachRepository: RomachRepositoryInterface;
+  treeCalculationService: TreeCalculationService;
+  maxRetry: number;
 }
-export interface HierarchyReplicationServiceOptions {
-  reality: RealityId;
-  interval: number;
-  logger: AppLoggerService;
-  romachEntitiesApi: RomachEntitiesApiInterface;
-  leaderElection: LeaderElectionInterface;
-  romachRepository: RomachRepositoryInterface;
-}
+
 export class HierarchyReplicationService {
   constructor(private options: HierarchyReplicationServiceOptions) { }
 
@@ -69,6 +68,7 @@ export class HierarchyReplicationService {
         this.readCurrentHierarchies(),
         this.differ(),
         this.saver(),
+        this.calcTree()
       );
   }
 
@@ -186,4 +186,62 @@ export class HierarchyReplicationService {
       );
     };
   }
+
+  private calcTree(): OperatorFunction<void, void> {
+    return (source: Observable<void>) => {
+      return source.pipe(
+        switchMap(() =>
+          from(this.getCurrentHierarchiesFromRepository()).pipe(
+            switchMap((newHierarchy) =>
+              from(this.getCurrentFoldersFromRepository()).pipe(
+                switchMap((currentFolders) => {
+                  this.options.treeCalculationService.calculateTree(currentFolders, newHierarchy);
+                  this.options.logger.info(
+                    `Hierarchy calculated for reality ${this.options.reality}, count: ${newHierarchy.length}`,
+                  );
+
+                  return of(void 0);
+                }),
+                retry(2),
+                catchError((error) => {
+                  this.options.logger.error(
+                    `Error while calculating hierarchy for reality ${this.options.reality}`,
+                    error,
+                  );
+                  return EMPTY;
+                }),
+              ),
+            ),
+          ),
+        ),
+      );
+    };
+  }
+
+  private async getCurrentFoldersFromRepository() {
+    const result = await RetryUtils.retry(
+      () => this.options.romachRepository.getBasicFolders(),
+      this.options.maxRetry,
+      this.options.logger,
+    );
+    if (result.isFail()) {
+      throw new Error(`Failed to fetch current folders from repository: ${result.error()}`);
+    }
+    this.options.logger.info(`Fetched ${result.value().length} current folders from repository.`);
+    return result.value();
+  }
+
+  private async getCurrentHierarchiesFromRepository() {
+    const result = await RetryUtils.retry(
+      () => this.options.romachRepository.getHierarchies(),
+      this.options.maxRetry,
+      this.options.logger,
+    );
+    if (result.isFail()) {
+      throw new Error(`Failed to fetch current hierarchies from repository: ${result.error()}`);
+    }
+    this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
+    return result.value();
+  }
+
 }

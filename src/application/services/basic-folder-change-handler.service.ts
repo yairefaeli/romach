@@ -50,6 +50,9 @@ export class BasicFolderChangeHandlerService {
     }
 
     private async detectChanges(folders: BasicFolder[]) {
+        this.options.logger.debug(
+            `starting to detect change`
+        )
         const detectChanges = await RetryUtils.retry(
             () =>
                 this.options.basicFolderChangeDetectionService.execute(
@@ -73,6 +76,9 @@ export class BasicFolderChangeHandlerService {
     }
 
     private async treeCalculatorServiceChanges(change: BasicFolderChange) {
+        this.options.logger.debug(
+            `starting to calculate tree`
+        )
         const treeCalculatorChanges = await RetryUtils.retry(
             () =>
                 this.options.treeCalculatorService.execute(
@@ -96,6 +102,9 @@ export class BasicFolderChangeHandlerService {
     }
 
     private async foldersServiceChanges(change: BasicFolderChange) {
+        this.options.logger.debug(
+            `starting to reftech folders`
+        )
         const folderChanges = await RetryUtils.retry(
             () =>
                 this.options.foldersService.execute(
