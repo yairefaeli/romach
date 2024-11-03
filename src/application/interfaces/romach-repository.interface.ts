@@ -15,10 +15,11 @@ export interface RomachRepositoryInterface {
   getHierarchies(): Promise<Result<Hierarchy[]>>;
   saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<FoldersByIdResponse>>;
   saveBasicFoldersById(ids: string[]): Promise<Result<FoldersByIdResponse>>;
-  getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse>>;
-  deleteBasicFolderByIds(ids: string[]): Promise<Result<FoldersByIdResponse[]>>;
+  getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse[]>>;
+  deleteBasicFolderByIds(ids: string[]): Promise<Result<void>>;
   getBasicFolders(ids: string[]): Promise<Result<BasicFolder[]>>;
   getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>>;
+  upsertRegisteredFolders(folders: FoldersByIdResponse[]): Promise<Result<void>>;
   upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
   updateFolderForAllUsers(folder: Folder): Promise<void>;
   findUniquePasswordsForFolder(folderId: BasicFolder): Promise<string[]>;
