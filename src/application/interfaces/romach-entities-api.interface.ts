@@ -1,18 +1,17 @@
 import { RegisteredFolderErrorStatus } from '../../domain/entities/RegisteredFolderStatus';
-import { FoldersByIdResponse } from '../view-model/folders-by-ids-response';
+import { FolderNotProtectedError, FoldersByIdResponse, FoldersByIdResponseError, GeneralError, NotFound, WrongPasswordForFolderError } from '../view-model/folders-by-ids-response';
 import { BasicFolder } from '../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../domain/entities/Hierarchy';
 import { Folder } from '../../domain/entities/Folder';
 import { Result } from 'rich-domain';
 
-
-// the interface should be implemented for each reality
 export interface RomachEntitiesApiInterface {
-  fetchFolderById(folderId: string): Promise<Result<unknown>>;
+  fetchFolderById(folderId: string): Promise<Result<BasicFolder, NotFound | GeneralError>>
+
   fetchFolderByIdWithPassword(
     folderId: string,
     password: any,
-  ): Promise<Result<unknown>>;
+  ): Promise<Result<BasicFolder, FoldersByIdResponseError>>;
 
   getBasicFoldersByTimestamp(
     timestamp: string,

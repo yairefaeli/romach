@@ -16,9 +16,7 @@ import { RxJsUtils } from '../../../utils/RxJsUtils/RxJsUtils';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { RealityId } from '../../entities/reality-id';
 import { isEqual } from 'lodash';
-import { Result } from 'rich-domain';
 import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
-import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 
 export interface HierarchyReplicationServiceOptions {

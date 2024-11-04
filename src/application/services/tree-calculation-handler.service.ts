@@ -22,36 +22,44 @@ export class TreeCalculationHandlerService {
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
-        const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
 
         if (this.needToCalcTree(currentFoldersFromRepositoryResult, changes)) {
-            const updatedFolders = this.compareFolders(currentFoldersFromRepositoryResult, changes);
+            const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
+            const updatedFolders = this.MergeFolders(currentFoldersFromRepositoryResult, changes);
             await this.calculateTree(updatedFolders, currentHierarchiesFromRepositoryResult);
         }
 
         return Result.Ok();
     }
 
-    private compareFolders(currentFoldersFromRepository: BasicFolder[], changedFolders: BasicFolderChange): BasicFolder[] {
+    private MergeFolders(currentFoldersFromRepository: BasicFolder[], changedFolders: BasicFolderChange): BasicFolder[] {
         const { deleted: deletedFolderIds, inserted: insertedFolders, updated: updatedFolders } = changedFolders;
 
-        const filteredFolders = currentFoldersFromRepository.filter(
+        const folderFromRepositoyWithoutDeltedFolders = currentFoldersFromRepository.filter(
             folder => !deletedFolderIds.includes(folder.getProps().id),
         );
 
         const updatedAndInsertedFolders = [...insertedFolders, ...updatedFolders];
 
-        const updatedFilteredFolders = differenceBy(
-            filteredFolders,
-            updatedAndInsertedFolders,
-            folder => folder.getProps().id,
-        );
+        const updatedFilteredFolders = folderFromRepositoyWithoutDeltedFolders.filter(filteredFolder => {
+            return updatedAndInsertedFolders.some(updatedFolder => {
+                const filteredProps = filteredFolder.getProps();
+                const updatedProps = updatedFolder.getProps();
+
+                return (
+                    filteredProps.id === updatedProps.id &&
+                    (filteredProps.name !== updatedProps.name || filteredProps.categoryId !== updatedProps.categoryId)
+                );
+            });
+        });
+
 
         const resultFolders = [...updatedFilteredFolders, ...updatedAndInsertedFolders];
 
         this.options.logger.info(`Filtered folders for tree calculation: ${resultFolders.length} folders.`);
         return resultFolders;
     }
+
 
     private needToCalcTree(currentFoldersFromRepository: BasicFolder[], changes: BasicFolderChange): boolean {
         const currentFoldersFromRepositoryResult = currentFoldersFromRepository.map(folder => folder.getProps());

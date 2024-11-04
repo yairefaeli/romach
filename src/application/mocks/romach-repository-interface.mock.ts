@@ -10,14 +10,9 @@ export function romachRepositoryInterfaceMockBuilder(): RomachRepositoryInterfac
     getBasicFolders: jest.fn(),
     saveBasicFolders: jest.fn(),
     saveBasicFoldersById: jest.fn(),
-    getFoldersByIds: jest.fn(),
     deleteBasicFolderByIds: jest.fn(),
     getBasicFoldersIdsAndsUpdatedAt: jest.fn(),
     getRegisteredFoldersByUpn: jest.fn(),
     upsertRegisteredFolders: jest.fn(),
-    updateFolderForAllUsers: jest.fn(),
-    findUniquePasswordsForFolder: jest.fn(),
-    updateFolderForUsersWithPassword: jest.fn(),
-    markPasswordInvalidForUsers: jest.fn(),
   };
 }
