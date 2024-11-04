@@ -1,17 +1,18 @@
 import { RegisteredFolderErrorStatus } from '../../domain/entities/RegisteredFolderStatus';
-import { FolderNotProtectedError, FoldersByIdResponse, FoldersByIdResponseError, GeneralError, NotFound, WrongPasswordForFolderError } from '../view-model/folders-by-ids-response';
 import { BasicFolder } from '../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../domain/entities/Hierarchy';
 import { Folder } from '../../domain/entities/Folder';
 import { Result } from 'rich-domain';
+import { ProtedctedFolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
+import { FolderErrorStatus, FoldersByIdResponse } from '../view-model/folders-by-ids-response';
 
 export interface RomachEntitiesApiInterface {
-  fetchFolderById(folderId: string): Promise<Result<BasicFolder, NotFound | GeneralError>>
+  fetchFolderById(folderId: string): Promise<Result<BasicFolder, FolderErrorStatus>>;
 
   fetchFolderByIdWithPassword(
     folderId: string,
     password: any,
-  ): Promise<Result<BasicFolder, FoldersByIdResponseError>>;
+  ): Promise<Result<BasicFolder, ProtedctedFolderErrorStatus>>;
 
   getBasicFoldersByTimestamp(
     timestamp: string,
