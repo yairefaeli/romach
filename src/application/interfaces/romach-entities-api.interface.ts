@@ -28,6 +28,10 @@ export interface RomachEntitiesApiInterface {
   getFoldersByIds( //
     input: { id: string; password?: string }[],
   ): Promise<Result<FoldersByIdResponse[]>>;
+
+  getFolderById( //
+    input: { id: string; password?: string },
+  ): Promise<Result<FoldersByIdResponse>>;
 }
 
 
