@@ -17,8 +17,7 @@ export interface BasicFolderChangeHandlerServiceOptions {
     basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
 }
 export class BasicFolderChangeHandlerService {
-    constructor(private options: BasicFolderChangeHandlerServiceOptions
-    ) { }
+    constructor(private options: BasicFolderChangeHandlerServiceOptions) { }
 
     async execute(folders: BasicFolder[]): Promise<Result<void>> {
 
@@ -107,7 +106,7 @@ export class BasicFolderChangeHandlerService {
         )
         const folderChanges = await RetryUtils.retry(
             () =>
-                this.options.foldersService.execute(
+                this.options.foldersService.basicFolderUpdated(
                     change,
                 ),
             this.options.maxRetry,
