@@ -63,24 +63,43 @@ export class FoldersService {
     private async handleUpsertedBasicFolders(
         updatedBasicFolders: BasicFolder[],
     ): Promise<Result<void>> {
-        const foldersFromRepoResult = await this.getFoldersFromRepo(updatedBasicFolders)
+        const updatedFoldersIds = updatedBasicFolders.map(
+            (folder) => folder.getProps().id,
+        );
+
+        const foldersFromRepoResult = await this.repository.getFoldersByIds(updatedFoldersIds);
         if (foldersFromRepoResult.isFail()) {
+            this.logger.error('faild get folders from repo by ids');
             return Result.fail();
         }
 
         const foldersFromRepo = foldersFromRepoResult.value();
-        foldersFromRepo.filter(folder => updatedBasicFolders.find(basicFolder => folder.folderId == basicFolder.getProps().id).getProps().updatedAt == folder.content.getProps().basicFolder.getProps().updatedAt)
-
-        const foldersFromAPIResponse = await this.getFoldersFromAPI(foldersFromRepo)
-        if (foldersFromAPIResponse.isFail()) {
+        const registerdFolders = foldersFromRepo.filter(folder => updatedBasicFolders.find(basicFolder => folder.folderId == basicFolder.getProps().id).getProps().updatedAt == folder.content.getProps().basicFolder.getProps().updatedAt);
+        const folderIdsAndPasswords = this.transformFoldersToInput(registerdFolders);
+        const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords);
+        if (foldersFromAPIResult.isFail()) {
+            this.logger.error('failed fetch folders from API by ids')
             return Result.fail();
         }
 
-        const foldersFromAPI = foldersFromAPIResponse.value();
-        const upsertRegisteredFoldersResult = await this.upsertFoldersToRepo(foldersFromAPI);
-        if (upsertRegisteredFoldersResult.isFail()) {
-            return Result.fail();
-        }
+        const foldersFromAPI = foldersFromAPIResult.value();
+        // const upsertRegisteredFoldersResult = await this.upsertFoldersToRepo(foldersFromAPI);
+        // get registerd folders from repo
+        // const input = { upn, folderId: foldersFromAPI. };
+        // const newFolderResult = RegisteredFolder.createValidRegisteredFolder(input);
+        // if (newFolderResult.isFail()) {
+        //     this.logger.error("faild upsert registerdFolder");
+        //     return Result.fail();
+        // }
+        // const upsertFoldersResult = await this.repository.upsertRegisteredFolders([newFolder]);
+
+        // if (upsertFoldersResult.isFail()) {
+        //     this.logger.error('')
+        // }
+
+        // if (upsertRegisteredFoldersResult.isFail()) {
+        //     return Result.fail();
+        // }
 
         return Result.Ok();
     }
@@ -105,51 +124,6 @@ export class FoldersService {
 
     private isFolderPasswordProtected(folder: FoldersByIdResponse) {
         return folder.content.getProps().basicFolder.getProps().isPasswordProtected
-    }
-
-    private async getFoldersFromRepo(updatedBasicFolders: BasicFolder[]) {
-        const updatedFoldersIds = updatedBasicFolders.map(
-            (folder) => folder.getProps().id,
-        );
-
-        const foldersFromRepoResult = await this.repository.getFoldersByIds(updatedFoldersIds);
-        if (foldersFromRepoResult.isFail()) {
-            this.logger.error('');
-        } else {
-            this.logger.info('');
-        }
-
-        return foldersFromRepoResult;
-    }
-
-    private async getFoldersFromAPI(registerdFolders: FoldersByIdResponse[]) {
-        const folderIdsAndPasswords = this.transformFoldersToInput(registerdFolders);
-        const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords);
-        if (foldersFromAPIResult.isFail()) {
-            this.logger.error('')
-        } else {
-            this.logger.info('')
-        }
-
-        return foldersFromAPIResult;
-    }
-
-    private async upsertFoldersToRepo(foldersFromAPI: FoldersByIdResponse[]) {
-        const input = { upn, folderId: foldersFromAPI. };
-        const newFolderResult = RegisteredFolder.createValidRegisteredFolder(input);
-        if (newFolderResult.isFail()) {
-            this.logger.error("faild upsert registerdFolder");
-            return Result.fail();
-        }
-        const upsertFoldersResult = await this.repository.upsertRegisteredFolders([newFolder]);
-
-        if (upsertFoldersResult.isFail()) {
-            this.logger.error('')
-        } else {
-            this.logger.info('')
-        }
-
-        return upsertFoldersResult;
     }
     /*
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -176,7 +150,7 @@ export class FoldersService {
 
     async userRequstedNewFolder(upn: string, folderId: string, password?: string): Promise<Result<void>> {
 
-        const basicfolderResult = await this.repository.getBasicFolder(folderId);
+        const basicfolderResult = await this.repository.getBasicFolderById(folderId);
         if (basicfolderResult.isFail()) {
             return Result.fail()
         }
