@@ -86,7 +86,7 @@ export class RegisteredFolder {
   ): Result<RegisteredFolder, string> {
     return this.createInvalidRegisteredFolder({
       ...input,
-      status: 'general-error',
+      status: 'worng-password',
       isPasswordProtected: true,
       password: null,
       lastValidPasswordTimestamp: null,
