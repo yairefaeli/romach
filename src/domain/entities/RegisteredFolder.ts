@@ -24,8 +24,7 @@ export type PasswordProtectedValidSpecificationProps = Pick<
 >;
 
 class PasswordProtectedValidSpecification
-  implements ISpecification<PasswordProtectedValidSpecificationProps>
-{
+  implements ISpecification<PasswordProtectedValidSpecificationProps> {
   isSatisfiedBy(
     candidate: PasswordProtectedValidSpecificationProps,
   ): Result<boolean, string> {
@@ -42,7 +41,7 @@ class PasswordProtectedValidSpecification
 }
 
 export class RegisteredFolder {
-  private constructor(private readonly props: RegisteredFolderProps) {}
+  private constructor(private readonly props: RegisteredFolderProps) { }
 
   static createValidRegisteredFolder(
     input: Pick<
@@ -50,7 +49,7 @@ export class RegisteredFolder {
       'upn' | 'folder' | 'password' | 'lastValidPasswordTimestamp'
     >,
   ): Result<RegisteredFolder, string> {
-    const basicFolderProps = input.folder.getProps().basicFolder.getProps();
+    const basicFolderProps = input.folder.getProps().basicFolder.getProps('id', 'isPasswordProtected');
     const passwordProtectedValidSpecification =
       new PasswordProtectedValidSpecification().isSatisfiedBy({
         isPasswordProtected: basicFolderProps.isPasswordProtected,

@@ -21,6 +21,7 @@ export class BasicFolder {
   protected constructor(props: BasicFolderProps) {
     this.props = props;
   }
+
   static create(props: BasicFolderProps): Result<BasicFolder, string> {
     const validationResult = this.isValid(props);
     if (!validationResult.value())
@@ -28,8 +29,16 @@ export class BasicFolder {
     return Result.Ok(new BasicFolder(props));
   }
 
-  getProps(): BasicFolderProps {
-    return this.props;
+  getProps(...keys: (keyof BasicFolderProps)[]): Partial<BasicFolderProps> {
+    if (keys.length === 0) {
+      return this.props;
+    } else {
+      const result = Object.assign(
+        {},
+        ...keys.map((key) => ({ [key]: this.props[key] }))
+      );
+      return result;
+    }
   }
 
   private static isValid(props: BasicFolderProps): ValidationResult {
