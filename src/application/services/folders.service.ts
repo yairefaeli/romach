@@ -3,17 +3,18 @@ import { RomachRepositoryInterface } from '../interfaces/romach-repository.inter
 import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
 import { FoldersByIdResponse } from '../view-model/folders-by-ids-response';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { uniqBy } from 'lodash';
-import { Result } from 'rich-domain';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
+import { BasicFolder } from 'src/domain/entities/BasicFolder';
+import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Result } from 'rich-domain';
+import { uniqBy } from 'lodash';
 
 export class FoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
-    ) { }
+    ) {}
 
     /*
     # PSUDO:
@@ -21,7 +22,7 @@ export class FoldersService {
             handle deleted
                 remove deleted from repo by folderId
             handle updated and inserted
-                get registerdFolders from repo by folderId         // maybe change registerdFolders to folderContent?
+                get registerdFolders from repo by folderId                                    // maybe change registerdFolders to folderContent?
                 filter only lastUpdateTime is different
                 uniq by folderId, password
                 for registerdFolders with same folderId, password
@@ -35,7 +36,8 @@ export class FoldersService {
     */
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
-        const res = await Promise.all([ // is it ok to do it parallel? i think yeah because ther are different ids.
+        const res = await Promise.all([
+            // is it ok to do it parallel? i think yeah because there are different ids.
             this.handleDeletedBasicFolders(change.deleted),
             this.handleUpsertedBasicFolders([...change.updated, ...change.inserted]),
         ]);
@@ -47,9 +49,7 @@ export class FoldersService {
         return Result.Ok();
     }
 
-    private async handleDeletedBasicFolders(
-        deletedBasicFoldersIds: string[],
-    ): Promise<Result<void>> {
+    private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
         const deletedResult = await this.repository.deleteBasicFolderByIds(deletedBasicFoldersIds);
 
         if (deletedResult.isFail()) {
@@ -61,12 +61,8 @@ export class FoldersService {
         }
     }
 
-    private async handleUpsertedBasicFolders(
-        updatedBasicFolders: BasicFolder[],
-    ): Promise<Result<void>> {
-        const updatedFoldersIds = updatedBasicFolders.map(
-            (folder) => folder.getProps().id,
-        );
+    private async handleUpsertedBasicFolders(updatedBasicFolders: BasicFolder[]): Promise<Result<void>> {
+        const updatedFoldersIds = updatedBasicFolders.map((folder) => folder.getProps().id);
 
         const foldersFromRepoResult = await this.repository.getFoldersByIds(updatedFoldersIds);
         if (foldersFromRepoResult.isFail()) {
@@ -75,65 +71,51 @@ export class FoldersService {
         }
 
         const foldersFromRepo = foldersFromRepoResult.value();
-        const registerdFolders = foldersFromRepo.filter(folder => updatedBasicFolders.find(basicFolder => folder.folderId == basicFolder.getProps().id).getProps().updatedAt == folder.content.getProps().basicFolder.getProps().updatedAt);
+        const registerdFolders = foldersFromRepo.filter(
+            (folder) =>
+                updatedBasicFolders.find((basicFolder) => folder.folderId == basicFolder.getProps().id).getProps()
+                    .updatedAt == folder.content.getProps().basicFolder.getProps().updatedAt,
+        );
         const folderIdsAndPasswords = this.transformFoldersToInput(registerdFolders);
         const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords);
         if (foldersFromAPIResult.isFail()) {
-            this.logger.error('failed fetch folders from API by ids')
+            this.logger.error('failed fetch folders from API by ids');
             return Result.fail();
         }
 
         const foldersFromAPI = foldersFromAPIResult.value();
-        // const upsertRegisteredFoldersResult = await this.upsertFoldersToRepo(foldersFromAPI);
-        // get registerd folders from repo
-        // const input = { upn, folderId: foldersFromAPI. };
-        // const newFolderResult = RegisteredFolder.createValidRegisteredFolder(input);
-        // if (newFolderResult.isFail()) {
-        //     this.logger.error("faild upsert registerdFolder");
-        //     return Result.fail();
-        // }
-        // const upsertFoldersResult = await this.repository.upsertRegisteredFolders([newFolder]);
-
-        // if (upsertFoldersResult.isFail()) {
-        //     this.logger.error('')
-        // }
-
-        // if (upsertRegisteredFoldersResult.isFail()) {
-        //     return Result.fail();
-        // }
+        
 
         return Result.Ok();
     }
 
-    private transformFoldersToInput(folders: FoldersByIdResponse[]): { id: string, password?: string }[] {
-        const nonUniquedFolders = uniqBy(
-            folders,
-            (item) => `${item.folderId}-${item.password}`,
-        );
+    private transformFoldersToInput(folders: FoldersByIdResponse[]): { id: string; password?: string }[] {
+        const nonUniquedFolders = uniqBy(folders, (item) => `${item.folderId}-${item.password}`);
 
         const inputs = nonUniquedFolders.map((folder) => {
             if (this.isFolderPasswordProtected(folder))
                 return {
                     id: folder.folderId,
                     password: folder.password,
-                }
-            return { id: folder.folderId }
-        })
+                };
+            return { id: folder.folderId };
+        });
 
         return inputs;
     }
 
     private isFolderPasswordProtected(folder: FoldersByIdResponse) {
-        return folder.content.getProps().basicFolder.getProps().isPasswordProtected
+        return folder.content.getProps().basicFolder.getProps().isPasswordProtected;
     }
     /*
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     
+    #PSUDO:
      - user requested new folder (upn, id, password)
-            select basicFolder from repo by id
+            select basicFolder from repo by folderId
             on sucess
                 if passwordProtected
-                    check registerdFolder with API by UPN,folderId
+                    check with API by password and folderId
                     on sucess
                         fetch folder from API with id and password
                         get registerdFolders from repo by folderId, password
@@ -142,7 +124,7 @@ export class FoldersService {
                         get registerdFolders from repo by folderId
                         upsert registerdFolders to repo with status ____
                 if not passwordProtected
-                    fetch folder from API with id and password
+                    fetch folder from API with id
                     upsert registerdFolders to repo with status ____
             on failed
                 upsert registerdFolders to repo with status ____
@@ -150,72 +132,192 @@ export class FoldersService {
     */
 
     async userRequstedNewFolder(upn: string, folderId: string, password?: string): Promise<Result<void>> {
-
         const basicfolderResult = await this.repository.getBasicFolderById(folderId);
         if (basicfolderResult.isFail()) {
-            return Result.fail()
+            this.logger.error('faild fetch basicFolders from repo by folderId', {
+                folderId,
+            });
+            return Result.fail();
         }
 
         const basicFolder = basicfolderResult.value();
         if (basicFolder.getProps().isPasswordProtected) {
             const checkPasswordResult = await this.romachApi.checkPassword(folderId, password); // what happend if wrong password? its failed or ok?
-
             if (checkPasswordResult.isOk()) {
                 // const checkedFolder = checkPasswordResult.value() // i got a folder here? can i depend on it and not fetch again from API?
-                const input = { id: folderId, password }
-                const foldersResponse = await this.romachApi.getFolderById(input)
+                const input = { id: folderId, password };
+                const foldersResponse = await this.romachApi.getFolderById(input);
                 if (foldersResponse.isFail()) {
-                    this.logger.error("faild fetch folders from API");
+                    this.logger.error('faild fetch folders from API');
                     return Result.fail();
                 }
 
-                const registerdFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
+                const folder = foldersResponse.value();
+
+                const registerdFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(
+                    folderId,
+                    password,
+                );
                 if (registerdFoldersResult.isFail()) {
-                    this.logger.error("faild get registerdFolders with same folderId");
+                    this.logger.error('faild get registerdFolders with same folderId');
                     return Result.fail();
                 }
 
-                const creatWrongPasswordRegisterdFolders = registerdFoldersResult.value().map(registerdFolder => RegisteredFolder.createValidRegisteredFolder(registerdFolder.getProps()));
-                if (Result.combine(creatWrongPasswordRegisterdFolders).isFail()) {
-                    this.logger.error("faild create registerdFolders");
+                const createValidRegisterdFolders = registerdFoldersResult.value().map((registerdFolder) =>
+                    RegisteredFolder.createValidRegisteredFolder({
+                        ...registerdFolder.getProps(),
+                        lastValidPasswordTimestamp: Timestamp.now(),
+                    }),
+                );
+                if (Result.combine(createValidRegisterdFolders).isFail()) {
+                    this.logger.error('faild create registerdFolders');
                     return Result.fail();
                 }
 
-                const newRegisterdFolders = Result.combine(creatWrongPasswordRegisterdFolders).value();
-                const upsertFolderResult = await this.repository.upsertRegisteredFolders(newRegisterdFolders);
+                const updatedRegisterdFolders: RegisteredFolder[] = Result.combine(createValidRegisterdFolders).value(); // is it ok to combine all result?
+                const newRegisterdFolderResult = RegisteredFolder.createValidRegisteredFolder({
+                    upn,
+                    folder: folder.content,
+                    password,
+                    lastValidPasswordTimestamp: Timestamp.now(),
+                });
+                if (newRegisterdFolderResult.isFail()) {
+                    this.logger.error('faild create new registerdFolder');
+                    return Result.fail();
+                }
+
+                const newRegisterdFolder = newRegisterdFolderResult.value();
+                const upsertFolderResult = await this.repository.upsertRegisteredFolders([
+                    ...updatedRegisterdFolders,
+                    newRegisterdFolder,
+                ]);
                 if (upsertFolderResult.isFail()) {
-                    this.logger.error("faild upsert registerdFolder");
+                    this.logger.error('faild upsert registerdFolder to repo');
                     return Result.fail();
                 }
             }
+            if (checkPasswordResult.isFail()) {
+                this.logger.error('failed to check password for folder', {
+                    folderId,
+                    password,
+                });
 
-            if ((checkPasswordResult).isFail()) {
-                this.logger.error('failed to check password');
-
-                const registerdFoldersResult = await this.repository.getRegisteredFoldersById(folderId)
+                const registerdFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
                 if (registerdFoldersResult.isFail()) {
-                    this.logger.error("faild get registerdFolders with same folderId");
+                    this.logger.error('faild get registerdFolders with same folderId', {
+                        folderId,
+                    });
                     return Result.fail();
                 }
 
-                const creatWrongPasswordRegisterdFolders = registerdFoldersResult.value().map(registerdFolder => RegisteredFolder.createWorngPasswordRegisteredFolder(registerdFolder.getProps()));
-                if (Result.combine(creatWrongPasswordRegisterdFolders).isFail()) {
-                    this.logger.error("faild create registerdFolders");
+                const createWrongPasswordRegisterdFolders = registerdFoldersResult
+                    .value()
+                    .map((registerdFolder) =>
+                        RegisteredFolder.createWorngPasswordRegisteredFolder(registerdFolder.getProps()),
+                    );
+                if (Result.combine(createWrongPasswordRegisterdFolders).isFail()) {
+                    this.logger.error('faild create registerdFolders');
                     return Result.fail();
                 }
 
-                const newRegisterdFolders = Result.combine(creatWrongPasswordRegisterdFolders).value();
-                const upsertFolderResult = await this.repository.upsertRegisteredFolders(newRegisterdFolders);
+                const newRegisterdFolderResult = RegisteredFolder.createWorngPasswordRegisteredFolder({
+                    upn,
+                    folderId,
+                });
+                if (newRegisterdFolderResult.isFail()) {
+                    this.logger.error('faild create new registerdFolder');
+                    return Result.fail();
+                }
+
+                const newRegisterdFolder = newRegisterdFolderResult.value();
+                const updatedRegisterdFolders = Result.combine(createWrongPasswordRegisterdFolders).value();
+                const upsertFolderResult = await this.repository.upsertRegisteredFolders([
+                    ...updatedRegisterdFolders,
+                    newRegisterdFolder,
+                ]);
                 if (upsertFolderResult.isFail()) {
-                    this.logger.error("faild upsert registerdFolder");
+                    this.logger.error('faild upsert registerdFolder to repo');
                     return Result.fail();
                 }
             }
-        } else {
+        } else if (!basicFolder.getProps().isPasswordProtected) {
+            // i put it only for me to know i am in this case.
+            const folderResult = await this.romachApi.getFolderById({ id: folderId });
+            if (folderResult.isFail()) {
+                this.logger.error('failed fetch folder from API by id', { folderId });
+            }
 
+            const registerdFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
+            if (registerdFoldersResult.isFail()) {
+                this.logger.error('faild get registerdFolders with same folderId', {
+                    folderId,
+                });
+                return Result.fail();
+            }
+
+            const createValidRegisterdFolders = registerdFoldersResult.value().map((registerdFolder) =>
+                RegisteredFolder.createValidRegisteredFolder({
+                    ...registerdFolder.getProps(),
+                    lastValidPasswordTimestamp: Timestamp.now(),
+                }),
+            );
+            if (Result.combine(createValidRegisterdFolders).isFail()) {
+                this.logger.error('faild create registerdFolders');
+                return Result.fail();
+            }
+
+            const folder = folderResult.value();
+            const updatedRegisterdFolders: RegisteredFolder[] = Result.combine(createValidRegisterdFolders).value(); // is it ok to combine all result?
+            const newRegisterdFolderResult = RegisteredFolder.createValidRegisteredFolder({
+                upn,
+                folder: folder.content,
+                password,
+                lastValidPasswordTimestamp: Timestamp.now(),
+            });
+            if (newRegisterdFolderResult.isFail()) {
+                this.logger.error('faild create new registerdFolder');
+                return Result.fail();
+            }
+
+            const newRegisterdFolder = newRegisterdFolderResult.value();
+            const upsertFolderResult = await this.repository.upsertRegisteredFolders([
+                ...updatedRegisterdFolders,
+                newRegisterdFolder,
+            ]);
+            if (upsertFolderResult.isFail()) {
+                this.logger.error('faild upsert registerdFolder to repo');
+                return Result.fail();
+            }
+        }
+        // i dont egdalti rosh and thought here i will only insert this folder without updating others
+        const newRegisterdFolderResult = RegisteredFolder.createGeneralErrorRegisteredFolder({
+            upn,
+            folderId,
+            isPasswordProtected: false,
+            lastValidPasswordTimestamp: null,
+        });
+        if (newRegisterdFolderResult.isFail()) {
+            this.logger.error('faild create new registerdFolder');
+            return Result.fail();
+        }
+
+        const newRegisterdFolder = newRegisterdFolderResult.value();
+        const upsertFolderResult = await this.repository.upsertRegisteredFolder(newRegisterdFolder);
+        if (upsertFolderResult.isFail()) {
+            this.logger.error('faild upsert registerdFolder to repo');
+            return Result.fail();
         }
         return Result.Ok();
     }
+
+    /* 
+    #PSUDO:
+      - user mutation folders interval
+              get registerdFolders from repo by UPN,folderId
+              update registration_timestamp on registerdFolders from repo by UPN,folderId
+              return registerdFolders statuses
+
+  */
 }
 
 // TODO
@@ -248,11 +350,7 @@ export class FoldersService {
 
 
 
-    - user mutation folders interval
-        get registerdFolders from repo by UPN,folderId
-        update registration_timestamp on registerdFolders from repo by UPN,folderId
-        return registerdFolders statuses
-
+    
 
     - retry failed statuses
         get registerdFolder from repo by status - failed statuses
@@ -292,4 +390,3 @@ export class FoldersService {
 //         })
 //     );
 // }
-
