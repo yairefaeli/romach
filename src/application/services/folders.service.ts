@@ -14,8 +14,8 @@ export class FoldersService {
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
     ) { }
+
     /*
-   
     # PSUDO:
         - basic folder updated (inserted, updated, deleted)
             handle deleted
@@ -33,6 +33,7 @@ export class FoldersService {
 
 
     */
+
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
         const res = await Promise.all([ // is it ok to do it parallel? i think yeah because ther are different ids.
             this.handleDeletedBasicFolders(change.deleted),
@@ -52,12 +53,12 @@ export class FoldersService {
         const deletedResult = await this.repository.deleteBasicFolderByIds(deletedBasicFoldersIds);
 
         if (deletedResult.isFail()) {
-            this.logger.error('')
+            this.logger.error('');
+            return Result.fail();
         } else {
-            this.logger.info('')
+            this.logger.info('');
+            return Result.Ok();
         }
-
-        return deletedResult;
     }
 
     private async handleUpsertedBasicFolders(
@@ -135,7 +136,7 @@ export class FoldersService {
     }
 
     private async upsertFoldersToRepo(foldersFromAPI: FoldersByIdResponse[]) {
-        const input = { upn, folderId: foldersFromAPI. };
+        const input = { upn, folderId: foldersFromAPI };
         const newFolderResult = RegisteredFolder.createValidRegisteredFolder(input);
         if (newFolderResult.isFail()) {
             this.logger.error("faild upsert registerdFolder");

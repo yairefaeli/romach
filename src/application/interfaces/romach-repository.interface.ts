@@ -3,7 +3,8 @@ import { Hierarchy } from '../../domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from '../../domain/entities/Timestamp';
-import { FoldersIdsAndsUpdatedAt } from '../view-model/folders-by-ids-response';
+import { FoldersByIdResponse, FoldersIdsAndsUpdatedAt } from '../view-model/folders-by-ids-response';
+import knex from 'knex';
 
 export type NullableTimestamp = Timestamp | null;
 
@@ -13,19 +14,20 @@ export interface RomachRepositoryInterface {
   getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
   getHierarchies(): Promise<Result<Hierarchy[]>>;
   getBasicFolders(): Promise<Result<BasicFolder[]>>;
-  
+
   saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<void>>;
   saveBasicFoldersById(ids: string[]): Promise<Result<void>>;
   deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>>;
   getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>>;
   upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
   getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
-  
+
   // saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<FoldersByIdResponse>>;
   // saveBasicFoldersById(ids: string[]): Promise<Result<FoldersByIdResponse>>;
-  // getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse[]>>;
+  getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse[]>>;
   // deleteBasicFolderByIds(ids: string[]): Promise<Result<void>>;
-  // getBasicFolders(ids: string[]): Promise<Result<BasicFolder[]>>;
+  getBasicFolders(ids: string[]): Promise<Result<BasicFolder[]>>;
+
   // getBasicFolder(ids: string): Promise<Result<BasicFolder>>;
   // updateFolderForAllUsers(folder: Folder): Promise<void>;
   // findUniquePasswordsForFolder(folderId: BasicFolder): Promise<string[]>;
@@ -34,7 +36,7 @@ export interface RomachRepositoryInterface {
   // getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<{ id: string, updatedAt: string }[]>>;
 
   // getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
-  // getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
-  // getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
+  getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
+  getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
   // upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
 }
