@@ -13,7 +13,7 @@ export interface RomachRepositoryInterface {
   getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
   getHierarchies(): Promise<Result<Hierarchy[]>>;
   getBasicFolders(): Promise<Result<BasicFolder[]>>;
-  
+
   saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<void>>;
   saveBasicFoldersById(ids: string[]): Promise<Result<void>>;
   getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>>; // return folders ids??
