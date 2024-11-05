@@ -1,5 +1,5 @@
 import { Result } from 'rich-domain';
-import { differenceBy, isEmpty, isEqual } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
 import { RomachRepositoryInterface } from '../interfaces/romach-repository.interface';
@@ -22,36 +22,67 @@ export class TreeCalculationHandlerService {
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
-        const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
+        if (currentFoldersFromRepositoryResult.isFail()) {
+            this.options.logger.error(`Failed to fetch current folders from repository: ${currentFoldersFromRepositoryResult.error()}`);
+            return Result.fail();
+        }
 
-        if (this.needToCalcTree(currentFoldersFromRepositoryResult, changes)) {
-            const updatedFolders = this.compareFolders(currentFoldersFromRepositoryResult, changes);
-            await this.calculateTree(updatedFolders, currentHierarchiesFromRepositoryResult);
+        const currentFolders = currentFoldersFromRepositoryResult.value();
+
+        if (this.needToCalcTree(currentFolders, changes)) {
+            const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
+
+            if (currentHierarchiesFromRepositoryResult.isFail()) {
+                this.options.logger.error(`Failed to fetch current hierarchies from repository: ${currentHierarchiesFromRepositoryResult.error()}`);
+                return Result.fail();
+            }
+
+            const currentHierarchies = currentHierarchiesFromRepositoryResult.value();
+            const updatedFolders = this.mergeFolders(currentFolders, changes);
+            const treeCalculationResult = await this.calculateTree(updatedFolders, currentHierarchies);
+
+            if (treeCalculationResult.isFail()) {
+                this.options.logger.error(`Failed to calculate tree: ${treeCalculationResult.error()}`);
+                return Result.fail();
+            }
+
         }
 
         return Result.Ok();
     }
 
-    private compareFolders(currentFoldersFromRepository: BasicFolder[], changedFolders: BasicFolderChange): BasicFolder[] {
+    private mergeFolders(currentFoldersFromRepository: BasicFolder[], changedFolders: BasicFolderChange): BasicFolder[] {
         const { deleted: deletedFolderIds, inserted: insertedFolders, updated: updatedFolders } = changedFolders;
 
-        const filteredFolders = currentFoldersFromRepository.filter(
+        //filter from the current folders that get from repository the deleted folders
+        const folderFromRepositoyWithoutDeltedFolders = currentFoldersFromRepository.filter(
             folder => !deletedFolderIds.includes(folder.getProps().id),
         );
 
+        // merge updated and inserted folders
         const updatedAndInsertedFolders = [...insertedFolders, ...updatedFolders];
 
-        const updatedFilteredFolders = differenceBy(
-            filteredFolders,
-            updatedAndInsertedFolders,
-            folder => folder.getProps().id,
-        );
+        //filter from the current folders the folders that have been get from handler and there name and category field changed
+        const updatedFilteredFolders = folderFromRepositoyWithoutDeltedFolders.filter(filteredFolder => {
+            return updatedAndInsertedFolders.some(updatedFolder => {
+                const filteredProps = filteredFolder.getProps();
+                const updatedProps = updatedFolder.getProps();
 
+                return (
+                    filteredProps.id === updatedProps.id &&
+                    (filteredProps.name !== updatedProps.name || filteredProps.categoryId !== updatedProps.categoryId)
+                );
+            });
+        });
+
+
+        // get the final result of the folders that need to send to calculate tree function
         const resultFolders = [...updatedFilteredFolders, ...updatedAndInsertedFolders];
 
         this.options.logger.info(`Filtered folders for tree calculation: ${resultFolders.length} folders.`);
         return resultFolders;
     }
+
 
     private needToCalcTree(currentFoldersFromRepository: BasicFolder[], changes: BasicFolderChange): boolean {
         const currentFoldersFromRepositoryResult = currentFoldersFromRepository.map(folder => folder.getProps());
@@ -72,25 +103,35 @@ export class TreeCalculationHandlerService {
     }
 
 
-    private async getCurrentFoldersFromRepository() {
-        const result = await RetryUtils.retry(() => this.options.romachRepository.getBasicFolders(), this.options.maxRetry, this.options.logger);
-        if (result.isFail()) {
-            throw new Error(`Failed to fetch current folders from repository: ${result.error()}`);
-        }
-        this.options.logger.info(`Fetched ${result.value().length} current folders from repository.`);
-
-        return result.value();
+    private async getCurrentFoldersFromRepository(): Promise<Result<BasicFolder[]>> {
+        return RetryUtils.retry(
+            async () => {
+                const result = await this.options.romachRepository.getBasicFolders();
+                if (result.isFail()) {
+                    throw new Error(`Failed to fetch current folders from repository: ${result.error()}`);
+                }
+                this.options.logger.info(`Fetched ${result.value().length} current folders from repository.`);
+                return result;
+            },
+            this.options.maxRetry,
+            this.options.logger
+        );
     }
 
 
-    private async getCurrentHierarchiesFromRepository() {
-        const result = await RetryUtils.retry(() => this.options.romachRepository.getHierarchies(), this.options.maxRetry, this.options.logger);
-
-        if (result.isFail()) {
-            throw new Error(`Failed to fetch current hierarchies from repository: ${result.error()}`);
-        }
-        this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
-        return result.value();
+    private async getCurrentHierarchiesFromRepository(): Promise<Result<Hierarchy[]>> {
+        return RetryUtils.retry(
+            async () => {
+                const result = await this.options.romachRepository.getHierarchies();
+                if (result.isFail()) {
+                    throw new Error(`Failed to fetch current hierarchies from repository: ${result.error()}`);
+                }
+                this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
+                return result;
+            },
+            this.options.maxRetry,
+            this.options.logger
+        );
     }
 
     private async calculateTree(currentFolders: BasicFolder[], currentHierarchies: Hierarchy[]): Promise<Result<void>> {

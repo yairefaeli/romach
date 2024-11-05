@@ -12,6 +12,10 @@ import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
 import { map, timer } from 'rxjs';
+import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
+import { BasicFolder } from 'src/domain/entities/BasicFolder';
+import { Tree } from 'src/domain/entities/Tree';
+import { Timestamp } from 'src/domain/entities/Timestamp';
 
 describe('HierarchyReplicationService', () => {
   const hierarchy1 = Hierarchy.create({
@@ -74,6 +78,19 @@ describe('HierarchyReplicationService', () => {
     };
   }
 
+  function mockTreeCalculationServiceBuilder(options?: {
+    calculateTree?: (basicFolders: BasicFolder[], hierarchies: Hierarchy[]) => Tree;
+  }): TreeCalculationService {
+    return {
+      calculateTree: options?.calculateTree ?? ((basicFolders, hierarchies) => {
+        return {
+          updatedAt: Timestamp.now(),
+          nodes: [],
+        };
+      }),
+    };
+  }
+
   async function testingModuleBuilder(
     input?: Partial<HierarchyReplicationServiceOptions>,
   ) {
@@ -84,6 +101,8 @@ describe('HierarchyReplicationService', () => {
       romachEntitiesApi: mockRomachApiInterfaceBuilder(),
       leaderElection: mockLeaderElectionInterfaceBuilder(),
       romachRepository: mockRomachRepositoryInterfaceBuilder(),
+      treeCalculationService: mockTreeCalculationServiceBuilder(),
+      maxRetry: 3,
       ...input,
     };
 
