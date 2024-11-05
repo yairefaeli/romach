@@ -14,21 +14,27 @@ export class FoldersService {
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
     ) { }
+    /*
+   
+    # PSUDO:
+        - basic folder updated (inserted, updated, deleted)
+            handle deleted
+                remove deleted from repo by folderId
+            handle updated and inserted
+                get registerdFolders from repo by folderId         // maybe change registerdFolders to folderContent?
+                filter only lastUpdateTime is different
+                uniq by folderId, password
+                for registerdFolders with same folderId, password
+                    fetch folders from API with folderId, password
+                        onSuccess
+                            update registerdFolder's content in repo by folderId, password
+                        onFailed
+                            update registerdFolder's status=failed and content=null in repo by folderId, password
 
+
+    */
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
-
-        // const deletedResult = await this.handleDeletedBasicFolders(change.deleted);
-        // if (deletedResult.isFail()) {
-        //     return Result.fail();
-        // }
-
-        // const upsertedResult = await this.handleUpsertedBasicFolders([...change.updated, ...change.inserted]);
-        // if (upsertedResult.isFail()) {
-        //     return Result.fail();
-        // }
-
-        // return Result.Ok();
-        const res = await Promise.all([
+        const res = await Promise.all([ // is it ok to do it parallel? i think yeah because ther are different ids.
             this.handleDeletedBasicFolders(change.deleted),
             this.handleUpsertedBasicFolders([...change.updated, ...change.inserted]),
         ]);
@@ -129,7 +135,13 @@ export class FoldersService {
     }
 
     private async upsertFoldersToRepo(foldersFromAPI: FoldersByIdResponse[]) {
-        const upsertFoldersResult = await this.repository.upsertRegisteredFolders(foldersFromAPI);
+        const input = { upn, folderId: foldersFromAPI. };
+        const newFolderResult = RegisteredFolder.createValidRegisteredFolder(input);
+        if (newFolderResult.isFail()) {
+            this.logger.error("faild upsert registerdFolder");
+            return Result.fail();
+        }
+        const upsertFoldersResult = await this.repository.upsertRegisteredFolders([newFolder]);
 
         if (upsertFoldersResult.isFail()) {
             this.logger.error('')
@@ -140,48 +152,93 @@ export class FoldersService {
         return upsertFoldersResult;
     }
     /*
-    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@MatanAzarzar
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    
+     - user requested new folder (upn, id, password)
+            select basicFolder from repo by id
+            on sucess
+                if passwordProtected
+                    check registerdFolder with API by UPN,folderId
+                    on sucess
+                        fetch folder from API with id and password
+                        get registerdFolders from repo by folderId, password
+                        upsert registerdFolders to repo with status 'valid' and update valid_password_timestamp
+                    on fail
+                        get registerdFolders from repo by folderId
+                        upsert registerdFolders to repo with status ____
+                if not passwordProtected
+                    fetch folder from API with id and password
+                    upsert registerdFolders to repo with status ____
+            on failed
+                upsert registerdFolders to repo with status ____
+                
     */
 
     async userRequstedNewFolder(upn: string, folderId: string, password?: string): Promise<Result<void>> {
-        // - user requested new folder (registerdFolder)
-        //     if protected
-        let folderToUpsert = folder;
-        if (folder.getProps().isPasswordProtected) {
-            const checkPasswordResult = await this.romachApi.checkPassword(folder.getProps().folderId, folder.getProps().password);
-            if ((checkPasswordResult).isFail()) {
-                const newFolderResult = RegisteredFolder.createWorngPasswordRegisteredFolder(folder.getProps());
-                if (newFolderResult.isFail()) {
-                    return Result.fail()
-                }
-                folderToUpsert = newFolderResult.value()
-                this.logger.error('failed to check password');
-            } else {
-                const input = { id: folder.getProps().folderId, password: folder.getProps().password }
+
+        const basicfolderResult = await this.repository.getBasicFolder(folderId);
+        if (basicfolderResult.isFail()) {
+            return Result.fail()
+        }
+
+        const basicFolder = basicfolderResult.value();
+        if (basicFolder.getProps().isPasswordProtected) {
+            const checkPasswordResult = await this.romachApi.checkPassword(folderId, password); // what happend if wrong password? its failed or ok?
+
+            if (checkPasswordResult.isOk()) {
+                // const checkedFolder = checkPasswordResult.value() // i got a folder here? can i depend on it and not fetch again from API?
+                const input = { id: folderId, password }
                 const foldersResponse = await this.romachApi.getFolderById(input)
                 if (foldersResponse.isFail()) {
+                    this.logger.error("faild fetch folders from API");
+                    return Result.fail();
+                }
 
-                } else {
-                    RegisteredFolder.createGeneralErrorRegisteredFolder
+                const registerdFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
+                if (registerdFoldersResult.isFail()) {
+                    this.logger.error("faild get registerdFolders with same folderId");
+                    return Result.fail();
+                }
+
+                const creatWrongPasswordRegisterdFolders = registerdFoldersResult.value().map(registerdFolder => RegisteredFolder.createValidRegisteredFolder(registerdFolder.getProps()));
+                if (Result.combine(creatWrongPasswordRegisterdFolders).isFail()) {
+                    this.logger.error("faild create registerdFolders");
+                    return Result.fail();
+                }
+
+                const newRegisterdFolders = Result.combine(creatWrongPasswordRegisterdFolders).value();
+                const upsertFolderResult = await this.repository.upsertRegisteredFolders(newRegisterdFolders);
+                if (upsertFolderResult.isFail()) {
+                    this.logger.error("faild upsert registerdFolder");
+                    return Result.fail();
+                }
+            }
+
+            if ((checkPasswordResult).isFail()) {
+                this.logger.error('failed to check password');
+
+                const registerdFoldersResult = await this.repository.getRegisteredFoldersById(folderId)
+                if (registerdFoldersResult.isFail()) {
+                    this.logger.error("faild get registerdFolders with same folderId");
+                    return Result.fail();
+                }
+
+                const creatWrongPasswordRegisterdFolders = registerdFoldersResult.value().map(registerdFolder => RegisteredFolder.createWorngPasswordRegisteredFolder(registerdFolder.getProps()));
+                if (Result.combine(creatWrongPasswordRegisterdFolders).isFail()) {
+                    this.logger.error("faild create registerdFolders");
+                    return Result.fail();
+                }
+
+                const newRegisterdFolders = Result.combine(creatWrongPasswordRegisterdFolders).value();
+                const upsertFolderResult = await this.repository.upsertRegisteredFolders(newRegisterdFolders);
+                if (upsertFolderResult.isFail()) {
+                    this.logger.error("faild upsert registerdFolder");
+                    return Result.fail();
                 }
             }
         } else {
 
         }
-
-        const res = await this.repository.upsertRegisteredFolders([folderToUpsert]);
-        if (res.isFail()) {
-            this.logger.error('failed to save to repo');
-        }
-        //     check registerdFolder with API by UPN,folderId
-        //     on sucess
-        //         fetch folder from API with id and password
-        //         update registerdFolders in repo by folderId, password
-        //     on fail
-        //         insert registerdFolder to repo
-        // if unprotected
-        //     fetch folder from API with id
-        //     insert registerdFolder to repo
         return Result.Ok();
     }
 }
@@ -210,38 +267,10 @@ export class FoldersService {
     questions for eyal:
     - when i use the entity Registerdfolder?
     - how the romach API look? the check and the folders content? what error we get from them?
-    - 
+    -
 #### psudo:
 
-    - basic folder updated (inserted, updated, deleted)
-        handle deleted
-            remove deleted from repo by folderId
-        handle updated and inserted
-            get registerdFolders from repo by folderId         // maybe change registerdFolders to folderContent?
-            filter only lastUpdateTime is different
-            uniq by folderId, password
-            for registerdFolders with same folderId, password
-                fetch folders from API with folderId, password
-                    onSuccess
-                        update registerdFolder's content in repo by folderId, password
-                    onFailed
-                        update registerdFolder's status=failed and content=null in repo by folderId, password
 
-
-     - user requested new folder (upn, id, password)
-            select basicFolder from repo by id
-            if protected
-                check registerdFolder with API by UPN,folderId
-                on sucess
-                    fetch folder from API with id and password
-                    get registerdFolders from repo by folderId, password
-                    update valid_password_timestamp for all
-                    upsert registerdFolders to repo
-                on fail
-                    insert registerdFolder to repo
-            if unprotected
-                fetch folder from API with id and password
-                insert registerdFolder to repo
 
 
     - user mutation folders interval
