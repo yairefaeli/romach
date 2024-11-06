@@ -43,17 +43,13 @@ class PasswordProtectedValidSpecification
 export class RegisteredFolder {
   private constructor(private readonly props: RegisteredFolderProps) { }
 
-  getProps(): RegisteredFolderProps {
-    return this.props;
-  }
-
   static createValidRegisteredFolder(
     input: Pick<
       RegisteredFolderProps,
       'upn' | 'folder' | 'password' | 'lastValidPasswordTimestamp'
     >,
   ): Result<RegisteredFolder, string> {
-    const basicFolderProps = input.folder.getProps().basicFolder.getProps();
+    const basicFolderProps = input.folder.getProps().basicFolder.getProps('id', 'isPasswordProtected');
     const passwordProtectedValidSpecification =
       new PasswordProtectedValidSpecification().isSatisfiedBy({
         isPasswordProtected: basicFolderProps.isPasswordProtected,

@@ -65,8 +65,8 @@ export class TreeCalculationHandlerService {
         //filter from the current folders the folders that have been get from handler and there name and category field changed
         const updatedFilteredFolders = folderFromRepositoyWithoutDeltedFolders.filter(filteredFolder => {
             return updatedAndInsertedFolders.some(updatedFolder => {
-                const filteredProps = filteredFolder.getProps();
-                const updatedProps = updatedFolder.getProps();
+                const filteredProps = filteredFolder.getProps('id', 'name', 'categoryId');
+                const updatedProps = updatedFolder.getProps('id', 'name', 'categoryId');
 
                 return (
                     filteredProps.id === updatedProps.id &&
@@ -74,7 +74,6 @@ export class TreeCalculationHandlerService {
                 );
             });
         });
-
 
         // get the final result of the folders that need to send to calculate tree function
         const resultFolders = [...updatedFilteredFolders, ...updatedAndInsertedFolders];
@@ -85,14 +84,14 @@ export class TreeCalculationHandlerService {
 
 
     private needToCalcTree(currentFoldersFromRepository: BasicFolder[], changes: BasicFolderChange): boolean {
-        const currentFoldersFromRepositoryResult = currentFoldersFromRepository.map(folder => folder.getProps());
+        const currentFoldersFromRepositoryProps = currentFoldersFromRepository.map(folder => folder.getProps('name', 'categoryId'));
 
         const needToCalculate = (
             !isEmpty(changes.deleted) ||
             !isEmpty(changes.inserted) ||
             changes.updated.some(folder => {
-                const props = folder.getProps();
-                return currentFoldersFromRepositoryResult.some(existingProps =>
+                const props = folder.getProps('name', 'categoryId');
+                return currentFoldersFromRepositoryProps.some(existingProps =>
                     !isEqual(props.name, existingProps.name) || !isEqual(props.categoryId, existingProps.categoryId)
                 );
             })
