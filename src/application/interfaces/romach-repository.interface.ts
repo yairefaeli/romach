@@ -32,6 +32,7 @@ export interface RomachRepositoryInterface {
 
   getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
   getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
+  getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
   getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
   upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
   upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result<void>>;
