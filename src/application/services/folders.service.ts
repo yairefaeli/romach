@@ -22,7 +22,7 @@ export class FoldersService {
             handle deleted
                 remove deleted from repo by folderId
             handle updated and inserted
-                get registerdFolders from repo by folderId                                    // maybe change registerdFolders to folderContent?
+                get registerdFolders from repo by folderId
                 filter only lastUpdateTime is different
                 uniq by folderId, password
                 for registerdFolders with same folderId, password
@@ -61,52 +61,66 @@ export class FoldersService {
         }
     }
 
-    private async handleUpsertedBasicFolders(updatedBasicFolders: BasicFolder[]): Promise<Result<void>> {
-        const updatedFoldersIds = updatedBasicFolders.map((folder) => folder.getProps().id);
-
-        const foldersFromRepoResult = await this.repository.getFoldersByIds(updatedFoldersIds);
-        if (foldersFromRepoResult.isFail()) {
-            this.logger.error('faild get folders from repo by ids');
+    private async handleUpsertedBasicFolders(upsartedBasicFolders: BasicFolder[]): Promise<Result<void>> {
+        const upsertedFoldersIds = upsartedBasicFolders.map((folder) => folder.getProps().id);
+        const registerdFoldersFromRepoResult = await this.repository.getRegisteredFoldersByIds(upsertedFoldersIds);
+        if (registerdFoldersFromRepoResult.isFail()) {
+            this.logger.error('faild get registerdFolders from repo by ids');
             return Result.fail();
         }
 
-        const foldersFromRepo = foldersFromRepoResult.value();
-        const registerdFolders = foldersFromRepo.filter(
+        const registerdFoldersFromRepo = registerdFoldersFromRepoResult.value();
+        const upsertedRegisterdFolders = registerdFoldersFromRepo.filter(
             (folder) =>
-                updatedBasicFolders.find((basicFolder) => folder.folderId == basicFolder.getProps().id).getProps()
-                    .updatedAt == folder.content.getProps().basicFolder.getProps().updatedAt,
+                upsartedBasicFolders
+                    .find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id)
+                    .getProps().updatedAt === folder.getProps().updatedAtTimestamp.toString(), // yeah? is to string will fix it? why updatedAt in basic folder isnt timestamp?
         );
-        const folderIdsAndPasswords = this.transformFoldersToInput(registerdFolders);
-        const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords);
+        const folderIdsAndPasswords = this.transformFoldersToInput(upsertedRegisterdFolders);
+        const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords); // what happend if one of the folders have wrong password? do i need to check that?
         if (foldersFromAPIResult.isFail()) {
-            this.logger.error('failed fetch folders from API by ids');
+            this.logger.error('failed fetch folders from API by ids and passwords');
             return Result.fail();
         }
 
         const foldersFromAPI = foldersFromAPIResult.value();
-        
+        const newUpsertedRegisterdFoldersResults = upsertedRegisterdFolders.map((registerdFolder) => {
+            const folder = foldersFromAPI.find((folder) => folder.folderId === registerdFolder.getProps().folderId);
+            return RegisteredFolder.createValidRegisteredFolder({
+                ...registerdFolder.getProps(),
+                folder: folder.content,
+            });
+        });
+        if (Result.combine(newUpsertedRegisterdFoldersResults).isFail()) {
+            this.logger.error('failed create registerdFolders');
+            return Result.fail();
+        }
+
+        const newUpsertedRegisterdFolders = Result.combine(newUpsertedRegisterdFoldersResults).value(); // is it ok to combine all result and get value?
+        const upsertRegisterdFoldersResult = await this.repository.upsertRegisteredFolders([newUpsertedRegisterdFolders]);
+        if (upsertRegisterdFoldersResult.isFail()) {
+            this.logger.error('faild upsert registerdFolders to repo');
+            return Result.fail();
+        }
 
         return Result.Ok();
     }
 
-    private transformFoldersToInput(folders: FoldersByIdResponse[]): { id: string; password?: string }[] {
-        const nonUniquedFolders = uniqBy(folders, (item) => `${item.folderId}-${item.password}`);
+    private transformFoldersToInput(folders: RegisteredFolder[]): { id: string; password?: string }[] {
+        const nonUniquedFolders = uniqBy(folders, (item) => `${item.getProps().folderId}-${item.getProps().password}`);
 
         const inputs = nonUniquedFolders.map((folder) => {
-            if (this.isFolderPasswordProtected(folder))
+            if (folder.getProps().isPasswordProtected)
                 return {
-                    id: folder.folderId,
-                    password: folder.password,
+                    id: folder.getProps().folderId,
+                    password: folder.getProps().password,
                 };
-            return { id: folder.folderId };
+            return { id: folder.getProps().folderId };
         });
 
         return inputs;
     }
 
-    private isFolderPasswordProtected(folder: FoldersByIdResponse) {
-        return folder.content.getProps().basicFolder.getProps().isPasswordProtected;
-    }
     /*
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     
@@ -174,7 +188,7 @@ export class FoldersService {
                     return Result.fail();
                 }
 
-                const updatedRegisterdFolders: RegisteredFolder[] = Result.combine(createValidRegisterdFolders).value(); // is it ok to combine all result?
+                const updatedRegisterdFolders: RegisteredFolder[] = Result.combine(createValidRegisterdFolders).value(); // is it ok to combine all result and get value?
                 const newRegisterdFolderResult = RegisteredFolder.createValidRegisteredFolder({
                     upn,
                     folder: folder.content,
