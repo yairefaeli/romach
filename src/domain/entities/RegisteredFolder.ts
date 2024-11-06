@@ -43,6 +43,11 @@ class PasswordProtectedValidSpecification
 export class RegisteredFolder {
   private constructor(private readonly props: RegisteredFolderProps) { }
 
+
+  getProps(): RegisteredFolderProps {
+    return this.props;
+  }
+
   static createValidRegisteredFolder(
     input: Pick<
       RegisteredFolderProps,
