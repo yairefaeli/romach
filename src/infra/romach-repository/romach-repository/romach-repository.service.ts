@@ -1,13 +1,14 @@
-import { NullableTimestamp, RomachRepositoryInterface } from '../../../application/interfaces/romach-repository.interface';
-import { FoldersByIdResponse } from '../../../application/view-model/folders-by-ids-response';
-import { RegisteredFolder } from '../../../domain/entities/RegisteredFolder';
-import { RealityId } from '../../../application/entities/reality-id';
-import { AppLoggerService } from '../../logging/app-logger.service';
-import { Hierarchy } from '../../../domain/entities/Hierarchy';
-import { Result } from 'rich-domain';
-import { Knex } from 'knex';
-import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Knex } from "knex";
+import { Result } from "rich-domain";
+import { RealityId } from "src/application/entities/reality-id";
+import { NullableTimestamp, RomachRepositoryInterface } from "src/application/interfaces/romach-repository.interface";
+import { FoldersByIdResponse, FoldersIdsAndsUpdatedAt } from "src/application/view-model/folders-by-ids-response";
+import { BasicFolder } from "src/domain/entities/BasicFolder";
+import { Hierarchy } from "src/domain/entities/Hierarchy";
+import { RegisteredFolder } from "src/domain/entities/RegisteredFolder";
+import { Timestamp } from "src/domain/entities/Timestamp";
+import { UPN } from "src/domain/entities/UPN";
+import { AppLoggerService } from "src/infra/logging/app-logger.service";
 
 export class RomachRepositoryService implements RomachRepositoryInterface {
   constructor(
@@ -15,69 +16,157 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
     private readonly logger: AppLoggerService,
     private reality: RealityId,
   ) { }
-  getBasicFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse>> {
-    throw new Error('Method not implemented.');
+
+
+  async getBasicFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse>> {
+    try {
+      const folders = await this.knex<FoldersByIdResponse>('basic_folders')
+        .whereIn('id', ids);
+      Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching folders by IDs');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async getBasicFolders(): Promise<Result<BasicFolder[]>> {
+    try {
+      const folders = await this.knex<BasicFolder>('basic_folders')
+        .select('*');
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching basic folders');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse>> {
+    try {
+      const folders = await this.knex<RegisteredFolder>('registered_folders')
+        .whereIn('id', ids)
+        .select('*');
+      Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching folders by IDs');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async saveBasicFolders(basicFolders: BasicFolder[]): Promise<Result<void>> {
+    try {
+      await this.knex<BasicFolder>('basic_folders')
+        .insert(basicFolders);
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error('Error saving basic folders');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>> {
+    try {
+      await this.knex('basic_folders')
+        .whereIn('id', ids)
+        .del();
+      Result.Ok();
+    } catch (error) {
+      this.logger.error('Error deleting folders by ID');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>> {
+    try {
+      await this.knex('registered_folders')
+        .insert(folders)
+        .onConflict('id')
+        .merge();
+
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error('Error upserting registered folders');
+      return Result.fail('DatabaseError');
+    }
   }
 
 
-  getBasicFolders(): Promise<Result<BasicFolder[]>> {
-    throw new Error('Method not implemented.');
-  }
-
-  getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse>> {
-    throw new Error('Method not implemented.');
-  }
-
-
-
-  saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>> {
-    throw new Error('Method not implemented.');
-  }
-
-  getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>> {
-    throw new Error('Method not implemented.');
-  }
-
-  saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<void>> {
-    throw new Error('Method not implemented.');
-  }
-
-  saveBasicFoldersById(ids: string[]): Promise<Result<void>> {
-    throw new Error('Method not implemented.');
-  }
-
-  deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>> {
-    throw new Error('Method not implemented.');
-  }
-
-  upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>> {
-    throw new Error('Method not implemented.');
-  }
-
-  getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<{ id: string; updatedAt: string; }[]>> {
-    throw new Error('Method not implemented.');
+  async getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>> {
+    try {
+      const folders = await this.knex('basic_folders')
+        .whereIn('id', folderIds)
+        .select('id', 'updated_at as updatedAt');
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching folder IDs and updatedAt');
+      return Result.fail('DatabaseError');
+    }
   }
 
 
   async saveHierarchies(hierarchy: Hierarchy[]): Promise<Result<void>> {
-    this.logger.info(
-      `saved ${hierarchy?.length} hierarchies to database for reality ${this.reality}`,
-    );
-
-    return Result.Ok();
+    try {
+      await this.knex('hierarchy')
+        .insert(hierarchy)
+        .onConflict('id')
+        .merge();
+      this.logger.info(`Saved ${hierarchy} hierarchies to database for reality ${this.reality}`);
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error('Error saving hierarchies');
+      return Result.fail('DatabaseError');
+    }
   }
+
 
   async getHierarchies(): Promise<Result<Hierarchy[]>> {
-    this.logger.info(
-      `read hierarchies from database for reality ${this.reality}`,
-    );
-
-    return Result.Ok([]);
+    try {
+      const hierarchies = await this.knex<Hierarchy>('hierarchy')
+        .where('')
+        .select('*');
+      this.logger.info(`Read ${hierarchies.length} hierarchies from database for reality ${this.reality}`);
+    } catch (error) {
+      this.logger.error('Error fetching hierarchies');
+      return Result.fail('DatabaseError');
+    }
   }
 
 
-  async getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>> {
-    this.logger.info(`read registered folders for upn ${upn}`);
-    return Result.Ok([]);
+
+  async getRegisteredFoldersByUpn(upn: UPN): Promise<Result<string[]>> {
+    try {
+      const folders = await this.knex('registered_folders')
+        .where({ upn })
+        .pluck('folder_id');
+
+      this.logger.info(`Read ${folders.length} registered folders for upn ${upn}`);
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching registered folders by UPN');
+      return Result.fail('DatabaseError');
+    }
   }
+
+  async saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>> {
+    try {
+      await this.knex('basic_folders_timestamp')
+        .insert({ timestamp });
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error('Error saving basic folders timestamp');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>> {
+    try {
+      const timestamp = await this.knex<NullableTimestamp>('basic_folders_timestamp')
+        .orderBy('timestamp', 'desc')
+        .first();
+      return Result.Ok(timestamp || null);
+    } catch (error) {
+      this.logger.error('Error fetching basic folders timestamp');
+      return Result.fail('DatabaseError');
+    }
+  }
+
 }

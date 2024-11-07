@@ -14,9 +14,10 @@ export interface RomachRepositoryInterface {
   getHierarchies(): Promise<Result<Hierarchy[]>>;
   getBasicFolders(): Promise<Result<BasicFolder[]>>;
   saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<void>>;
-  saveBasicFoldersById(ids: string[]): Promise<Result<void>>;
   deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>>;
-  getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>>;
-  upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
+  getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>>; // string or registered folder
+  upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>
   getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 }
+
+

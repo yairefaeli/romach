@@ -8,8 +8,6 @@ export class FoldersService {
     ) { }
 
     async execute(change: BasicFolderChange): Promise<Result<void>> {
-
-
         return Result.Ok()
 
     }

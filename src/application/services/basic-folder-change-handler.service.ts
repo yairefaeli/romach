@@ -16,6 +16,7 @@ export interface BasicFolderChangeHandlerServiceOptions {
     treeCalculatorService: TreeCalculationHandlerService;
     basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
 }
+
 export class BasicFolderChangeHandlerService {
     constructor(private options: BasicFolderChangeHandlerServiceOptions
     ) { }

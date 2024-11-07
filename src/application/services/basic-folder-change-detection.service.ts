@@ -21,7 +21,7 @@ export class BasicFolderChangeDetectionService {
 
         const foldersIds = current.map(folder => folder.getProps().id)
 
-        const previousFoldersResult = await this.foldersServiceChanges(foldersIds);
+        const previousFoldersResult = await this.getBasicFoldersIdsAndsUpdatedAt(foldersIds);
 
         if (previousFoldersResult.isFail()) {
             return Result.fail()
@@ -44,7 +44,7 @@ export class BasicFolderChangeDetectionService {
     }
 
 
-    private async foldersServiceChanges(folderIds: string[]) {
+    private async getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]) {
         this.options.logger.debug(
             `starting to fetch basic folders ids and updated at`
         )
