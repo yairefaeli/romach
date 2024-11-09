@@ -1,4 +1,3 @@
-import { EventEmitterInterface } from "src/application/interfaces/event-handler-interface";
 
 export interface Configuration {
   logger: {
