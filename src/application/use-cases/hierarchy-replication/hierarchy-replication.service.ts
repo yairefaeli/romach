@@ -245,5 +245,4 @@ export class HierarchyReplicationService {
     this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
     return result.value();
   }
-
 }

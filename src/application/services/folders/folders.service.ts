@@ -1,6 +1,6 @@
 import { AppLoggerService } from "src/infra/logging/app-logger.service";
 import { Result } from "rich-domain";
-import { BasicFolderChange } from "../interfaces/basic-folder-changes.interface";
+import { BasicFolderChange } from "src/application/interfaces/basic-folder-changes.interface";
 
 export class FoldersService {
     constructor(

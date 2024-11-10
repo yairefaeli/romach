@@ -1,12 +1,12 @@
 import { AppLoggerService } from "src/infra/logging/app-logger.service";
-import { BasicFolderChangeDetectionService } from "./basic-folder-change-detection.service";
-import { UpdateBasicFoldersRepositoryService } from "./update-basic-folder-repository.service";
-import { FoldersService } from "./folders.service";
-import { TreeCalculationHandlerService } from "./tree-calculation-handler.service";
+import { BasicFolderChangeDetectionService } from "../basic-folder-change-detection.service/basic-folder-change-detection.service";
+import { UpdateBasicFoldersRepositoryService } from "../update-basic-folder-repository/update-basic-folder-repository.service";
 import { BasicFolder } from "src/domain/entities/BasicFolder";
 import { Result } from "rich-domain";
 import { RetryUtils } from "src/utils/RetryUtils/RetryUtils";
-import { BasicFolderChange } from "../interfaces/basic-folder-changes.interface";
+import { BasicFolderChange } from "../../interfaces/basic-folder-changes.interface";
+import { FoldersService } from "../folders/folders.service";
+import { TreeCalculationHandlerService } from "../tree-calculation-handler/tree-calculation-handler.service";
 
 export interface BasicFolderChangeHandlerServiceOptions {
     logger: AppLoggerService;

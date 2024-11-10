@@ -1,13 +1,13 @@
 import { Result } from 'rich-domain';
 import { isEmpty, isEqual } from 'lodash';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
-import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
-import { RomachRepositoryInterface } from '../interfaces/romach-repository.interface';
-import { RomachEntitiesApiInterface } from '../interfaces/romach-entities-api.interface';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Hierarchy } from 'src/domain/entities/Hierarchy';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
+import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
+import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
 
 export interface TreeCalculationHandlerServiceOptions {
     maxRetry: number
