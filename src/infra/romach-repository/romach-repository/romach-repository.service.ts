@@ -121,7 +121,7 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
   async getHierarchies(): Promise<Result<Hierarchy[]>> {
     try {
       const hierarchies = await this.knex<Hierarchy>('hierarchy')
-        .where('')
+        .where('') // make sure need 'where' clause
         .select('*');
       this.logger.info(`Read ${hierarchies.length} hierarchies from database for reality ${this.reality}`);
     } catch (error) {
@@ -168,5 +168,4 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
       return Result.fail('DatabaseError');
     }
   }
-
 }
