@@ -5,7 +5,6 @@ import { RegisteredFolderErrorStatus } from '../../../domain/entities/Registered
 import { Folder } from '../../../domain/entities/Folder';
 import { folderMock } from '../../mocks/entities.mock';
 import { Result } from 'rich-domain';
-import { clone } from 'lodash';
 
 describe('PasswordCheckerService', () => {
   function createTest() {
