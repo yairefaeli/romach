@@ -24,7 +24,7 @@ export interface RomachEntitiesApiInterface {
   checkPassword(
     id: string,
     Password: string,
-  ): Promise<Result<Folder, RegisteredFolderErrorStatus>>;
+  ): Result<boolean>;
 
   getFoldersByIds(
     input: { id: string; password?: string }[],
