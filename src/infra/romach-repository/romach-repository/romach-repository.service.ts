@@ -132,7 +132,7 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
 
 
 
-  async getRegisteredFoldersByUpn(upn: UPN): Promise<Result<string[]>> {
+  async getRegisteredFoldersByUpn(upn: UPN): Promise<Result<RegisteredFolder[]>> {
     try {
       const folders = await this.knex('registered_folders')
         .where({ upn })

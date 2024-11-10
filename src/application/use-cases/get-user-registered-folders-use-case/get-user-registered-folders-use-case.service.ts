@@ -10,7 +10,7 @@ export interface GetUserRegisteredFoldersUseCaseOutput {
 }
 
 export class GetUserRegisteredFoldersUseCase {
-  constructor(private romachRepository: RomachRepositoryInterface) {}
+  constructor(private romachRepository: RomachRepositoryInterface) { }
   async execute(
     input: GetUserRegisteredFoldersUseCaseInput,
   ): Promise<Result<GetUserRegisteredFoldersUseCaseOutput>> {
@@ -19,6 +19,6 @@ export class GetUserRegisteredFoldersUseCase {
     if (result.isFail()) {
       return Result.fail(result.error());
     }
-    return Result.Ok({ ids: result.value() });
+    Result.Ok({ ids: result.value() });
   }
 }

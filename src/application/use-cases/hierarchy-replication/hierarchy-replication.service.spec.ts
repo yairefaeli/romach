@@ -11,7 +11,6 @@ import { LeaderElectionInterface } from '../../interfaces/leader-election.interf
 import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
-import { of, throwError } from 'rxjs';
 import { map, timer } from 'rxjs';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
@@ -25,12 +24,14 @@ describe('HierarchyReplicationService', () => {
     displayName: 'displayName1',
     children: [],
   }).value();
+
   const hierarchy2 = Hierarchy.create({
     id: '2',
     name: 'name2',
     displayName: 'displayName2',
     children: [],
   }).value();
+
   const mockHierarchies: Hierarchy[] = [hierarchy1, hierarchy2];
 
   function mockRomachApiInterfaceBuilder(options?: {
