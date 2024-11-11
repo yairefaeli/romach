@@ -1,20 +1,20 @@
-import { AppLoggerService } from "src/infra/logging/app-logger.service";
-import { BasicFolderChangeDetectionService } from "../basic-folder-change-detection.service/basic-folder-change-detection.service";
+import { BasicFolderChangeDetectionService } from "../basic-folder-change-detection/basic-folder-change-detection.service";
 import { UpdateBasicFoldersRepositoryService } from "../update-basic-folder-repository/update-basic-folder-repository.service";
-import { BasicFolder } from "src/domain/entities/BasicFolder";
 import { Result } from "rich-domain";
-import { RetryUtils } from "src/utils/RetryUtils/RetryUtils";
 import { BasicFolderChange } from "../../interfaces/basic-folder-changes.interface";
+import { BasicFolder } from "src/domain/entities/BasicFolder";
+import { AppLoggerService } from "src/infra/logging/app-logger.service";
+import { RetryUtils } from "src/utils/RetryUtils/RetryUtils";
 import { FoldersService } from "../folders/folders.service";
 import { TreeCalculationHandlerService } from "../tree-calculation-handler/tree-calculation-handler.service";
 
 export interface BasicFolderChangeHandlerServiceOptions {
+    maxRetry: number;
     logger: AppLoggerService;
     foldersService: FoldersService;
-    maxRetry: number;
-    updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService;
     treeCalculatorService: TreeCalculationHandlerService;
     basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
+    updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService;
 }
 
 export class BasicFolderChangeHandlerService {
