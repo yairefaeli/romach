@@ -1,20 +1,20 @@
 import { Result } from 'rich-domain';
 import { isEmpty, isEqual } from 'lodash';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
-import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
-import { RomachRepositoryInterface } from '../interfaces/romach-repository.interface';
-import { RomachEntitiesApiInterface } from '../interfaces/romach-entities-api.interface';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Hierarchy } from 'src/domain/entities/Hierarchy';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
+import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
+import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
 
 export interface TreeCalculationHandlerServiceOptions {
+    maxRetry: number
     logger: AppLoggerService,
     romachRepository: RomachRepositoryInterface,
     treeCalculationService: TreeCalculationService,
     romachEntitiesApiInterface: RomachEntitiesApiInterface,
-    maxRetry: number
 }
 
 export class TreeCalculationHandlerService {
@@ -22,6 +22,7 @@ export class TreeCalculationHandlerService {
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
+
         if (currentFoldersFromRepositoryResult.isFail()) {
             this.options.logger.error(`Failed to fetch current folders from repository: ${currentFoldersFromRepositoryResult.error()}`);
             return Result.fail();
@@ -36,8 +37,8 @@ export class TreeCalculationHandlerService {
                 this.options.logger.error(`Failed to fetch current hierarchies from repository: ${currentHierarchiesFromRepositoryResult.error()}`);
                 return Result.fail();
             }
-
             const currentHierarchies = currentHierarchiesFromRepositoryResult.value();
+
             const updatedFolders = this.mergeFolders(currentFolders, changes);
             const treeCalculationResult = await this.calculateTree(updatedFolders, currentHierarchies);
 
@@ -55,16 +56,13 @@ export class TreeCalculationHandlerService {
         const { deleted: deletedFolderIds, inserted: insertedFolders, updated: updatedFolders } = changedFolders;
 
         //filter from the current folders that get from repository the deleted folders
-        const folderFromRepositoyWithoutDeltedFolders = currentFoldersFromRepository.filter(
+        const folderFromRepositoyWithoutDeletedFolders = currentFoldersFromRepository.filter(
             folder => !deletedFolderIds.includes(folder.getProps().id),
         );
 
-        // merge updated and inserted folders
-        const updatedAndInsertedFolders = [...insertedFolders, ...updatedFolders];
-
-        //filter from the current folders the folders that have been get from handler and there name and category field changed
-        const updatedFilteredFolders = folderFromRepositoyWithoutDeltedFolders.filter(filteredFolder => {
-            return updatedAndInsertedFolders.some(updatedFolder => {
+        //filter from the current folders the folders that their name or category has changed
+        const updatedFilteredFolders = folderFromRepositoyWithoutDeletedFolders.filter(filteredFolder => {
+            return updatedFolders.some(updatedFolder => {// maybe updatedFolders is enough
                 const filteredProps = filteredFolder.getProps('id', 'name', 'categoryId');
                 const updatedProps = updatedFolder.getProps('id', 'name', 'categoryId');
 
@@ -76,7 +74,7 @@ export class TreeCalculationHandlerService {
         });
 
         // get the final result of the folders that need to send to calculate tree function
-        const resultFolders = [...updatedFilteredFolders, ...updatedAndInsertedFolders];
+        const resultFolders = [...updatedFilteredFolders, ...insertedFolders];
 
         this.options.logger.info(`Filtered folders for tree calculation: ${resultFolders.length} folders.`);
         return resultFolders;

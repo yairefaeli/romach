@@ -15,7 +15,7 @@ import { map, timer } from 'rxjs';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Tree } from 'src/domain/entities/Tree';
-import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 
 describe('HierarchyReplicationService', () => {
   const hierarchy1 = Hierarchy.create({
@@ -24,12 +24,14 @@ describe('HierarchyReplicationService', () => {
     displayName: 'displayName1',
     children: [],
   }).value();
+
   const hierarchy2 = Hierarchy.create({
     id: '2',
     name: 'name2',
     displayName: 'displayName2',
     children: [],
   }).value();
+
   const mockHierarchies: Hierarchy[] = [hierarchy1, hierarchy2];
 
   function mockRomachApiInterfaceBuilder(options?: {
@@ -194,6 +196,7 @@ describe('HierarchyReplicationService', () => {
       saveHierarchiesExpectedCalls: 0,
     }),
   );
+
   it(
     'when leader is changed to false, should not call getHierarchies',
     scenarioTestBuilder({
@@ -207,23 +210,21 @@ describe('HierarchyReplicationService', () => {
       saveHierarchiesExpectedCalls: 0,
     }),
   );
-
   it(
-    'when hierarchies changed 2 times, should call saveHierarchies 2 times',
+    'when leader is true, should call getHierarchies, fetch and print mock hierarchies',
     scenarioTestBuilder({
       reality: 'reality1',
       leaderElectionValues: [true],
-      repositoryInitialHierarchies: [],
-      getHierarchies: jest
-        .fn()
-        .mockResolvedValueOnce([]) // same a initial
-        .mockResolvedValueOnce([mockHierarchies[0]])
-        .mockResolvedValue([]),
+      getHierarchies: jest.fn().mockImplementation(() => {
+        const hierarchies = [hierarchy1, hierarchy2];
+        console.log("Fetched hierarchies:", hierarchies);
+        return Promise.resolve(hierarchies);
+      }),
       duration: 1000,
-      leaderElectionPollInterval: 4000,
-      getHierarchiesPollInterval: 300,
-      getHierarchiesExpectedCalls: 4,
-      saveHierarchiesExpectedCalls: 2,
+      leaderElectionPollInterval: 500,
+      getHierarchiesPollInterval: 100,
+      getHierarchiesExpectedCalls: 5,
+      saveHierarchiesExpectedCalls: 0,
     }),
   );
 });

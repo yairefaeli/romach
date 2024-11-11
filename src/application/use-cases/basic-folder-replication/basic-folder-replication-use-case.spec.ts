@@ -1,86 +1,123 @@
-// import { FlowUtils } from '../../../utils/FlowUtils/FlowUtils';
-// import { Result } from 'rich-domain';
-// import { BehaviorSubject } from 'rxjs';
-// import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
-// import { jest } from '@jest/globals';
-// import { romachEntitiesApiInterfaceMockBuilder } from 'src/application/mocks/romach-entities-interface.mock';
+import {
+  BasicFolderReplicationHandlerFn,
+  BasicFoldersReplicationUseCase,
+  BasicFoldersReplicationUseCaseOptions,
+} from './basic-folder-replication-use-case.service';
+import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-interface.mock';
+import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
+import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
+import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';
+import { BasicFolder } from '../../../domain/entities/BasicFolder';
+import { FlowUtils } from '../../../utils/FlowUtils/FlowUtils';
+import { Timestamp } from '../../../domain/entities/Timestamp';
+import { BehaviorSubject } from 'rxjs';
+import { jest } from '@jest/globals';
+import { Result } from 'rich-domain';
 
-// describe('BasicFoldersReplicationUseCase', () => {
-//   const leaderElectionSubject = new BehaviorSubject<boolean>(true);
+describe('BasicFoldersReplicationUseCase', () => {
+  function createTest() {
+    const leaderElectionSubject = new BehaviorSubject<boolean>(true);
+    const leaderElectionMock = leaderElectionInterfaceMockBuilder();
+    leaderElectionMock.isLeader = () => leaderElectionSubject.asObservable();
 
-//   function createTest() {
-//     const mockApi = romachEntitiesApiInterfaceMockBuilder();
+    const mockApi = romachEntitiesApiInterfaceMockBuilder();
 
-//     const leaderElectionMock = leaderElectionInterfaceMockBuilder();
-//     leaderElectionMock.isLeader = () => leaderElectionSubject.asObservable();
+    const mockRepository = romachRepositoryInterfaceMockBuilder();
 
-//     const mockRepository: jest.Mocked<RomachRepositoryInterface> = {
-//       getBasicFoldersTimestamp: jest.fn(),
-//       saveBasicFoldersTimestamp: jest.fn(),
-//     } as any;
+    // @ts-ignore
+    mockRepository.getBasicFoldersTimestamp = jest
+      .fn()
+      .mockReturnValue(Result.Ok(null));
 
-//     const loggerMock = mockAppLoggerServiceBuilder({
-//       print: true,
-//       debug: true,
-//     });
+    // @ts-ignore
+    mockRepository.saveBasicFoldersTimestamp = jest
+      .fn()
+      .mockReturnValue(Result.Ok());
 
-//     const handlerMock = jest.fn(async (basicFolders: any[]) => Result.Ok<void, string, {}>(undefined));
+    const loggerMock = mockAppLoggerServiceBuilder({
+      print: true,
+      debug: true,
+    });
 
-//     mockApi.getBasicFoldersByTimestamp = jest
-//       .fn()
-//       .mockRejectedValueOnce(new Error('error'))
-//       .mockResolvedValueOnce(Result.Ok([basicFoldersMock[0]]))
-//       .mockResolvedValueOnce(Result.Ok([basicFoldersMock[0], basicFoldersMock[1]]))
-//       .mockRejectedValueOnce(new Error('error'))
-//       .mockResolvedValue(Result.Ok([]));
+    // @ts-ignore
+    const handlerMock: BasicFolderReplicationHandlerFn = jest
+      .fn()
+      .mockReturnValue(Result.Ok());
 
-//     const pollInterval = 100;
+    //@ts-ignore
+    mockApi.getBasicFoldersByTimestamp = jest
+      .fn()
+      .mockReturnValueOnce(Result.Ok([]))
+      .mockReturnValueOnce(
+        Result.Ok([
+          BasicFolder.create({
+            id: '1',
+            name: 'aaa',
+            deleted: false,
+            isLocal: false,
+            isPasswordProtected: false,
+            creationDate: Timestamp.now().toString(),
+            updatedAt: Timestamp.now().toString(),
+            categoryId: 'category1',
+          }).value(),
+        ]),
+      )
+      .mockReturnValueOnce(
+        Result.Ok([
+          BasicFolder.create({
+            id: '2',
+            name: 'bbb',
+            deleted: false,
+            isLocal: false,
+            isPasswordProtected: false,
+            creationDate: Timestamp.now().toString(),
+            updatedAt: Timestamp.now().toString(),
+            categoryId: 'category2',
+          }).value(),
+        ]),
+      )
+      .mockReturnValue(Result.Ok([]));
 
-//     const options = {
-//       romachApi: mockApi,
-//       romachRepository: mockRepository,
-//       leaderElection: leaderElectionMock,
-//       pollInterval: pollInterval,
-//       retryInterval: 50,
-//       maxRetry: 3,
-//       handler: handlerMock,
-//       logger: loggerMock,
-//     };
+    const options: BasicFoldersReplicationUseCaseOptions = {
+      romachApi: mockApi,
+      romachRepository: mockRepository,
+      leaderElection: leaderElectionMock,
+      pollInterval: 100,
+      retryInterval: 300,
+      maxRetry: 1,
+      handler: handlerMock,
+      logger: loggerMock,
+    };
 
-//     const service = new BasicFoldersReplicationUseCase(options);
+    const replicator = new BasicFoldersReplicationUseCase(options);
 
-//     return {
-//       service,
-//       mockApi,
-//       leaderElectionMock,
-//       loggerMock,
-//       handlerMock,
-//       mockRepository,
-//     };
-//   }
+    return {
+      leaderElectionSubject,
+      replicator,
+      mockApi,
+      leaderElectionMock,
+      loggerMock,
+      handlerMock,
+      mockRepository,
+    };
+  }
 
-//   it('should be defined', () => {
-//     const { service } = createTest();
-//     expect(service).toBeDefined();
-//   });
+  it('should be defined', () => {
+    const { replicator, handlerMock } = createTest();
+    expect(handlerMock([])).toEqual(Result.Ok());
+    expect(replicator).toBeDefined();
+  });
 
-//   it('valid input', async () => {
-//     const { service, mockApi, handlerMock } = createTest();
+  it('valid input', async () => {
+    const { replicator, mockApi, handlerMock, leaderElectionSubject } =
+      createTest();
 
-//     const subscription = service.execute().subscribe();
-//     await FlowUtils.delay(500);
-//     leaderElectionSubject.next(false);
-//     subscription.unsubscribe();
+    const subscription = replicator.execute().subscribe();
+    await FlowUtils.delay(500);
+    leaderElectionSubject.next(false);
+    subscription.unsubscribe();
 
-//     expect(mockApi.getBasicFoldersByTimestamp).toHaveBeenCalledTimes(7);
-//     expect(handlerMock).toHaveBeenCalledTimes(2);
-//   });
-// });
-// function leaderElectionInterfaceMockBuilder() {
-//   throw new Error('Function not implemented.');
-// }
-
-// function mockAppLoggerServiceBuilder(arg0: { print: boolean; debug: boolean; }) {
-//   throw new Error('Function not implemented.');
-// }
-
+    expect(mockApi.getBasicFoldersByTimestamp).toHaveBeenCalledTimes(5);
+    expect(handlerMock).toHaveBeenCalledTimes(5);
+  }, 500000);
+});

@@ -66,7 +66,7 @@ export class HierarchyReplicationService {
         this.readCurrentHierarchies(),
         this.differ(),
         this.saver(),
-        this.calcTree()
+        this.calcTree(), //what first - calc or saver
       );
   }
 
@@ -166,7 +166,10 @@ export class HierarchyReplicationService {
           from(
             this.options.romachRepository.saveHierarchies(newHierarchy),
           ).pipe(
-            tap(() => {
+            tap((result) => {
+              if (result.isFail()) {
+                throw new Error(result.error());
+              }
               this.options.logger.info(
                 `Hierarchy saved for reality ${this.options.reality} count: ${newHierarchy.length}`,
               );
@@ -179,6 +182,7 @@ export class HierarchyReplicationService {
               );
               return EMPTY;
             }),
+            map(() => undefined),
           ),
         ),
       );
@@ -241,5 +245,4 @@ export class HierarchyReplicationService {
     this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
     return result.value();
   }
-
 }

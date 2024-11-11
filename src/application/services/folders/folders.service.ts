@@ -1,13 +1,12 @@
-import { RomachEntitiesApiInterface } from '../interfaces/romach-entities-api.interface';
-import { RomachRepositoryInterface } from '../interfaces/romach-repository.interface';
-import { BasicFolderChange } from '../interfaces/basic-folder-changes.interface';
-import { FoldersByIdResponse } from '../view-model/folders-by-ids-response';
-import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from 'src/domain/entities/Timestamp';
-import { Result } from 'rich-domain';
-import { uniqBy } from 'lodash';
+import { AppLoggerService } from "src/infra/logging/app-logger.service";
+import { Result } from "rich-domain";
+import { BasicFolderChange } from "src/application/interfaces/basic-folder-changes.interface";
+import { RomachEntitiesApiInterface } from "src/application/interfaces/romach-entities-api.interface";
+import { RomachRepositoryInterface } from "src/application/interfaces/romach-repository.interface";
+import { BasicFolder } from "src/domain/entities/BasicFolder";
+import { RegisteredFolder } from "src/domain/entities/RegisteredFolder";
+import { uniqBy } from "lodash";
+import { Timestamp } from "src/domain/entities/Timestamp";
 
 export class FoldersService {
     constructor(

@@ -7,23 +7,24 @@ import { ProtedctedFolderErrorStatus } from 'src/domain/entities/ProtectedFolder
 import { FolderErrorStatus, FoldersByIdResponse } from '../view-model/folders-by-ids-response';
 
 export interface RomachEntitiesApiInterface {
-  fetchFolderById(folderId: string): Promise<Result<BasicFolder, FolderErrorStatus>>;
 
-  fetchFolderByIdWithPassword(
+  getFolderById(folderId: string): Promise<Result<BasicFolder, FolderErrorStatus>>;
+
+  getFolderByIdWithPassword(
     folderId: string,
-    password: any,
+    Password: string,
   ): Promise<Result<BasicFolder, ProtedctedFolderErrorStatus>>;
 
   getBasicFoldersByTimestamp(
     timestamp: string,
   ): Promise<Result<BasicFolder[]>>;
 
-  getHierarchies(): Promise<Result<Hierarchy[]>>;
+  getHierarchies(): Promise<Result<Hierarchy[]>>
 
   checkPassword(
     id: string,
-    password: string,
-  ): Promise<Result<Folder, RegisteredFolderErrorStatus>>;
+    Password: string,
+  ): Result<boolean>;
 
   getFoldersByIds( //
     input: { id: string; password?: string }[],

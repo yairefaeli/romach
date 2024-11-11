@@ -8,30 +8,21 @@ import { Result } from 'rich-domain';
 export type NullableTimestamp = Timestamp | null;
 
 export interface RomachRepositoryInterface {
-  saveHierarchies(hierarchy: Hierarchy[]): Promise<Result<void>>;
-  saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>>;
-  getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
-  getHierarchies(): Promise<Result<Hierarchy[]>>;
-  getBasicFolders(): Promise<Result<BasicFolder[]>>;
+    saveHierarchies(hierarchy: Hierarchy[]): Promise<Result<void>>;
+    saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>>;
+    getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
+    getHierarchies(): Promise<Result<Hierarchy[]>>;
+    getBasicFolders(): Promise<Result<BasicFolder[]>>;
+    getBasicFolderById(id: string): Promise<Result<BasicFolder>>;
+    saveBasicFolders(basicFolders: BasicFolder[]): Promise<Result<void>>;
+    deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>>;
+    getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 
-  saveBasicFolders(basicFolder: BasicFolder[]): Promise<Result<void>>;
-  saveBasicFoldersById(ids: string[]): Promise<Result<void>>;
-  getRegisteredFoldersByUpn(upn: string): Promise<Result<string[]>>; // return folders ids??
-  upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
-  getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
-
-  getFoldersByIds(ids: string[]): Promise<Result<FoldersByIdResponse[]>>;
-  deleteBasicFolderByIds(ids: string[]): Promise<Result<void>>;
-  getBasicFoldersByIds(ids: string[]): Promise<Result<BasicFolder[]>>;
-  getBasicFolderById(ids: string): Promise<Result<BasicFolder>>;
-  getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<{ id: string; updatedAt: string }[]>>;
-
-  getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
-  getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
-  getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
-  getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
-  upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
-  upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result<void>>;
-  deleteRegisterdFoldersByIds(ids: string[]): Promise<Result<void>>;
-
+    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
+    upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result<void>>;
+    upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
+    deleteRegisterdFoldersByIds(ids: string[]): Promise<Result<void>>;
 }

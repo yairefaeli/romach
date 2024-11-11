@@ -16,7 +16,7 @@ export class AddProtectedFolderToUserUseCase {
   constructor(
     private repo: RomachRepositoryInterface,
     private api: RomachEntitiesApiInterface,
-  ) {}
+  ) { }
 
   async execute(
     input: AddProtectedFolderToUserInput,
@@ -24,7 +24,7 @@ export class AddProtectedFolderToUserUseCase {
     const { upn, password, folderId } = input;
     const checkPasswordResult = await this.api.checkPassword(
       folderId,
-      password,
+      password
     );
 
     if (checkPasswordResult.isFail()) {
