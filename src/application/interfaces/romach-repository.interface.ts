@@ -24,10 +24,6 @@ export interface RomachRepositoryInterface {
   deleteBasicFolderByIds(ids: string[]): Promise<Result<void>>;
   getBasicFoldersByIds(ids: string[]): Promise<Result<BasicFolder[]>>;
   getBasicFolderById(ids: string): Promise<Result<BasicFolder>>;
-  // updateFolderForAllUsers(folder: Folder): Promise<void>;
-  // findUniquePasswordsForFolder(folderId: BasicFolder): Promise<string[]>;
-  // updateFolderForUsersWithPassword(folder: Folder, password: string): Promise<void>;
-  // markPasswordInvalidForUsers(folderId: string, password: string): Promise<void>;
   getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<{ id: string; updatedAt: string }[]>>;
 
   getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
@@ -36,4 +32,6 @@ export interface RomachRepositoryInterface {
   getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
   upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
   upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result<void>>;
+  deleteRegisterdFoldersByIds(ids: string[]): Promise<Result<void>>;
+
 }
