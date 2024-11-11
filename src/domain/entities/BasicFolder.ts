@@ -11,7 +11,7 @@ export interface BasicFolderProps {
   isLocal: boolean;
   isPasswordProtected: boolean;
   creationDate: string;
-  updatedAt: string;
+  updatedAt: Timestamp;
   categoryId: string;
 }
 

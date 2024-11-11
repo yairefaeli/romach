@@ -50,15 +50,13 @@ export class FoldersService {
     }
 
     private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
-        const deletedResult = await this.repository.deleteBasicFolderByIds(deletedBasicFoldersIds);
-
+        const deletedResult = await this.repository.deleteRegisterdFoldersByIds(deletedBasicFoldersIds);
         if (deletedResult.isFail()) {
-            this.logger.error('');
+            this.logger.error('failed delete registerdFolders from repo by ids');
             return Result.fail();
-        } else {
-            this.logger.info('');
-            return Result.Ok();
         }
+
+        return Result.Ok();
     }
 
     private async handleUpsertedBasicFolders(upsartedBasicFolders: BasicFolder[]): Promise<Result<void>> {
@@ -70,11 +68,12 @@ export class FoldersService {
         }
 
         const registerdFoldersFromRepo = registerdFoldersFromRepoResult.value();
+
         const upsertedRegisterdFolders = registerdFoldersFromRepo.filter(
             (folder) =>
                 upsartedBasicFolders
                     .find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id)
-                    .getProps().updatedAt === folder.getProps().updatedAtTimestamp.toString(), // yeah? is to string will fix it? why updatedAt in basic folder isnt timestamp?
+                    .getProps().updatedAt === folder.getProps().updatedAtTimestamp,
         );
         const folderIdsAndPasswords = this.transformFoldersToInput(upsertedRegisterdFolders);
         const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords); // what happend if one of the folders have wrong password? do i need to check that?
@@ -82,7 +81,7 @@ export class FoldersService {
             this.logger.error('failed fetch folders from API by ids and passwords');
             return Result.fail();
         }
-
+        // const foldersFromAPIResult = await this.fetchFoldersFromAPI()
         const foldersFromAPI = foldersFromAPIResult.value();
         const newUpsertedRegisterdFoldersResults = upsertedRegisterdFolders.map((registerdFolder) => {
             const folder = foldersFromAPI.find((folder) => folder.folderId === registerdFolder.getProps().folderId);
@@ -97,13 +96,19 @@ export class FoldersService {
         }
 
         const newUpsertedRegisterdFolders = Result.combine(newUpsertedRegisterdFoldersResults).value(); // is it ok to combine all result and get value?
-        const upsertRegisterdFoldersResult = await this.repository.upsertRegisteredFolders([newUpsertedRegisterdFolders]);
+        const upsertRegisterdFoldersResult = await this.repository.upsertRegisteredFolders([
+            newUpsertedRegisterdFolders,
+        ]);
         if (upsertRegisterdFoldersResult.isFail()) {
             this.logger.error('faild upsert registerdFolders to repo');
             return Result.fail();
         }
 
         return Result.Ok();
+    }
+
+    fetchFoldersFromAPI() {
+        throw new Error('Method not implemented.');
     }
 
     private transformFoldersToInput(folders: RegisteredFolder[]): { id: string; password?: string }[] {
@@ -158,7 +163,6 @@ export class FoldersService {
         if (basicFolder.getProps().isPasswordProtected) {
             const checkPasswordResult = await this.romachApi.checkPassword(folderId, password); // what happend if wrong password? its failed or ok?
             if (checkPasswordResult.isOk()) {
-                // const checkedFolder = checkPasswordResult.value() // i got a folder here? can i depend on it and not fetch again from API?
                 const input = { id: folderId, password };
                 const foldersResponse = await this.romachApi.getFolderById(input);
                 if (foldersResponse.isFail()) {
