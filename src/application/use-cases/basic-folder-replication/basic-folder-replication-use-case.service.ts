@@ -28,7 +28,7 @@ export interface BasicFoldersReplicationUseCaseOptions {
 export class BasicFoldersReplicationUseCase {
   private timestamp: Timestamp;
 
-  constructor(private options: BasicFoldersReplicationUseCaseOptions) {}
+  constructor(private options: BasicFoldersReplicationUseCaseOptions) { }
 
   private isRunning = false;
 

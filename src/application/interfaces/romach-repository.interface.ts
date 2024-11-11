@@ -4,6 +4,7 @@ import { Result } from 'rich-domain';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from '../../domain/entities/Timestamp';
 import { FoldersIdsAndsUpdatedAt } from '../view-model/folders-by-ids-response';
+import { Folder } from 'src/domain/entities/Folder';
 
 export type NullableTimestamp = Timestamp | null;
 
