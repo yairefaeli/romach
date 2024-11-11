@@ -1,38 +1,28 @@
-import { RegisteredFolderErrorStatus } from '../../domain/entities/RegisteredFolderStatus';
 import { BasicFolder } from '../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../domain/entities/Hierarchy';
-import { Folder } from '../../domain/entities/Folder';
 import { Result } from 'rich-domain';
+import { Folder } from 'src/domain/entities/Folder';
 import { ProtedctedFolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
-import { FolderErrorStatus, FoldersByIdResponse } from '../view-model/folders-by-ids-response';
+import { Timestamp } from 'src/domain/entities/Timestamp';
 
 export interface RomachEntitiesApiInterface {
 
-  getFolderById(folderId: string): Promise<Result<BasicFolder, FolderErrorStatus>>;
-
   getFolderByIdWithPassword(
     folderId: string,
-    Password: string,
-  ): Promise<Result<BasicFolder, ProtedctedFolderErrorStatus>>;
+    Password: string
+  ): Promise<Result<Folder, ProtedctedFolderErrorStatus>>;
+
+  getFolderByIdWithoutPassword(
+    folderId: string
+  ): Promise<Result<Folder, ProtedctedFolderErrorStatus>>;
 
   getBasicFoldersByTimestamp(
-    timestamp: string,
+    timestamp: Timestamp
   ): Promise<Result<BasicFolder[]>>;
 
   getHierarchies(): Promise<Result<Hierarchy[]>>
 
-  checkPassword(
-    id: string,
-    Password: string,
-  ): Result<boolean>;
-
-  getFoldersByIds( //
-    input: { id: string; password?: string }[],
-  ): Promise<Result<FoldersByIdResponse[]>>;
-
-  getFolderById( //
-    input: { id: string; password?: string },
-  ): Promise<Result<FoldersByIdResponse>>;
+  checkPasswords(id: string, password: string): Promise<Result<boolean>>
 }
 
 
