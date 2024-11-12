@@ -173,4 +173,19 @@ export class RegisteredFolder {
       }),
     );
   }
+
+  static getCreateFunctionByStatus(status: RegisteredFolderStatus) { // i think Eyal will not like it :)
+    switch (status) {
+        case 'valid':
+            return RegisteredFolder.createValidRegisteredFolder;
+        case 'worng-password':
+            return RegisteredFolder.createWorngPasswordRegisteredFolder;
+        case 'general-error':
+            return RegisteredFolder.createGeneralErrorRegisteredFolder;
+        case 'not-found':
+            return RegisteredFolder.createNotFoundRegisteredFolder;
+        case 'loading':
+            return RegisteredFolder.createLoadingRegisteredFolder;
+    }
+}
 }
