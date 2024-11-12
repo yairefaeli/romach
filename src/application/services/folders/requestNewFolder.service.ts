@@ -221,10 +221,13 @@ export class FoldersService {
         }
         
         const newRegisterdFolders = createRegisterdfoldersResult.value();
-        const upsertFolderResult = await this.repository.upsertRegisteredFolders(newRegisterdFolders);
-        if (upsertFolderResult.isFail()) {
-            this.logger.error('failed upsert registerdFolders to repo');
-            return Result.fail();
+
+        if (newRegisterdFolders) {
+            const upsertFolderResult = await this.repository.upsertRegisteredFolders(newRegisterdFolders);
+            if (upsertFolderResult.isFail()) {
+                this.logger.error('failed upsert registerdFolders to repo');
+                return Result.fail();
+            }
         }
     }
 
