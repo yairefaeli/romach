@@ -22,7 +22,7 @@ export interface RomachEntitiesApiInterface {
 
   getHierarchies(): Promise<Result<Hierarchy[]>>
 
-  checkPasswords(id: string, password: string): Promise<Result<boolean>>
+  checkPassword(id: string, password: string): Promise<Result<boolean>>
 }
 
 

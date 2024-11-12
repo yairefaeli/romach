@@ -117,13 +117,13 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
   }
 
   getHierarchies(): Promise<Result<Hierarchy[]>> {
-    
+
     throw new Error('Method not implemented.');
   }
 
-  async checkPasswords(id: string, password: string): Promise<Result<boolean>> {
+  async checkPassword(id: string, password: string): Promise<Result<boolean>> {
     const query = gql`
-        query checkPasswords($folderId: String!, $viewPassword: String!) {
+        query checkPassword($folderId: String!, $viewPassword: String!) {
             checkPasswords(folderId: $folderId, viewPassword: $viewPassword) {
             }
         }
