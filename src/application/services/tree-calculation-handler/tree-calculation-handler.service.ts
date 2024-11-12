@@ -65,7 +65,7 @@ export class TreeCalculationHandlerService {
             return updatedFolders.some(updatedFolder => {// maybe updatedFolders is enough
                 const filteredProps = filteredFolder.getProps('id', 'name', 'categoryId');
                 const updatedProps = updatedFolder.getProps('id', 'name', 'categoryId');
-
+                
                 return (
                     filteredProps.id === updatedProps.id &&
                     (filteredProps.name !== updatedProps.name || filteredProps.categoryId !== updatedProps.categoryId)

@@ -67,7 +67,6 @@ export class FoldersService {
         }
 
         const registerdFoldersFromRepo = registerdFoldersFromRepoResult.value();
-
         const upsertedRegisterdFolders = registerdFoldersFromRepo.filter(
             (folder) =>
                 upsartedBasicFolders
@@ -76,11 +75,11 @@ export class FoldersService {
         );
         const folderIdsAndPasswords = this.transformFoldersToInput(upsertedRegisterdFolders);
         const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords); // what happend if one of the folders have wrong password? do i need to check that?
+        // const foldersFromAPIResult = await this.fetchFoldersFromAPI()
         if (foldersFromAPIResult.isFail()) {
             this.logger.error('failed fetch folders from API by ids and passwords');
             return Result.fail();
         }
-        // const foldersFromAPIResult = await this.fetchFoldersFromAPI()
         const foldersFromAPI = foldersFromAPIResult.value();
         const newUpsertedRegisterdFoldersResults = upsertedRegisterdFolders.map((registerdFolder) => {
             const folder = foldersFromAPI.find((folder) => folder.folderId === registerdFolder.getProps().folderId);
@@ -104,10 +103,6 @@ export class FoldersService {
         }
 
         return Result.Ok();
-    }
-
-    fetchFoldersFromAPI() {
-        throw new Error('Method not implemented.');
     }
 
     private transformFoldersToInput(folders: RegisteredFolder[]): { id: string; password?: string }[] {
