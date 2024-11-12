@@ -65,8 +65,8 @@ export class HierarchyReplicationService {
         this.fetcher(),
         this.readCurrentHierarchies(),
         this.differ(),
+        this.calcTree(),
         this.saver(),
-        this.calcTree(), //what first - calc or saver
       );
   }
 
@@ -189,31 +189,27 @@ export class HierarchyReplicationService {
     };
   }
 
-  private calcTree(): OperatorFunction<void, void> {
-    return (source: Observable<void>) => {
+  private calcTree(): OperatorFunction<Hierarchy[], Hierarchy[]> {
+    return (source: Observable<Hierarchy[]>) => {
       return source.pipe(
-        switchMap(() =>
-          from(this.getCurrentHierarchiesFromRepository()).pipe(
-            switchMap((newHierarchy) =>
-              from(this.getCurrentFoldersFromRepository()).pipe(
-                switchMap((currentFolders) => {
-                  this.options.treeCalculationService.calculateTree(currentFolders, newHierarchy);
-                  this.options.logger.info(
-                    `Hierarchy calculated for reality ${this.options.reality}, count: ${newHierarchy.length}`,
-                  );
+        switchMap((newHierarchy) =>
+          from(this.getCurrentFoldersFromRepository()).pipe(
+            switchMap((currentFolders) => {
+              this.options.treeCalculationService.calculateTree(currentFolders, newHierarchy);
+              this.options.logger.info(
+                `Hierarchy calculated for reality ${this.options.reality}, count: ${newHierarchy.length}`,
+              );
 
-                  return of(void 0);
-                }),
-                retry(2),
-                catchError((error) => {
-                  this.options.logger.error(
-                    `Error while calculating hierarchy for reality ${this.options.reality}`,
-                    error,
-                  );
-                  return EMPTY;
-                }),
-              ),
-            ),
+              return of(newHierarchy);
+            }),
+            retry(2),
+            catchError((error) => {
+              this.options.logger.error(
+                `Error while calculating hierarchy for reality ${this.options.reality}`,
+                error,
+              );
+              return EMPTY;
+            }),
           ),
         ),
       );
@@ -230,19 +226,6 @@ export class HierarchyReplicationService {
       throw new Error(`Failed to fetch current folders from repository: ${result.error()}`);
     }
     this.options.logger.info(`Fetched ${result.value().length} current folders from repository.`);
-    return result.value();
-  }
-
-  private async getCurrentHierarchiesFromRepository() {
-    const result = await RetryUtils.retry(
-      () => this.options.romachRepository.getHierarchies(),
-      this.options.maxRetry,
-      this.options.logger,
-    );
-    if (result.isFail()) {
-      throw new Error(`Failed to fetch current hierarchies from repository: ${result.error()}`);
-    }
-    this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
     return result.value();
   }
 }

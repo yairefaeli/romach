@@ -18,8 +18,8 @@ export class AddProtectedFolderToUserUseCase {
     private api: RomachEntitiesApiInterface,
   ) { }
 
-  async (
-    input: AddexecuteProtectedFolderToUserInput,
+  async(
+    input: AddProtectedFolderToUserInput,
   ): Promise<Result<Folder, RegisteredFolderErrorStatus>> {
     const { upn, password, folderId } = input;
     const checkPasswordResult = await this.api.checkPasswords(folderId, password);

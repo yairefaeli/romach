@@ -4,7 +4,7 @@ import { LeaderElectionInterface } from '../../interfaces/leader-election.interf
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
-import { from, interval, of, switchMap, tap, timer } from 'rxjs';
+import { from, switchMap, timer } from 'rxjs';
 import { RxJsUtils } from '../../../utils/RxJsUtils/RxJsUtils';
 import { Timestamp } from '../../../domain/entities/Timestamp';
 import { FlowUtils } from '../../../utils/FlowUtils/FlowUtils';
@@ -29,8 +29,6 @@ export class BasicFoldersReplicationUseCase {
   private timestamp: Timestamp;
 
   constructor(private options: BasicFoldersReplicationUseCaseOptions) { }
-
-  private isRunning = false;
 
   execute() {
     return this.options.leaderElection
@@ -125,7 +123,7 @@ export class BasicFoldersReplicationUseCase {
     const foldersResult = await RetryUtils.retry(
       () =>
         this.options.romachApi.getBasicFoldersByTimestamp(
-          this.timestamp.toString(),
+          this.timestamp,
         ),
       this.options.maxRetry,
       this.options.logger,
