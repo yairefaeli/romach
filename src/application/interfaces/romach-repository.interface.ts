@@ -18,7 +18,8 @@ export interface RomachRepositoryInterface {
     deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>>;
     getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 
-    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
+    // all get registerdFolders are only valids, not other kinds of error !!!
+    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>; 
     getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
