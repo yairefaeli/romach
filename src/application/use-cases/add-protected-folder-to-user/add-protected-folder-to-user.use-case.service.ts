@@ -22,7 +22,7 @@ export class AddProtectedFolderToUserUseCase {
     input: AddexecuteProtectedFolderToUserInput,
   ): Promise<Result<Folder, RegisteredFolderErrorStatus>> {
     const { upn, password, folderId } = input;
-    const checkPasswordResult = await this.api.checkPasswords(folderId, password);
+    const checkPasswordResult = await this.api.checkPassword(folderId, password);
 
     if (checkPasswordResult.isFail()) {
       Result.fail(checkPasswordResult.error());

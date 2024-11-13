@@ -9,7 +9,7 @@ import { filter, partition, pick, uniqBy } from 'lodash';
 import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
 
-export class UpdateRegisterdFoldersService {
+export class UpdateregisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly folderService: FoldersService,
@@ -31,9 +31,9 @@ export class UpdateRegisterdFoldersService {
     }
 
     private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
-        const deletedResult = await this.repository.deleteRegisterdFoldersByIds(deletedBasicFoldersIds);
+        const deletedResult = await this.repository.deleteregisteredFoldersByIds(deletedBasicFoldersIds);
         if (deletedResult.isFail()) {
-            this.logger.error('failed delete registerdFolders from repo by ids');
+            this.logger.error('failed to delete registeredFolders from repo by ids');
             return Result.fail();
         }
 
@@ -41,37 +41,37 @@ export class UpdateRegisterdFoldersService {
     }
 
     private async handleUpsertedBasicFolders(upsertedBasicFolders: BasicFolder[]): Promise<Result<void>> {
-        const registerdFoldersFromRepoResult = await this.getRegisteredFoldersByIds(upsertedBasicFolders);
-        if (registerdFoldersFromRepoResult.isFail()) {
-            this.logger.error('faild get registerdFolders from repo by ids');
+        const registeredFoldersFromRepoResult = await this.getRegisteredFoldersByIds(upsertedBasicFolders);
+        if (registeredFoldersFromRepoResult.isFail()) {
+            this.logger.error('failed to get registeredFolders from repo by ids');
             return Result.fail();
         }
 
-        const registerdFoldersFromRepo = registerdFoldersFromRepoResult.value();
-        const filteredRegisterdFolders = this.filterAlreadyUpdated(registerdFoldersFromRepo, upsertedBasicFolders);
-        const foldersFromAPIResult = await this.fetchFoldersFromAPI(filteredRegisterdFolders);
+        const registeredFoldersFromRepo = registeredFoldersFromRepoResult.value();
+        const filteredregisteredFolders = this.filterAlreadyUpdated(registeredFoldersFromRepo, upsertedBasicFolders);
+        const foldersFromAPIResult = await this.fetchFoldersFromAPI(filteredregisteredFolders);
         if (Result.combine(foldersFromAPIResult).isFail()) {
-            this.logger.error('failed fetch folders from API by ids and passwords');
+            this.logger.error('failed to fetch folders from API by ids and passwords');
             return Result.fail();
         }
 
         const foldersFromAPI = foldersFromAPIResult.flatMap((x) => x.value());
-        const newUpsertedRegisterdFoldersResult = this.folderService.updateFoldersToRegisterdFolders(
-            filteredRegisterdFolders,
+        const newUpsertedregisteredFoldersResult = this.folderService.updateFoldersToregisteredFolders(
+            filteredregisteredFolders,
             foldersFromAPI,
         );
-        if (newUpsertedRegisterdFoldersResult.isFail()) {
-            this.logger.error('failed update registerdFolders');
+        if (newUpsertedregisteredFoldersResult.isFail()) {
+            this.logger.error('failed to update registeredFolders');
 
             return Result.fail();
         }
 
-        const newUpsertedRegisterdFolders = newUpsertedRegisterdFoldersResult.value();
-        if (newUpsertedRegisterdFolders) {
-            const upsertRegisterdFoldersResult =
-                await this.repository.upsertRegisteredFolders(newUpsertedRegisterdFolders);
-            if (upsertRegisterdFoldersResult.isFail()) {
-                this.logger.error('faild upsert registerdFolders to repo');
+        const newUpsertedregisteredFolders = newUpsertedregisteredFoldersResult.value();
+        if (newUpsertedregisteredFolders) {
+            const upsertregisteredFoldersResult =
+                await this.repository.upsertRegisteredFolders(newUpsertedregisteredFolders);
+            if (upsertregisteredFoldersResult.isFail()) {
+                this.logger.error('failed to  upsert registeredFolders to repo');
                 return Result.fail();
             }
 
@@ -79,15 +79,15 @@ export class UpdateRegisterdFoldersService {
         }
     }
 
-    private fetchFoldersFromAPI(upsertedRegisterdFolders: RegisteredFolder[]) {
+    private fetchFoldersFromAPI(upsertedregisteredFolders: RegisteredFolder[]) {
         const nonUniquedFolders = uniqBy(
-            upsertedRegisterdFolders,
+            upsertedregisteredFolders,
             (item) => `${item.getProps().folderId}-${item.getProps().password}`,
         );
 
         const [passwordProtected, notPasswordProtected] = partition(
             nonUniquedFolders,
-            (registerdFolder) => registerdFolder.getProps().isPasswordProtected,
+            (registeredFolder) => registeredFolder.getProps().isPasswordProtected,
         );
 
         const folderIdsWithPasswords = passwordProtected.map((folder) =>
@@ -101,15 +101,15 @@ export class UpdateRegisterdFoldersService {
         return Promise.all([foldersFromAPIwithPassword, foldersFromAPIWithoutPassword]);
     }
 
-    private filterAlreadyUpdated(registerdFoldersFromRepo: RegisteredFolder[], upsartedBasicFolders: BasicFolder[]) {
-        const upsertedRegisterdFolders = registerdFoldersFromRepo.filter(
+    private filterAlreadyUpdated(registeredFoldersFromRepo: RegisteredFolder[], upsartedBasicFolders: BasicFolder[]) {
+        const upsertedregisteredFolders = registeredFoldersFromRepo.filter(
             (folder) =>
                 upsartedBasicFolders
                     .find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id)
                     .getProps().updatedAt === folder.getProps().updatedAtTimestamp,
         );
 
-        return upsertedRegisterdFolders;
+        return upsertedregisteredFolders;
     }
 
     private getRegisteredFoldersByIds(basicFolders: BasicFolder[]) {
@@ -124,15 +124,15 @@ export class UpdateRegisterdFoldersService {
             handle deleted
                 remove deleted from repo by folderId
             handle updated and inserted
-                get current registerdFolders from repo by folderId
+                get current registeredFolders from repo by folderId
                 filter only lastUpdateTime is different - ?
                 uniq by folderId, password
                 fetch folders from API with folderIds, passwords
                 on Success
-                    update registerdFolder folder in repo by folderId, password
+                    update registeredFolder folder in repo by folderId, password
                 on Fail
-                    update registerdFolder's status=failed and content=null in repo by folderId, password
-                registerdFolders with same folderId, password
+                    update registeredFolder's status=failed and content=null in repo by folderId, password
+                registeredFolders with same folderId, password
 
 
     */

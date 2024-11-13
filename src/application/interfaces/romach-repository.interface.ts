@@ -18,12 +18,16 @@ export interface RomachRepositoryInterface {
     deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>>;
     getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 
-    // all get registerdFolders are only valids, not other kinds of error !!!
-    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>; 
+    // all get registeredFolders are only valids, not other kinds of error !!!
+    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
     upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result<void>>;
     upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
-    deleteRegisterdFoldersByIds(ids: string[]): Promise<Result<void>>;
+    deleteregisteredFoldersByIds(ids: string[]): Promise<Result<void>>;
+    deleteregisteredFoldersByIdsForUpn(ids: string[], upn: string): Promise<Result<void>>;
+    updateRegistrationByFolderIds(folderIds: string[]): Promise<Result<void>>; // put now()
+    updateRegistrationByUpn(upn: string): Promise<Result<void>>; // put now()
+    updateRegistrationByUpnAndFolderIds(folderIds: string[], upn: string): Promise<Result<void>>; // put now()
 }

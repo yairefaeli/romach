@@ -6,7 +6,7 @@ import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
-import { filter, uniqBy } from 'lodash';
+import { filter, partition, uniqBy } from 'lodash';
 import { Result } from 'rich-domain';
 
 export class FoldersService {
@@ -16,19 +16,20 @@ export class FoldersService {
         private readonly repository: RomachRepositoryInterface,
     ) {}
 
-    updateFoldersToRegisterdFolders(registerdFolders: RegisteredFolder[], folders: Folder[]) {
+    updateFoldersToregisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {        
         const yair = folders.flatMap((folder) => {
-            const registerdfoldersWithSameFolder = filter(
-                registerdFolders,
-                (registerdFolder) =>
-                    registerdFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
+            const registeredfoldersWithSameFolder = filter(
+                registeredFolders,
+                (registeredFolder) =>
+                    registeredFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
             );
-            return this.updateFolderToRegisterdFolders(registerdfoldersWithSameFolder, folder);
+            return this.updateFolderToregisteredFolders(registeredfoldersWithSameFolder, folder);
         });
 
         if (Result.combine(yair).isFail()) return Result.fail();
 
-        const snir = yair.flatMap((x) => { // azarzar help
+        const snir = yair.flatMap((x) => {
+            // azarzar help
             const y = x.value();
             if (y) return y;
         });
@@ -36,33 +37,50 @@ export class FoldersService {
         return Result.Ok(snir);
     }
 
-    updateFolderToRegisterdFolders(registerdFolders: RegisteredFolder[], folder: Folder) {
-        const createRegisterdfoldersResult = registerdFolders.map((registerdFolder) => {
-            const createRegisterdFolder = RegisteredFolder.getCreateFunctionByStatus(registerdFolder.getProps().status);
-            return createRegisterdFolder({
-                ...registerdFolder.getProps(),
+    updateFolderToregisteredFolders(registeredFolders: RegisteredFolder[], folder: Folder) {
+        const createregisteredfoldersResult = registeredFolders.map((registeredFolder) => {
+            const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
+            return createregisteredFolder({
+                ...registeredFolder.getProps(),
                 folder,
                 lastValidPasswordTimestamp: Timestamp.now(),
             });
         });
 
-        if (Result.combine(createRegisterdfoldersResult).isFail()) {
-            this.logger.error('failed update folder to registerdFolders');
+        if (Result.combine(createregisteredfoldersResult).isFail()) {
+            this.logger.error('failed update folder to registeredFolders');
             return Result.fail();
         }
 
-        return Result.Ok(createRegisterdfoldersResult.map((x) => x.value()));
+        return Result.Ok(createregisteredfoldersResult.map((x) => x.value()));
+    }
+
+    /* 
+        #PSUDO:
+        - user mutation folders interval
+                get registeredFolders from repo by UPN,folderId
+                delete irrelevant registeredFolders
+                update registration_timestamp on registeredFolders from repo by UPN,folderId
+
+    */
+    async userMutationFolderInterval(upn: string, folderIds: string[]) {
+        const getRegisteredFoldersByUpnResult = await this.repository.getRegisteredFoldersByUpn(upn);
+        const registeredFolders = getRegisteredFoldersByUpnResult.value();
+        const [relevantregisteredFolders, irrelevantregisteredFolders] = partition(registeredFolders, (registeredFolder) =>
+            folderIds.includes(registeredFolder.getProps().folderId),
+        );
+
+        const irrelevantregisteredFoldersIds = irrelevantregisteredFolders.map(
+            (registeredFolder) => registeredFolder.getProps().folderId,
+        );
+        const relevantregisteredFoldersIds = relevantregisteredFolders.map(
+            (registeredFolder) => registeredFolder.getProps().folderId,
+        );
+
+        await this.repository.deleteregisteredFoldersByIdsForUpn(irrelevantregisteredFoldersIds, upn);
+        await this.repository.updateRegistrationByUpnAndFolderIds(relevantregisteredFoldersIds, upn);
     }
 }
-
-/* 
-    #PSUDO:
-      - user mutation folders interval
-              get registerdFolders from repo by UPN,folderId
-              update registration_timestamp on registerdFolders from repo by UPN,folderId
-              return registerdFolders statuses
-
-  */
 
 // TODO
 /*
@@ -77,7 +95,7 @@ export class FoldersService {
 
     while-true:
         retry failed statuses -
-            status = 'worng-password' | 'general-error' | 'not-found'
+            status = 'wrong-password' | 'general-error' | 'not-found'
 
         GC -
             registration_timestamp > 60s
@@ -86,7 +104,7 @@ export class FoldersService {
     !! LOGS !!
 
     questions for eyal:
-    - when i use the entity Registerdfolder?
+    - when i use the entity registeredfolder?
     - how the romach API look? the check and the folders content? what error we get from them?
     -
 #### psudo:
@@ -97,13 +115,13 @@ export class FoldersService {
     
 
     - retry failed statuses
-        get registerdFolder from repo by status - failed statuses
+        get registeredFolder from repo by status - failed statuses
         # if protected... like in new folder
 
 
     - GC
         interval of 30s
-            delete registerdFolder from repo
+            delete registeredFolder from repo
                 where registration_timestamp > 60s or valid_password_timestamp > 24h
     */
 

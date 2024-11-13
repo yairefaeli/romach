@@ -82,12 +82,12 @@ export class RegisteredFolder {
     return Result.Ok(new RegisteredFolder(props));
   }
 
-  static createWorngPasswordRegisteredFolder(
+  static createwrongPasswordRegisteredFolder(
     input: Pick<RegisteredFolderProps, 'upn' | 'folderId'>,
   ): Result<RegisteredFolder, string> {
     return this.createInvalidRegisteredFolder({
       ...input,
-      status: 'worng-password',
+      status: 'wrong-password',
       isPasswordProtected: true,
       password: null,
       lastValidPasswordTimestamp: null,
@@ -178,8 +178,8 @@ export class RegisteredFolder {
     switch (status) {
         case 'valid':
             return RegisteredFolder.createValidRegisteredFolder;
-        case 'worng-password':
-            return RegisteredFolder.createWorngPasswordRegisteredFolder;
+        case 'wrong-password':
+            return RegisteredFolder.createwrongPasswordRegisteredFolder;
         case 'general-error':
             return RegisteredFolder.createGeneralErrorRegisteredFolder;
         case 'not-found':

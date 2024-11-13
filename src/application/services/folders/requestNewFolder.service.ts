@@ -21,7 +21,7 @@ export class RequsetNewFolderService {
     async execute(upn: string, folderId: string, password?: string): Promise<Result<void>> {
         const basicfolderResult = await this.repository.getBasicFolderById(folderId);
         if (basicfolderResult.isFail()) {
-            this.logger.error('failed fetch basicFolders from repo by folderId', {
+            this.logger.error('failed to fetch basicFolders from repo by folderId', {
                 folderId,
             });
             return Result.fail();
@@ -35,21 +35,21 @@ export class RequsetNewFolderService {
     }
 
     private async handleNewFolderWithError(upn: string, folderId: string) {
-        const newRegisterdFolderResult = RegisteredFolder.createGeneralErrorRegisteredFolder({
+        const newregisteredFolderResult = RegisteredFolder.createGeneralErrorRegisteredFolder({
             upn,
             folderId,
             isPasswordProtected: false,
             lastValidPasswordTimestamp: null,
         });
-        if (newRegisterdFolderResult.isFail()) {
-            this.logger.error('failed create new registerdFolder');
+        if (newregisteredFolderResult.isFail()) {
+            this.logger.error('failed to create new registeredFolder');
             return Result.fail();
         }
 
-        const newRegisterdFolder = newRegisterdFolderResult.value();
-        const upsertFolderResult = await this.repository.upsertRegisteredFolder(newRegisterdFolder);
+        const newregisteredFolder = newregisteredFolderResult.value();
+        const upsertFolderResult = await this.repository.upsertRegisteredFolder(newregisteredFolder);
         if (upsertFolderResult.isFail()) {
-            this.logger.error('failed upsert registerdFolder to repo');
+            this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail();
         }
         return Result.Ok();
@@ -57,18 +57,18 @@ export class RequsetNewFolderService {
 
     private handleNewFolder(basicFolder: BasicFolder, upn: string, folderId: string, password?: string) {
         if (basicFolder.getProps().isPasswordProtected) {
-            return this.handlePasswordProtected(upn, folderId, password);
+            return this.handleProtectedFolders(upn, folderId, password);
         } else {
-            return this.handlePasswordUnprotected(upn, folderId);
+            return this.handleUnprotectedFolders(upn, folderId);
         }
     }
 
-    private async handlePasswordProtected(upn: string, folderId: string, password?: string) {
-        const checkPasswordResult = await this.romachApi.checkPasswords(folderId, password);
+    private async handleProtectedFolders(upn: string, folderId: string, password?: string) {
+        const checkPasswordResult = await this.romachApi.checkPassword(folderId, password);
         if (checkPasswordResult.isOk()) {
-            const isRightPassword = checkPasswordResult.value();
-            if (isRightPassword) {
-                return this.handleRightPassword(upn, folderId, password);
+            const isPasswordCorrect = checkPasswordResult.value();
+            if (isPasswordCorrect) {
+                return this.handleCorrectPassword(upn, folderId, password);
             } else {
                 return this.handleWrongPassword(upn, folderId);
             }
@@ -82,128 +82,129 @@ export class RequsetNewFolderService {
         return this.handleNewFolderWithError(upn, folderId);
     }
 
-    private async handleRightPassword(upn: string, folderId: string, password: string) {
-        const registerdFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
-        const currentRegisterdFolders = registerdFoldersResult.value();
-        if (!currentRegisterdFolders) return Result.fail('failed get registerdFolders with same folderId and password');
+    private async handleCorrectPassword(upn: string, folderId: string, password: string) {
+        const registeredFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
+        const currentregisteredFolders = registeredFoldersResult.value();
+        if (!currentregisteredFolders)
+            return Result.fail('failed to get registeredFolders with same folderId and password');
 
         const foldersResponse = await this.romachApi.getFolderByIdWithPassword(folderId, password);
         if (foldersResponse.isFail()) {
-            this.logger.error('failed fetch folders from API');
+            this.logger.error('failed to fetch folders from API');
             return Result.fail();
         }
 
         const folder = foldersResponse.value();
-        const changedValidRegisterdFoldersResult = this.folderService.updateFolderToRegisterdFolders(
-            currentRegisterdFolders,
+        const changedValidregisteredFoldersResult = this.folderService.updateFolderToregisteredFolders(
+            currentregisteredFolders,
             folder,
         );
-        if (changedValidRegisterdFoldersResult.isFail()) {
-            this.logger.error('failed update registerdFolders');
+        if (changedValidregisteredFoldersResult.isFail()) {
+            this.logger.error('failed to update registeredFolders');
             return Result.fail();
         }
 
-        const newRegisterdFolderResult = RegisteredFolder.createValidRegisteredFolder({
+        const newregisteredFolderResult = RegisteredFolder.createValidRegisteredFolder({
             upn,
             folder,
             password,
             lastValidPasswordTimestamp: Timestamp.now(),
         });
-        if (newRegisterdFolderResult.isFail()) {
-            this.logger.error('failed create new registerdFolder');
+        if (newregisteredFolderResult.isFail()) {
+            this.logger.error('failed to create new registeredFolder');
             return Result.fail();
         }
 
-        const newRegisterdFolder = newRegisterdFolderResult.value();
-        const updatedRegisterdFolders = changedValidRegisterdFoldersResult.value();
-        if (updatedRegisterdFolders) {
+        const newregisteredFolder = newregisteredFolderResult.value();
+        const updatedRegisteredFolders = changedValidregisteredFoldersResult.value();
+        if (updatedRegisteredFolders) {
             const upsertFolderResult = await this.repository.upsertRegisteredFolders([
-                newRegisterdFolder,
-                ...updatedRegisterdFolders,
+                newregisteredFolder,
+                ...updatedRegisteredFolders,
             ]);
             if (upsertFolderResult.isFail()) {
-                this.logger.error('failed upsert registerdFolder to repo');
+                this.logger.error('failed to upsert registeredFolder to repo');
                 return Result.fail();
             }
         }
     }
 
     private async handleWrongPassword(upn: string, folderId: string) {
-        const currentRegisterdFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
-        const currentRegisterdfolders = currentRegisterdFoldersResult.value();
-        if (!currentRegisterdfolders) return Result.fail(currentRegisterdFoldersResult.error()); //registerdFoldersResult ?? - i could heap up logs
+        const currentregisteredFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
+        const currentregisteredfolders = currentregisteredFoldersResult.value();
+        if (!currentregisteredfolders) return Result.fail(currentregisteredFoldersResult.error()); //registeredFoldersResult ?? - i could heap up logs
 
-        const newRegisterdFolderResult = RegisteredFolder.createWorngPasswordRegisteredFolder({
+        const newregisteredFolderResult = RegisteredFolder.createwrongPasswordRegisteredFolder({
             upn,
             folderId,
         });
-        const newRegisterdFolder = newRegisterdFolderResult.value();
-        if (!newRegisterdFolder) return Result.fail('failed create new registerdFolder');
+        const newregisteredFolder = newregisteredFolderResult.value();
+        if (!newregisteredFolder) return Result.fail('failed to create new registeredFolder');
 
-        const changedRegisterdFoldersResult = this.changeStatusToRegisterdFolders(
-            currentRegisterdfolders,
-            'worng-password',
+        const changedregisteredFoldersResult = this.changeStatusToregisteredFolders(
+            currentregisteredfolders,
+            'wrong-password',
         );
-        const changedRegisterdFolders = changedRegisterdFoldersResult.value();
-        if (!changedRegisterdFolders) return Result.fail(changedRegisterdFoldersResult.error());
+        const changedregisteredFolders = changedregisteredFoldersResult.value();
+        if (!changedregisteredFolders) return Result.fail(changedregisteredFoldersResult.error());
 
-        const allRegisterdFoldersToUpsert = [...changedRegisterdFolders, newRegisterdFolder];
-        const upsertFolderResult = await this.repository.upsertRegisteredFolders(allRegisterdFoldersToUpsert);
+        const allregisteredFoldersToUpsert = [...changedregisteredFolders, newregisteredFolder];
+        const upsertFolderResult = await this.repository.upsertRegisteredFolders(allregisteredFoldersToUpsert);
         if (upsertFolderResult.isFail()) {
-            this.logger.error('failed upsert registerdFolder to repo');
+            this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail();
         }
     }
 
-    private async handlePasswordUnprotected(upn: string, folderId: string) {
+    private async handleUnprotectedFolders(upn: string, folderId: string) {
         const folderResult = await this.romachApi.getFolderByIdWithoutPassword(folderId);
         if (folderResult.isFail()) {
-            this.logger.error('failed fetch folder from API by id', { folderId });
+            this.logger.error('failed to fetch folder from API by id', { folderId });
             return Result.fail();
         }
 
         const folder = folderResult.value();
-        const newRegisterdFolderResult = RegisteredFolder.createValidRegisteredFolder({
+        const newregisteredFolderResult = RegisteredFolder.createValidRegisteredFolder({
             upn,
             folder,
             password: '',
             lastValidPasswordTimestamp: null,
         });
 
-        const registerdFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
-        if (registerdFoldersResult.isFail()) {
-            this.logger.error('failed get registerdFolders with same folderId', {
+        const registeredFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
+        if (registeredFoldersResult.isFail()) {
+            this.logger.error('failed to get registeredFolders with same folderId', {
                 folderId,
             });
             return Result.fail();
         }
 
         const upsertFolderResult = await this.repository.upsertRegisteredFolders([
-            newRegisterdFolderResult.value(),
-            ...registerdFoldersResult.value(),
+            newregisteredFolderResult.value(),
+            ...registeredFoldersResult.value(),
         ]);
         if (upsertFolderResult.isFail()) {
-            this.logger.error('failed upsert registerdFolders to repo');
+            this.logger.error('failed to upsert registeredFolders to repo');
             return Result.fail();
         }
     }
 
-    private changeStatusToRegisterdFolders(registerdFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
-        const createRegisterdFolder = RegisteredFolder.getCreateFunctionByStatus(newStatus);
+    private changeStatusToregisteredFolders(registeredFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
+        const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(newStatus);
 
-        const createRegisterdfoldersResult = registerdFolders.map((registerdFolder) =>
-            createRegisterdFolder({
-                ...registerdFolder.getProps(),
+        const createregisteredfoldersResult = registeredFolders.map((registeredFolder) =>
+            createregisteredFolder({
+                ...registeredFolder.getProps(),
                 lastValidPasswordTimestamp: newStatus === 'valid' ? Timestamp.now() : null,
             }),
         );
 
-        if (Result.combine(createRegisterdfoldersResult).isFail()) {
-            this.logger.error('failed change status to registerdFolders');
+        if (Result.combine(createregisteredfoldersResult).isFail()) {
+            this.logger.error('failed to change status to registeredFolders');
             return Result.fail();
         }
 
-        return Result.Ok(createRegisterdfoldersResult.map((x) => x.value()));
+        return Result.Ok(createregisteredfoldersResult.map((x) => x.value()));
     }
 }
 
@@ -219,35 +220,35 @@ export class RequsetNewFolderService {
                     on sucess
                         on right password
                             fetch folder from API with id and password
-                            get current registerdFolders from repo by folderId, password
-                            create registerdFolder with status 'valid' - on create fail 'error'
+                            get current registeredFolders from repo by folderId, password
+                            create registeredFolder with status 'valid' - on create fail 'error'
                             update current registeredFolders status and folder
-                            upsert all registerdFolders to repo 
+                            upsert all registeredFolders to repo 
                         on wrong password
-                            get current registerdFolders from repo by folderId, password
-                            create registerdFolder with status 'wrong-password'
+                            get current registeredFolders from repo by folderId, password
+                            create registeredFolder with status 'wrong-password'
                             update current registeredFolders status
-                            upsert all registerdFolders to repo 
+                            upsert all registeredFolders to repo 
                     on fail
-                        get current registerdFolders from repo by folderId
-                        create new registerdFolder with status 'error'
+                        get current registeredFolders from repo by folderId
+                        create new registeredFolder with status 'error'
                         update current registeredFolders status
-                        upsert all registerdFolders to repo 
+                        upsert all registeredFolders to repo 
                 if not passwordProtected
                     fetch folder from API with id
-                    get current registerdFolders from repo by folderId
-                    create new registerdFolder with status 'valid' - on create fail 'error'
+                    get current registeredFolders from repo by folderId
+                    create new registeredFolder with status 'valid' - on create fail 'error'
                     update current registeredFolders status and folder
-                    upsert all registerdFolders to repo 
+                    upsert all registeredFolders to repo 
             on failed
-                create registerdFolder with status 'error'
-                insert registerdFolder to repo
+                create registeredFolder with status 'error'
+                insert registeredFolder to repo
                 
 
 
-            updateRegisterdFolders(upn, id, password, status, folder):
-                get current registerdFolders from repo by folderId
-                create new registerdFolder with status 'status'
+            updateregisteredFolders(upn, id, password, status, folder):
+                get current registeredFolders from repo by folderId
+                create new registeredFolder with status 'status'
                 update current registeredFolders status 'status' and folder
-                upsert all registerdFolders to repo 
+                upsert all registeredFolders to repo 
     */

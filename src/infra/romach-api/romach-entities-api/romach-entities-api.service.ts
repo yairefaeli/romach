@@ -121,7 +121,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     throw new Error('Method not implemented.');
   }
 
-  async checkPasswords(id: string, password: string): Promise<Result<boolean>> {
+  async checkPassword(id: string, password: string): Promise<Result<boolean>> {
     const query = gql`
         query checkPasswords($folderId: String!, $viewPassword: String!) {
             checkPasswords(folderId: $folderId, viewPassword: $viewPassword) {

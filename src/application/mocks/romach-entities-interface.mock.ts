@@ -6,6 +6,6 @@ export function romachEntitiesApiInterfaceMockBuilder(): RomachEntitiesApiInterf
     getBasicFoldersByTimestamp: jest.fn(),
     getHierarchies: jest.fn(),
     getFolderByIdWithoutPassword: jest.fn(),
-    checkPasswords: jest.fn()
+    checkPassword: jest.fn()
   };
 };
