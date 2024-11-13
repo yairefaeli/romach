@@ -5,12 +5,14 @@ import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
+import { filter, partition, pick, uniqBy } from 'lodash';
+import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
-import { uniqBy } from 'lodash';
 
 export class UpdateRegisterdFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
+        private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
     ) {}
@@ -38,52 +40,65 @@ export class UpdateRegisterdFoldersService {
         return Result.Ok();
     }
 
-    private async handleUpsertedBasicFolders(upsartedBasicFolders: BasicFolder[]): Promise<Result<void>> {
-        const upsertedFoldersIds = upsartedBasicFolders.map((folder) => folder.getProps().id);
-        const registerdFoldersFromRepoResult = await this.repository.getRegisteredFoldersByIds(upsertedFoldersIds);
+    private async handleUpsertedBasicFolders(upsertedBasicFolders: BasicFolder[]): Promise<Result<void>> {
+        const registerdFoldersFromRepoResult = await this.getRegisteredFoldersByIds(upsertedBasicFolders);
         if (registerdFoldersFromRepoResult.isFail()) {
             this.logger.error('faild get registerdFolders from repo by ids');
             return Result.fail();
         }
-        
+
         const registerdFoldersFromRepo = registerdFoldersFromRepoResult.value();
-        const filteredRegisterdFolders = this.filterAlreadyUpdated(registerdFoldersFromRepo, upsartedBasicFolders);
-        const foldersFromAPIResult = await this.fetchFoldersFromAPI(registerdFoldersFromRepo);
-        if (foldersFromAPIResult.isFail()) {
+        const filteredRegisterdFolders = this.filterAlreadyUpdated(registerdFoldersFromRepo, upsertedBasicFolders);
+        const foldersFromAPIResult = await this.fetchFoldersFromAPI(filteredRegisterdFolders);
+        if (Result.combine(foldersFromAPIResult).isFail()) {
             this.logger.error('failed fetch folders from API by ids and passwords');
             return Result.fail();
         }
 
-        const foldersFromAPI = foldersFromAPIResult.value();
-        const newUpsertedRegisterdFoldersResults = filteredRegisterdFolders.map((registerdFolder) => {
-            const folder = foldersFromAPI.find((folder) => folder.folderId === registerdFolder.getProps().folderId);
-            return RegisteredFolder.createValidRegisteredFolder({
-                ...registerdFolder.getProps(),
-                folder: folder.content,
-            });
-        });
-        if (Result.combine(newUpsertedRegisterdFoldersResults).isFail()) {
-            this.logger.error('failed create registerdFolders');
+        const foldersFromAPI = foldersFromAPIResult.flatMap((x) => x.value());
+        const newUpsertedRegisterdFoldersResult = this.folderService.updateFoldersToRegisterdFolders(
+            filteredRegisterdFolders,
+            foldersFromAPI,
+        );
+        if (newUpsertedRegisterdFoldersResult.isFail()) {
+            this.logger.error('failed update registerdFolders');
+
             return Result.fail();
         }
 
-        const newUpsertedRegisterdFolders = Result.combine(newUpsertedRegisterdFoldersResults).value(); // is it ok to combine all result and get value?
-        const upsertRegisterdFoldersResult = await this.repository.upsertRegisteredFolders([
-            newUpsertedRegisterdFolders,
-        ]);
-        if (upsertRegisterdFoldersResult.isFail()) {
-            this.logger.error('faild upsert registerdFolders to repo');
-            return Result.fail();
-        }
+        const newUpsertedRegisterdFolders = newUpsertedRegisterdFoldersResult.value();
+        if (newUpsertedRegisterdFolders) {
+            const upsertRegisterdFoldersResult =
+                await this.repository.upsertRegisteredFolders(newUpsertedRegisterdFolders);
+            if (upsertRegisterdFoldersResult.isFail()) {
+                this.logger.error('faild upsert registerdFolders to repo');
+                return Result.fail();
+            }
 
-        return Result.Ok();
+            return Result.Ok();
+        }
     }
 
-    private async fetchFoldersFromAPI(upsertedRegisterdFolders: RegisteredFolder[]) {
-        const folderIdsAndPasswords = this.transformFoldersToInput(upsertedRegisterdFolders);
-        const foldersFromAPIResult = await this.romachApi.getFoldersByIds(folderIdsAndPasswords); // what happend if one of the folders have wrong password? do i need to check that?
+    private fetchFoldersFromAPI(upsertedRegisterdFolders: RegisteredFolder[]) {
+        const nonUniquedFolders = uniqBy(
+            upsertedRegisterdFolders,
+            (item) => `${item.getProps().folderId}-${item.getProps().password}`,
+        );
 
-        return foldersFromAPIResult;
+        const [passwordProtected, notPasswordProtected] = partition(
+            nonUniquedFolders,
+            (registerdFolder) => registerdFolder.getProps().isPasswordProtected,
+        );
+
+        const folderIdsWithPasswords = passwordProtected.map((folder) =>
+            pick(folder.getProps(), ['folderId', 'password']),
+        );
+        const folderIdsWithoutPassword = notPasswordProtected.map((folder) => folder.getProps().folderId);
+
+        const foldersFromAPIwithPassword = this.romachApi.getFoldersByIdWithPassword(folderIdsWithPasswords); // azarzar - why to split with password or without
+        const foldersFromAPIWithoutPassword = this.romachApi.getFoldersByIdWithoutPassword(folderIdsWithoutPassword);
+
+        return Promise.all([foldersFromAPIwithPassword, foldersFromAPIWithoutPassword]);
     }
 
     private filterAlreadyUpdated(registerdFoldersFromRepo: RegisteredFolder[], upsartedBasicFolders: BasicFolder[]) {
@@ -97,19 +112,9 @@ export class UpdateRegisterdFoldersService {
         return upsertedRegisterdFolders;
     }
 
-    private transformFoldersToInput(folders: RegisteredFolder[]): { id: string; password?: string }[] {
-        const nonUniquedFolders = uniqBy(folders, (item) => `${item.getProps().folderId}-${item.getProps().password}`);
-
-        const inputs = nonUniquedFolders.map((folder) => {
-            if (folder.getProps().isPasswordProtected)
-                return {
-                    id: folder.getProps().folderId,
-                    password: folder.getProps().password,
-                };
-            return { id: folder.getProps().folderId };
-        });
-
-        return inputs;
+    private getRegisteredFoldersByIds(basicFolders: BasicFolder[]) {
+        const upsertedFoldersIds = basicFolders.map((folder) => folder.getProps().id);
+        return this.repository.getRegisteredFoldersByIds(upsertedFoldersIds);
     }
 }
 
@@ -119,15 +124,15 @@ export class UpdateRegisterdFoldersService {
             handle deleted
                 remove deleted from repo by folderId
             handle updated and inserted
-                get registerdFolders from repo by folderId
-                filter only lastUpdateTime is different
+                get current registerdFolders from repo by folderId
+                filter only lastUpdateTime is different - ?
                 uniq by folderId, password
-                for registerdFolders with same folderId, password
-                    fetch folders from API with folderId, password
-                        onSuccess
-                            update registerdFolder's content in repo by folderId, password
-                        onFailed
-                            update registerdFolder's status=failed and content=null in repo by folderId, password
+                fetch folders from API with folderIds, passwords
+                on Success
+                    update registerdFolder folder in repo by folderId, password
+                on Fail
+                    update registerdFolder's status=failed and content=null in repo by folderId, password
+                registerdFolders with same folderId, password
 
 
     */
