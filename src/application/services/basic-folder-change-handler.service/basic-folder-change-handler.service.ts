@@ -1,4 +1,3 @@
-import { BasicFolderChangeDetectionService } from "../basic-folder-change-detection/basic-folder-change-detection.service";
 import { UpdateBasicFoldersRepositoryService } from "../update-basic-folder-repository/update-basic-folder-repository.service";
 import { Result } from "rich-domain";
 import { BasicFolderChange } from "../../interfaces/basic-folder-changes.interface";
@@ -7,6 +6,7 @@ import { AppLoggerService } from "src/infra/logging/app-logger.service";
 import { RetryUtils } from "src/utils/RetryUtils/RetryUtils";
 import { FoldersService } from "../folders/folders.service";
 import { TreeCalculationHandlerService } from "../tree-calculation-handler/tree-calculation-handler.service";
+import { BasicFolderChangeDetectionService } from "../basic-folder-change-detection.service/basic-folder-change-detection.service";
 
 export interface BasicFolderChangeHandlerServiceOptions {
     maxRetry: number;
