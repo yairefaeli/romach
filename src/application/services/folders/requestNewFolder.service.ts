@@ -7,11 +7,13 @@ import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
+import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
 
 export class RequsetNewFolderService {
     constructor(
         private readonly logger: AppLoggerService,
+        private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
     ) {}
@@ -92,7 +94,10 @@ export class RequsetNewFolderService {
         }
 
         const folder = foldersResponse.value();
-        const changedValidRegisterdFoldersResult = this.updateFolderToRegisterdFolders(currentRegisterdFolders, folder);
+        const changedValidRegisterdFoldersResult = this.folderService.updateFolderToRegisterdFolders(
+            currentRegisterdFolders,
+            folder,
+        );
         if (changedValidRegisterdFoldersResult.isFail()) {
             this.logger.error('failed update registerdFolders');
             return Result.fail();
@@ -195,24 +200,6 @@ export class RequsetNewFolderService {
 
         if (Result.combine(createRegisterdfoldersResult).isFail()) {
             this.logger.error('failed change status to registerdFolders');
-            return Result.fail();
-        }
-
-        return Result.Ok(createRegisterdfoldersResult.map((x) => x.value()));
-    }
-
-    private updateFolderToRegisterdFolders(registerdFolders: RegisteredFolder[], folder: Folder) {
-        const createRegisterdfoldersResult = registerdFolders.map((registerdFolder) => {
-            const createRegisterdFolder = RegisteredFolder.getCreateFunctionByStatus(registerdFolder.getProps().status);
-            return createRegisterdFolder({
-                ...registerdFolder.getProps(),
-                folder,
-                lastValidPasswordTimestamp: Timestamp.now(),
-            });
-        });
-
-        if (Result.combine(createRegisterdfoldersResult).isFail()) {
-            this.logger.error('failed update folder to registerdFolders');
             return Result.fail();
         }
 
