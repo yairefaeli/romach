@@ -25,8 +25,8 @@ export interface RomachRepositoryInterface {
     getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
     upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result<void>>;
     upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>>;
-    deleteregisteredFoldersByIds(ids: string[]): Promise<Result<void>>;
-    deleteregisteredFoldersByIdsForUpn(ids: string[], upn: string): Promise<Result<void>>;
+    deleteRegisteredFoldersByIds(ids: string[]): Promise<Result<void>>;
+    deleteRegisteredFoldersByIdsForUpn(ids: string[], upn: string): Promise<Result<void>>;
     updateRegistrationByFolderIds(folderIds: string[]): Promise<Result<void>>; // put now()
     updateRegistrationByUpn(upn: string): Promise<Result<void>>; // put now()
     updateRegistrationByUpnAndFolderIds(folderIds: string[], upn: string): Promise<Result<void>>; // put now()

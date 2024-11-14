@@ -54,7 +54,7 @@ export class GarbageCollectorService {
 
     private async deleteExpiredFolders(folderIdsToDelete: string[]): Promise<Result<void>> {
         const deleteResult = await RetryUtils.retry(
-            () => this.options.repository.deleteregisteredFoldersByIds(folderIdsToDelete),
+            () => this.options.repository.deleteRegisteredFoldersByIds(folderIdsToDelete),
             this.options.maxRetry,
             this.options.logger
         );

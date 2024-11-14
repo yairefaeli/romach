@@ -77,7 +77,7 @@ export class FoldersService {
             (registeredFolder) => registeredFolder.getProps().folderId,
         );
 
-        await this.repository.deleteregisteredFoldersByIdsForUpn(irrelevantregisteredFoldersIds, upn);
+        await this.repository.deleteRegisteredFoldersByIdsForUpn(irrelevantregisteredFoldersIds, upn);
         await this.repository.updateRegistrationByUpnAndFolderIds(relevantregisteredFoldersIds, upn);
     }
 }

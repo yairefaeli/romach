@@ -15,7 +15,7 @@ export class UpdateregisteredFoldersService {
         private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
-    ) {}
+    ) { }
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
         const res = await Promise.all([
@@ -31,7 +31,7 @@ export class UpdateregisteredFoldersService {
     }
 
     private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
-        const deletedResult = await this.repository.deleteregisteredFoldersByIds(deletedBasicFoldersIds);
+        const deletedResult = await this.repository.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
         if (deletedResult.isFail()) {
             this.logger.error('failed to delete registeredFolders from repo by ids');
             return Result.fail();
