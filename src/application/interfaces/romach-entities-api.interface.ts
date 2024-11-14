@@ -7,7 +7,7 @@ import { Result } from 'rich-domain';
 
 export interface RomachEntitiesApiInterface {
     getFolderByIdWithPassword(folderId: string, Password: string): Promise<Result<Folder, ProtectedFolderErrorStatus>>;
-    getFoldersByIdWithPassword(
+    getFoldersByIdsWithPassword(
         input: { folderId: string; password: string }[],
     ): Promise<Result<Folder[], ProtectedFolderErrorStatus>>;
     getFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, FolderErrorStatus>>;
