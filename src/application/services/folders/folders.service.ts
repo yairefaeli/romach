@@ -125,6 +125,8 @@ export class FoldersService {
                 where registration_timestamp > 60s or valid_password_timestamp > 24h
     */
 
+
+                
 // private handleUpdatedBasicFoldersReactive(
 //     updatedBasicFolders: BasicFolder[]
 // ): Observable<Result<void>> {

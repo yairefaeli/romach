@@ -168,4 +168,21 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
       return Result.fail('DatabaseError');
     }
   }
+
+  async getExpiredRegisteredFolders(registrationThreshold: string, validPasswordThreshold: string): Promise<Result<RegisteredFolder[]>> {
+    try {
+      const folders = await this.knex<RegisteredFolder>('registered_folders')
+        .where(function () {
+          this.where('registration_timestamp', '<', registrationThreshold)
+            .orWhere('valid_password_timestamp', '<', validPasswordThreshold);
+        })
+        .select('*');
+
+      this.logger.info(`Fetched ${folders.length} expired registered folders from repository.`);
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching expired registered folders');
+      return Result.fail('DatabaseError');
+    }
+  }
 }

@@ -62,6 +62,11 @@ export interface RomachRefetchFoldersConfig {
   chunkSize: number;
 }
 
+export interface GarbageCollectorConfig {
+  maxRetry: number;
+  gcInterval: number;
+}
+
 export interface RomachConfig {
   realities: string[];
   hierarchy: RomachHierarchyConfig;
@@ -70,4 +75,5 @@ export interface RomachConfig {
   loginApi: RomachLoginApiConfig;
   refreshTokenApi: RomachRefreshTokenApiConfig;
   basicFolder: RomachBasicFolderConfig;
+  garbageCollector: GarbageCollectorConfig;
 }
