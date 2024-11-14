@@ -52,7 +52,7 @@ export class BasicFolderChangeHandlerService {
 
     private async detectChanges(folders: BasicFolder[]) {
         this.options.logger.debug(
-            `starting to detect change`
+            `Starting to detect change`
         )
         const detectChanges = await RetryUtils.retry(
             () =>
@@ -65,11 +65,11 @@ export class BasicFolderChangeHandlerService {
 
         if (detectChanges.isFail()) {
             this.options.logger.error(
-                `error to detect changes: ${detectChanges.error()}`,
+                `Error to detect changes: ${detectChanges.error()}`,
             );
         } else {
             this.options.logger.debug(
-                `detect changes succses: ${this.detectChanges.toString()}`,
+                `Detect changes success: ${this.detectChanges.toString()}`,
             );
         }
 
@@ -78,7 +78,7 @@ export class BasicFolderChangeHandlerService {
 
     private async treeCalculatorServiceChanges(change: BasicFolderChange) {
         this.options.logger.debug(
-            `starting to calculate tree`
+            `Starting to calculate tree`
         )
         const treeCalculatorChanges = await RetryUtils.retry(
             () =>
@@ -91,11 +91,11 @@ export class BasicFolderChangeHandlerService {
 
         if (treeCalculatorChanges.isFail()) {
             this.options.logger.error(
-                `error to tree calculator Changes: ${treeCalculatorChanges.error()}`,
+                `Error in tree calculator changes: ${treeCalculatorChanges.error()}`,
             );
         } else {
             this.options.logger.debug(
-                `tree calculator changes succses: ${this.detectChanges.toString()}`,
+                `Tree calculator changes success: ${this.detectChanges.toString()}`,
             );
         }
 
@@ -104,7 +104,7 @@ export class BasicFolderChangeHandlerService {
 
     private async foldersServiceChanges(change: BasicFolderChange) {
         this.options.logger.debug(
-            `starting to reftech folders`
+            `Starting to refetch folders`
         )
         const folderChanges = await RetryUtils.retry(
             () =>
@@ -117,11 +117,11 @@ export class BasicFolderChangeHandlerService {
 
         if (folderChanges.isFail()) {
             this.options.logger.error(
-                `error to calc folder changes: ${folderChanges.error()}`,
+                `Error to calc folder changes: ${folderChanges.error()}`,
             );
         } else {
             this.options.logger.debug(
-                `detect changes succses: ${this.detectChanges.toString()}`,
+                `Detect changes success: ${this.detectChanges.toString()}`,
             );
         }
 
