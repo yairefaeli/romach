@@ -122,7 +122,7 @@ export class BasicFoldersReplicationUseCase {
   private async fetchBasicFolders() {
     const foldersResult = await RetryUtils.retry(
       () =>
-        this.options.romachApi.getBasicFoldersByTimestamp(
+        this.options.romachApi.fetchBasicFoldersByTimestamp(
           this.timestamp,
         ),
       this.options.maxRetry,

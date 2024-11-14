@@ -74,7 +74,7 @@ export class HierarchyReplicationService {
     return (source: Observable<unknown>) => {
       return source.pipe(
         concatMap((_) =>
-          from(this.options.romachEntitiesApi.getHierarchies()).pipe(
+          from(this.options.romachEntitiesApi.fetchHierarchies()).pipe(
             tap((hierarchiesResult) => {
               if (hierarchiesResult.isFail()) {
                 throw new Error('');

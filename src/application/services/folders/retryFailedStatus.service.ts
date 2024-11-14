@@ -102,13 +102,13 @@ export class RetryFailedStatusService {
         let retryFetchResult: Result<Folder>;
         if (isPasswordProtected) {
             retryFetchResult = await RetryUtils.retry(
-                () => this.options.romachEntitiesApi.getFolderByIdWithPassword(folderId, password),
+                () => this.options.romachEntitiesApi.fetchFolderByIdWithPassword(folderId, password),
                 this.options.maxRetry,
                 this.options.logger
             );
         } else {
             retryFetchResult = await RetryUtils.retry(
-                () => this.options.romachEntitiesApi.getFolderByIdWithoutPassword(folderId),
+                () => this.options.romachEntitiesApi.fetchFolderByIdWithoutPassword(folderId),
                 this.options.maxRetry,
                 this.options.logger
             );

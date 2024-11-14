@@ -39,7 +39,7 @@ describe('HierarchyReplicationService', () => {
   }): RomachEntitiesApiInterface {
     return {
       ...romachEntitiesApiInterfaceMockBuilder(),
-      getHierarchies:
+      fetchHierarchies:
         options?.getHierarchies ??
         jest
           .fn()
@@ -168,7 +168,7 @@ describe('HierarchyReplicationService', () => {
         setTimeout(() => {
           subscription.unsubscribe();
           try {
-            expect(mockRomachApiInterface.getHierarchies).toHaveBeenCalledTimes(
+            expect(mockRomachApiInterface.fetchHierarchies).toHaveBeenCalledTimes(
               getHierarchiesExpectedCalls,
             );
             expect(
