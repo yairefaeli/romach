@@ -4,7 +4,7 @@ import { AppLoggerService } from '../../logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
-import { ProtedctedFolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
+import { ProtectedFolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
 import { gql } from 'graphql-request';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
@@ -16,7 +16,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     private logger: AppLoggerService,
   ) { }
 
-  async getFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, ProtedctedFolderErrorStatus>> {
+  async getFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, ProtectedFolderErrorStatus>> {
     try {
       const query = gql`
         query getFolderByIdWithoutPassword($folderId: String!) {
@@ -50,7 +50,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     }
   }
 
-  async getFolderByIdWithPassword(folderId: string, password: string): Promise<Result<Folder, ProtedctedFolderErrorStatus>> {
+  async getFolderByIdWithPassword(folderId: string, password: string): Promise<Result<Folder, ProtectedFolderErrorStatus>> {
     try {
       const query = gql`
         query getFolderByIdWithPassword($folderId: String!, $password: String!) {
