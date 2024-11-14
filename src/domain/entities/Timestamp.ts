@@ -1,7 +1,7 @@
 import { isDate } from 'lodash';
 
 export class Timestamp {
-  private constructor(private readonly timestamp: Date) {}
+  private constructor(private readonly timestamp: Date) { }
 
   static now(): Timestamp {
     return new Timestamp(new Date());
@@ -28,4 +28,18 @@ export class Timestamp {
   isAfter(timestamp: Timestamp): boolean {
     return this.timestamp > timestamp.timestamp;
   }
+
+  subtractSeconds(seconds: number): Timestamp {
+    const newTimestamp = new Date(this.timestamp);
+    newTimestamp.setSeconds(newTimestamp.getSeconds() - seconds);
+    return new Timestamp(newTimestamp);
+  }
+
+  subtractHours(hours: number): Timestamp {
+    const newTimestamp = new Date(this.timestamp);
+    newTimestamp.setHours(newTimestamp.getHours() - hours);
+    return new Timestamp(newTimestamp);
+  }
+
+
 }
