@@ -6,6 +6,7 @@ import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
 import { Subject, timer } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
+import { Folder } from 'src/domain/entities/Folder';
 
 export interface RetryFailedStatusServiceOptions {
     logger: AppLoggerService,
@@ -94,15 +95,24 @@ export class RetryFailedStatusService {
 
     private async retryFolder(folder: RegisteredFolder): Promise<Result<void>> {
         const folderProps = folder.getProps();
-        const { folderId, status } = folderProps;
+        const { folderId, status, isPasswordProtected, password } = folderProps;
 
         this.options.logger.info(`Retrying operation for folder ID: ${folderId} with status: ${status}`);
 
-        const retryFetchResult = await RetryUtils.retry(
-            () => this.options.romachEntitiesApi.getFolderByIdWithoutPassword(folderId),
-            this.options.maxRetry,
-            this.options.logger
-        );
+        let retryFetchResult: Result<Folder>;
+        if (isPasswordProtected) {
+            retryFetchResult = await RetryUtils.retry(
+                () => this.options.romachEntitiesApi.getFolderByIdWithPassword(folderId, password),
+                this.options.maxRetry,
+                this.options.logger
+            );
+        } else {
+            retryFetchResult = await RetryUtils.retry(
+                () => this.options.romachEntitiesApi.getFolderByIdWithoutPassword(folderId),
+                this.options.maxRetry,
+                this.options.logger
+            );
+        }
 
         if (retryFetchResult.isFail()) {
             this.options.logger.error(`Failed to retry operation for folder ID: ${folderId}`);
@@ -112,4 +122,5 @@ export class RetryFailedStatusService {
         this.options.logger.info(`Successfully retried operation for folder ID: ${folderId}`);
         return Result.Ok();
     }
+
 }

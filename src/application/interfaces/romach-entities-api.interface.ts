@@ -7,10 +7,12 @@ import { Result } from 'rich-domain';
 
 export interface RomachEntitiesApiInterface {
     getFolderByIdWithPassword(folderId: string, Password: string): Promise<Result<Folder, ProtectedFolderErrorStatus>>;
+
     getFoldersByIdsWithPassword(
         input: { folderId: string; password: string }[],
     ): Promise<Result<Folder[], ProtectedFolderErrorStatus>>;
     getFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, FolderErrorStatus>>;
+
     getFoldersByIdsWithoutPassword(folderId: string[]): Promise<Result<Folder[], FolderErrorStatus>>;
 
     getBasicFoldersByTimestamp(timestamp: Timestamp): Promise<Result<BasicFolder[]>>;
