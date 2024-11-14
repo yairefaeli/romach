@@ -56,7 +56,7 @@ export class UpdateregisteredFoldersService {
         }
 
         const foldersFromAPI = foldersFromAPIResult.flatMap((x) => x.value());
-        const newUpsertedregisteredFoldersResult = this.folderService.updateFoldersToregisteredFolders(
+        const newUpsertedregisteredFoldersResult = this.folderService.updateFoldersToRegisteredFolders(
             filteredregisteredFolders,
             foldersFromAPI,
         );
@@ -96,7 +96,7 @@ export class UpdateregisteredFoldersService {
         const folderIdsWithoutPassword = notPasswordProtected.map((folder) => folder.getProps().folderId);
 
         const foldersFromAPIwithPassword = this.romachApi.getFoldersByIdWithPassword(folderIdsWithPasswords); // azarzar - why to split with password or without
-        const foldersFromAPIWithoutPassword = this.romachApi.getFoldersByIdWithoutPassword(folderIdsWithoutPassword);
+        const foldersFromAPIWithoutPassword = this.romachApi.getFoldersByIdsWithoutPassword(folderIdsWithoutPassword);
 
         return Promise.all([foldersFromAPIwithPassword, foldersFromAPIWithoutPassword]);
     }

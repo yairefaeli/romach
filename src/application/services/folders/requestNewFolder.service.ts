@@ -95,7 +95,7 @@ export class RequsetNewFolderService {
         }
 
         const folder = foldersResponse.value();
-        const changedValidregisteredFoldersResult = this.folderService.updateFolderToregisteredFolders(
+        const changedValidregisteredFoldersResult = this.folderService.updateFolderToRegisteredFolders(
             currentregisteredFolders,
             folder,
         );
@@ -134,7 +134,7 @@ export class RequsetNewFolderService {
         const currentregisteredfolders = currentregisteredFoldersResult.value();
         if (!currentregisteredfolders) return Result.fail(currentregisteredFoldersResult.error()); //registeredFoldersResult ?? - i could heap up logs
 
-        const newregisteredFolderResult = RegisteredFolder.createwrongPasswordRegisteredFolder({
+        const newregisteredFolderResult = RegisteredFolder.createWrongPasswordRegisteredFolder({
             upn,
             folderId,
         });

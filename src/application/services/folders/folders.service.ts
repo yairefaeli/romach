@@ -16,14 +16,14 @@ export class FoldersService {
         private readonly repository: RomachRepositoryInterface,
     ) {}
 
-    updateFoldersToregisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {        
+    updateFoldersToRegisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {        
         const yair = folders.flatMap((folder) => {
-            const registeredfoldersWithSameFolder = filter(
+            const registeredFoldersWithSameFolder = filter(
                 registeredFolders,
                 (registeredFolder) =>
                     registeredFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
             );
-            return this.updateFolderToregisteredFolders(registeredfoldersWithSameFolder, folder);
+            return this.updateFolderToRegisteredFolders(registeredFoldersWithSameFolder, folder);
         });
 
         if (Result.combine(yair).isFail()) return Result.fail();
@@ -37,7 +37,7 @@ export class FoldersService {
         return Result.Ok(snir);
     }
 
-    updateFolderToregisteredFolders(registeredFolders: RegisteredFolder[], folder: Folder) {
+    updateFolderToRegisteredFolders(registeredFolders: RegisteredFolder[], folder: Folder) {
         const createregisteredfoldersResult = registeredFolders.map((registeredFolder) => {
             const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
             return createregisteredFolder({
