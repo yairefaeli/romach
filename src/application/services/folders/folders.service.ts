@@ -3,7 +3,6 @@ import { RomachRepositoryInterface } from 'src/application/interfaces/romach-rep
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
 import { filter, partition, uniqBy } from 'lodash';
@@ -12,7 +11,6 @@ import { Result } from 'rich-domain';
 export class FoldersService {
     constructor(
         private readonly logger: AppLoggerService,
-        private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
     ) {}
 

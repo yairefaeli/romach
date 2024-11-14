@@ -31,4 +31,6 @@ export interface RomachRepositoryInterface {
     updateRegistrationByUpn(upn: string): Promise<Result<void>>; // put now()
     updateRegistrationByUpnAndFolderIds(folderIds: string[], upn: string): Promise<Result<void>>; // put now()
     getExpiredRegisteredFolders(): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFoldersWithFailedStatuses(): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFolderPassword(folderId: string, upn: string): Promise<Result<string>>;
 }
