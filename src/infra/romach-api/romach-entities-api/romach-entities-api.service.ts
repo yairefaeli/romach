@@ -4,7 +4,7 @@ import { AppLoggerService } from '../../logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
-import { ProtectedFolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
+import { FolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
 import { gql } from 'graphql-request';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
@@ -16,7 +16,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     private logger: AppLoggerService,
   ) { }
 
-  async getFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, ProtectedFolderErrorStatus>> {
+  async fetchFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, FolderErrorStatus>> {
     try {
       const query = gql`
         query getFolderByIdWithoutPassword($folderId: String!) {
@@ -50,7 +50,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     }
   }
 
-  async getFolderByIdWithPassword(folderId: string, password: string): Promise<Result<Folder, ProtectedFolderErrorStatus>> {
+  async fetchFolderByIdWithPassword(folderId: string, password: string): Promise<Result<Folder, FolderErrorStatus>> {
     try {
       const query = gql`
         query getFolderByIdWithPassword($folderId: String!, $password: String!) {
@@ -84,7 +84,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     }
   }
 
-  async getBasicFoldersByTimestamp(timestamp: Timestamp): Promise<Result<BasicFolder[]>> {
+  async fetchBasicFoldersByTimestamp(timestamp: Timestamp): Promise<Result<BasicFolder[]>> {
     try {
       const query = gql`
         query getBasicFoldersByTimestamp($timeStamp: Date! ) {
@@ -116,7 +116,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     }
   }
 
-  getHierarchies(): Promise<Result<Hierarchy[]>> {
+  fetchHierarchies(): Promise<Result<Hierarchy[]>> {
 
     throw new Error('Method not implemented.');
   }
