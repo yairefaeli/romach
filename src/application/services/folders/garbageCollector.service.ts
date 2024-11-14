@@ -12,7 +12,6 @@ export interface GarbageCollectorServiceOptions {
     gcInterval: number,
 }
 
-
 export class GarbageCollectorService {
     constructor(private options: GarbageCollectorServiceOptions
     ) {
@@ -51,7 +50,10 @@ export class GarbageCollectorService {
         // Get the folder IDs to be deleted
         const folderIdsToDelete = expiredFolders.map(folder => folder.getProps().folderId);
 
-        // Delete the expired registered folders
+        return this.deleteExpiredFolders(folderIdsToDelete);
+    }
+
+    private async deleteExpiredFolders(folderIdsToDelete: string[]): Promise<Result<void>> {
         const deleteResult = await RetryUtils.retry(
             () => this.options.repository.deleteregisteredFoldersByIds(folderIdsToDelete),
             this.options.maxRetry,
