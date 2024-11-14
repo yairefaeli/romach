@@ -16,21 +16,14 @@ export class GarbageCollectorService {
     constructor(private options: GarbageCollectorServiceOptions
     ) {
         setInterval(() => this.performGarbageCollection(), this.options.gcInterval);
-
     }
 
     private async performGarbageCollection(): Promise<Result<void>> {
         this.options.logger.info('Starting garbage collection for registered folders...');
 
-        const currentTimestamp = Timestamp.now();
-
-        // Define the thresholds
-        const registrationThreshold = currentTimestamp.subtractSeconds(60).toString();
-        const validPasswordThreshold = currentTimestamp.subtractHours(24).toString();
-
         // Query the database to get registered folders matching the conditions
         const expiredFoldersResult = await RetryUtils.retry(
-            () => this.options.repository.getExpiredRegisteredFolders(registrationThreshold, validPasswordThreshold),
+            () => this.options.repository.getExpiredRegisteredFolders(),
             this.options.maxRetry,
             this.options.logger
         );

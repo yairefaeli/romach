@@ -169,12 +169,14 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
     }
   }
 
-  async getExpiredRegisteredFolders(registrationThreshold: string, validPasswordThreshold: string): Promise<Result<RegisteredFolder[]>> {
+  async getExpiredRegisteredFolders(): Promise<Result<RegisteredFolder[]>> {
     try {
       const folders = await this.knex<RegisteredFolder>('registered_folders')
         .where(function () {
-          this.where('registration_timestamp', '<', registrationThreshold)
-            .orWhere('valid_password_timestamp', '<', validPasswordThreshold);
+          // Check if `registration_timestamp` is older than 60 seconds
+          this.where('registration_timestamp', '<', this.client.raw('NOW() - INTERVAL 60 SECOND'))
+            // OR if `valid_password_timestamp` is older than 24 hours
+            .orWhere('valid_password_timestamp', '<', this.client.raw('NOW() - INTERVAL 24 HOUR'));
         })
         .select('*');
 
