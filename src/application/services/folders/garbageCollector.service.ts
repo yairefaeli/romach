@@ -26,7 +26,7 @@ export class GarbageCollectorService {
         const currentTimestamp = Timestamp.now();
 
         // Define the thresholds
-        const registrationThreshold = currentTimestamp.subtractSeconds(60).toString();
+        const registrationThreshold = currentTimestamp.subtractSeconds(60).toString(); // numbers - get from config
         const validPasswordThreshold = currentTimestamp.subtractHours(24).toString();
 
         // Query the database to get registered folders matching the conditions
