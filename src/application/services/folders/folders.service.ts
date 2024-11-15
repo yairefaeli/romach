@@ -15,7 +15,7 @@ export class FoldersService {
         private readonly repository: RomachRepositoryInterface,
     ) {}
 
-    async upsertGeneralerror(
+    async upsertGeneralError(
         upn: string,
         folderId: string,
         isPasswordProtected: boolean,
@@ -41,19 +41,25 @@ export class FoldersService {
         return Result.fail();
     }
 
-    async upsertValid(upn: string, folderId: string, folder: Folder, password?: string): Promise<Result<Folder>> {
+    async upsertValid(
+        upn: string,
+        folderId: string,
+        folder: Folder,
+        password?: string,
+    ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const registeredFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
         const currentregisteredFolders = registeredFoldersResult.value();
-        if (!currentregisteredFolders)
-            return Result.fail('failed to get registeredFolders with same folderId and password');
-
+        if (!currentregisteredFolders) {
+            this.logger.error('failed to get registeredFolders with same folderId and password');
+            return Result.fail('general-error');
+        }
         const changedValidregisteredFoldersResult = this.updateFolderToRegisteredFolders(
             currentregisteredFolders,
             folder,
         );
         if (changedValidregisteredFoldersResult.isFail()) {
             this.logger.error('failed to update registeredFolders');
-            return Result.fail();
+            return Result.fail('general-error');
         }
 
         const newregisteredFolderResult = RegisteredFolder.createValidRegisteredFolder({
@@ -64,7 +70,7 @@ export class FoldersService {
         });
         if (newregisteredFolderResult.isFail()) {
             this.logger.error('failed to create new registeredFolder');
-            return Result.fail();
+            return Result.fail('general-error');
         }
 
         const newregisteredFolder = newregisteredFolderResult.value();
@@ -76,41 +82,47 @@ export class FoldersService {
             ]);
             if (upsertFolderResult.isFail()) {
                 this.logger.error('failed to upsert registeredFolder to repo');
-                return Result.fail();
+                return Result.fail('general-error');
             }
         }
 
         return Result.Ok(folder);
     }
 
-    async upsertWrongPassword(upn: string, folderId: string) {
+    async upsertWrongPassword(
+        upn: string,
+        folderId: string,
+    ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const currentregisteredFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
         const currentregisteredfolders = currentregisteredFoldersResult.value();
-        if (!currentregisteredfolders) return Result.fail(currentregisteredFoldersResult.error()); //registeredFoldersResult ?? - i could heap up logs
+        if (!currentregisteredfolders) return Result.fail('general-error');
 
         const newregisteredFolderResult = RegisteredFolder.createWrongPasswordRegisteredFolder({
             upn,
             folderId,
         });
         const newregisteredFolder = newregisteredFolderResult.value();
-        if (!newregisteredFolder) return Result.fail('failed to create new registeredFolder');
+        this.logger.error('failed to create new registeredFolder');
+        if (!newregisteredFolder) return Result.fail('general-error');
 
         const changedregisteredFoldersResult = this.changeStatusToregisteredFolders(
             currentregisteredfolders,
             'wrong-password',
         );
         const changedregisteredFolders = changedregisteredFoldersResult.value();
-        if (!changedregisteredFolders) return Result.fail(changedregisteredFoldersResult.error());
+        if (!changedregisteredFolders) return Result.fail('general-error');
 
         const allregisteredFoldersToUpsert = [...changedregisteredFolders, newregisteredFolder];
         const upsertFolderResult = await this.repository.upsertRegisteredFolders(allregisteredFoldersToUpsert);
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
-            return Result.fail();
+            return Result.fail('general-error');
         }
+
+        // return Result.Ok();
     }
 
-    changeStatusToregisteredFolders(registeredFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
+    private changeStatusToregisteredFolders(registeredFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
         const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(newStatus);
 
         const createregisteredfoldersResult = registeredFolders.map((registeredFolder) =>
@@ -167,33 +179,6 @@ export class FoldersService {
         }
 
         return Result.Ok(createregisteredfoldersResult.map((x) => x.value()));
-    }
-
-    /* 
-        #PSUDO:
-        - user mutation folders interval
-                get registeredFolders from repo by UPN,folderId
-                delete irrelevant registeredFolders
-                update registration_timestamp on registeredFolders from repo by UPN,folderId
-
-    */
-    async userMutationFolderInterval(upn: string, folderIds: string[]) {
-        const getRegisteredFoldersByUpnResult = await this.repository.getRegisteredFoldersByUpn(upn);
-        const registeredFolders = getRegisteredFoldersByUpnResult.value();
-        const [relevantregisteredFolders, irrelevantregisteredFolders] = partition(
-            registeredFolders,
-            (registeredFolder) => folderIds.includes(registeredFolder.getProps().folderId),
-        );
-
-        const irrelevantregisteredFoldersIds = irrelevantregisteredFolders.map(
-            (registeredFolder) => registeredFolder.getProps().folderId,
-        );
-        const relevantregisteredFoldersIds = relevantregisteredFolders.map(
-            (registeredFolder) => registeredFolder.getProps().folderId,
-        );
-
-        await this.repository.deleteRegisteredFoldersByIdsForUpn(irrelevantregisteredFoldersIds, upn);
-        await this.repository.updateRegistrationByUpnAndFolderIds(relevantregisteredFoldersIds, upn);
     }
 }
 
