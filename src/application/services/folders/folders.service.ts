@@ -1,19 +1,17 @@
 import { RegisteredFolderErrorStatus, RegisteredFolderStatus } from 'src/domain/entities/RegisteredFolderStatus';
-import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
 import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
-import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
-import { filter, partition, uniqBy } from 'lodash';
+import { filter } from 'lodash';
 import { Result } from 'rich-domain';
 
 export class FoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly repository: RomachRepositoryInterface,
-    ) {}
+    ) { }
 
     async upsertGeneralError(
         upn: string,
@@ -212,7 +210,7 @@ export class FoldersService {
 
 
 
-    
+
 
     - retry failed statuses
         get registeredFolder from repo by status - failed statuses

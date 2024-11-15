@@ -2,7 +2,6 @@ import { RomachEntitiesApiInterface } from '../interfaces/romach-entities-api.in
 
 export function romachEntitiesApiInterfaceMockBuilder(): RomachEntitiesApiInterface {
   return {
-    fetchFolderByIdWithPassword: jest.fn(),
     fetchBasicFoldersByTimestamp: jest.fn(),
     fetchHierarchies: jest.fn(),
     fetchFolderByIdWithoutPassword: jest.fn(),

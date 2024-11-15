@@ -95,24 +95,16 @@ export class RetryFailedStatusService {
 
     private async retryFolder(folder: RegisteredFolder): Promise<Result<void>> {
         const folderProps = folder.getProps();
-        const { folderId, status, isPasswordProtected, password } = folderProps;
+        const { folderId, status, password } = folderProps;
 
         this.options.logger.info(`Retrying operation for folder ID: ${folderId} with status: ${status}`);
 
         let retryFetchResult: Result<Folder>;
-        if (isPasswordProtected) {
-            retryFetchResult = await RetryUtils.retry(
-                () => this.options.romachEntitiesApi.fetchFolderByIdWithPassword(folderId, password),
-                this.options.maxRetry,
-                this.options.logger
-            );
-        } else {
-            retryFetchResult = await RetryUtils.retry(
-                () => this.options.romachEntitiesApi.fetchFolderByIdWithoutPassword(folderId),
-                this.options.maxRetry,
-                this.options.logger
-            );
-        }
+        retryFetchResult = await RetryUtils.retry(
+            () => this.options.romachEntitiesApi.fetchFolderByIdWithPassword(folderId, password),
+            this.options.maxRetry,
+            this.options.logger
+        );
 
         if (retryFetchResult.isFail()) {
             this.options.logger.error(`Failed to retry operation for folder ID: ${folderId}`);
