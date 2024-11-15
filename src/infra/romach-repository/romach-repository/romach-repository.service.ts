@@ -187,4 +187,19 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
       return Result.fail('DatabaseError');
     }
   }
+
+  async getRegisteredFoldersWithFailedStatuses(): Promise<Result<RegisteredFolder[]>> {
+    try {
+      const folders = await this.knex<RegisteredFolder>('registered_folders')
+        .whereIn('status', ['loading', 'general-error', 'not-found'])
+        .select('id', 'status');
+
+      this.logger.info(`Fetched ${folders.length} registered folders with failed statuses from repository.`);
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching registered folders with failed statuses');
+      return Result.fail('DatabaseError');
+    }
+  }
+
 }
