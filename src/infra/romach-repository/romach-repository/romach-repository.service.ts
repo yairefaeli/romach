@@ -146,6 +146,8 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
     }
   }
 
+  // the pluck only gives the folder ids is this a mistake?
+
   async saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>> {
     try {
       await this.knex('basic_folders_timestamp')
@@ -202,8 +204,47 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
     }
   }
 
-  async deleteRegisteredFoldersByIds(ids: string[]): Promise<Result<void>>;
-  async getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
-  async getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
-  async getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
+  async deleteRegisteredFoldersByIds(ids: string[]): Promise<Result<void>> {
+    try {
+      await this.knex<RegisteredFolder>('registered_folders').whereIn('folder_id', ids).del();
+      this.logger.info(`Deleted registered folders with ids: ${ids} from repo`)
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error(`Failed to delete registered folders by ids: ${ids} from repo`)
+      return Result.fail('DatabaseError')
+    }
+  }
+
+  async getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>> {
+    try {
+      const registeredFolder = await this.knex<RegisteredFolder>('registered_folders').where({folder_id: folderId}).select('*');
+      this.logger.info(`Fetched registered folder with id ${folderId} from repo`)
+      return Result.Ok(registeredFolder)
+    } catch (error) {
+      this.logger.info(`Failed to fetch registered folder with id ${folderId} from repo`)
+      return Result.fail('DatabaseError')
+    }
+  }
+
+  async getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>> {
+    try {
+        const registeredFolders = await this.knex<RegisteredFolder>('registered_folders').whereIn('folder_id': folderIds).select('*');
+        this.logger.info(`Fetched registered folders with ids: ${folderIds} from repo`)
+        return Result.Ok(registeredFolders)
+      } catch (error) {
+        this.logger.info(`Failed to fetch registered folders with ids: ${folderIds} from repo`)
+        return Result.fail('DatabaseError')
+      }
+  }
+
+  async getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>> {
+    try {
+        const registeredFolder = await this.knex<RegisteredFolder>('registered_folders').where({'folder_id': folderId, password}).select('*');
+        this.logger.info(`Fetched registered folder by password and id: ${folderId} from repo`)
+        return Result.Ok(registeredFolders)
+      } catch (error) {
+        this.logger.info(`Failed to fetch registered folder by password and id: ${folderId} from repo`)
+        return Result.fail('DatabaseError')
+      }
+  }
 }
