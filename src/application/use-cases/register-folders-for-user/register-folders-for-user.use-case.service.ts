@@ -27,19 +27,19 @@ export class RegisterFoldersForUserUseCase {
         const { reality, upn, folderIds } = dto;
         const getRegisteredFoldersByUpnResult = await this.repository.getRegisteredFoldersByUpn(upn);
         const registeredFolders = getRegisteredFoldersByUpnResult.value();
-        const [relevantregisteredFolders, irrelevantregisteredFolders] = partition(
+        const [relevantRegisteredFolders, irrelevantRegisteredFolders] = partition(
             registeredFolders,
             (registeredFolder) => folderIds.includes(registeredFolder.getProps().folderId),
         );
 
-        const irrelevantregisteredFoldersIds = irrelevantregisteredFolders.map(
+        const irrelevantRegisteredFoldersIds = irrelevantRegisteredFolders.map(
             (registeredFolder) => registeredFolder.getProps().folderId,
         );
-        const relevantregisteredFoldersIds = relevantregisteredFolders.map(
+        const relevantRegisteredFoldersIds = relevantRegisteredFolders.map(
             (registeredFolder) => registeredFolder.getProps().folderId,
         );
 
-        await this.repository.deleteRegisteredFoldersByIdsForUpn(irrelevantregisteredFoldersIds, upn);
-        await this.repository.updateRegistrationByUpnAndFolderIds(relevantregisteredFoldersIds, upn);
+        await this.repository.deleteRegisteredFoldersByIdsForUpn(irrelevantRegisteredFoldersIds, upn);
+        await this.repository.updateRegistrationByUpnAndFolderIds(relevantRegisteredFoldersIds, upn);
     }
 }

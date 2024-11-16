@@ -202,4 +202,9 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
     }
   }
 
+  async deleteRegisteredFoldersByIds(ids: string[]): Promise<Result<void>>;
+  async getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
+  async getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
+
+
 }
