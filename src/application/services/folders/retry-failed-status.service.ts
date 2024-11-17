@@ -101,7 +101,7 @@ export class RetryFailedStatusService {
 
         let retryFetchResult: Result<Folder>;
         retryFetchResult = await RetryUtils.retry(
-            () => this.options.romachEntitiesApi.fetchFolderByIdWithPassword(folderId, password),
+            () => this.options.romachEntitiesApi.fetchFoldersByIdsAndPasswords([{ folderId, password }]),
             this.options.maxRetry,
             this.options.logger
         );
