@@ -2,9 +2,7 @@ import { RegisteredFolderErrorStatus } from '../../../domain/entities/Registered
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
 import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
 import { FoldersService } from 'src/application/services/folders/folders.service';
-import { RegisteredFolder } from '../../../domain/entities/RegisteredFolder';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { Timestamp } from '../../../domain/entities/Timestamp';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Folder } from '../../../domain/entities/Folder';
 import { Result } from 'rich-domain';
@@ -19,7 +17,6 @@ export interface AddProtectedFolderToUserInput {
 export class AddProtectedFolderToUserUseCase {
     constructor(
         private readonly logger: AppLoggerService,
-
         private repository: RomachRepositoryInterface,
         private api: RomachEntitiesApiInterface,
         private registeredFolderService: FoldersService,
@@ -48,18 +45,17 @@ export class AddProtectedFolderToUserUseCase {
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         if (basicFolder.getProps().isPasswordProtected) {
             return this.handleProtectedFolders(input, basicFolder);
-        } else {
-            const { upn, folderId, password } = input;
-            const foldersResponse = await this.api.fetchFoldersByIdsAndPasswords([{ folderId, password }]);
-
-            if (foldersResponse.isFail()) {
-                this.logger.error('failed to fetch folders from API');
-                return Result.fail();
-            }
-
-            const folder = foldersResponse.value();
-            return this.registeredFolderService.upsertValid(upn, folderId, folder);
         }
+
+        const { upn, folderId, password } = input;
+        const foldersResponse = await this.api.fetchFoldersByIdsAndPasswords([{ folderId, password }]);
+        if (foldersResponse.isFail()) {
+            this.logger.error('failed to fetch folders from API');
+            return this.registeredFolderService.upsertGeneralError(upn, folderId, false);
+        }
+
+        const folder = foldersResponse.value();
+        return this.registeredFolderService.upsertValid(upn, folderId, folder);
     }
 
     private async handleProtectedFolders(
@@ -67,28 +63,26 @@ export class AddProtectedFolderToUserUseCase {
         basicFolder: BasicFolder,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const { upn, password, folderId } = input;
+
         const checkPasswordResult = await this.api.checkPassword(folderId, password);
-
-        if (checkPasswordResult.isOk()) {
-            const isPasswordCorrect = checkPasswordResult.value();
-
-            if (isPasswordCorrect) {
-                const foldersResponse = await this.api.fetchFoldersByIdsAndPasswords([{ folderId, password }]);
-
-                if (foldersResponse.isFail()) {
-                    this.logger.error('failed to fetch folders from API');
-                    return Result.fail('general-error');
-                }
-                const folder = foldersResponse.value();
-                return this.registeredFolderService.upsertValid(upn, folderId, folder, password);
-            } else {
-                return this.registeredFolderService.upsertWrongPassword(upn, folderId);
-            }
-        } else {
-            const { isPasswordProtected } = basicFolder.getProps();
+        if (checkPasswordResult.isFail()) {
             this.logger.error('Failed to check password for folder', input);
-            return this.registeredFolderService.upsertGeneralError(upn, folderId, isPasswordProtected);
+            return this.registeredFolderService.upsertGeneralError(upn, folderId, true);
         }
+
+        const isPasswordCorrect = checkPasswordResult.value();
+        if (!isPasswordCorrect) {
+            return this.registeredFolderService.upsertWrongPassword(upn, folderId);
+        }
+
+        const foldersResponse = await this.api.fetchFoldersByIdsAndPasswords([{ folderId, password }]);
+        if (foldersResponse.isFail()) {
+            this.logger.error('failed to fetch folders from API');
+            return this.registeredFolderService.upsertGeneralError(upn, folderId, true);
+        }
+
+        const folder = foldersResponse.value();
+        return this.registeredFolderService.upsertValid(upn, folderId, folder, password);
     }
 }
 
