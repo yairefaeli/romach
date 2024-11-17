@@ -48,7 +48,7 @@ export class AddProtectedFolderToUserUseCase {
         }
 
         const { upn, folderId, password } = input;
-        const foldersResponse = await this.api.fetchFoldersByIdsAndPasswords([{ folderId, password }]);
+        const foldersResponse = await this.api.fetchFolderByIdAndPassword({ folderId, password });
         if (foldersResponse.isFail()) {
             this.logger.error('failed to fetch folders from API');
             return this.registeredFolderService.upsertGeneralError(upn, folderId, false);
@@ -75,7 +75,7 @@ export class AddProtectedFolderToUserUseCase {
             return this.registeredFolderService.upsertWrongPassword(upn, folderId);
         }
 
-        const foldersResponse = await this.api.fetchFoldersByIdsAndPasswords([{ folderId, password }]);
+        const foldersResponse = await this.api.fetchFolderByIdAndPassword({ folderId, password });
         if (foldersResponse.isFail()) {
             this.logger.error('failed to fetch folders from API');
             return this.registeredFolderService.upsertGeneralError(upn, folderId, true);
