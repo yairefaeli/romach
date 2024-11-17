@@ -15,7 +15,7 @@ export class UpdateregisteredFoldersService {
         private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
-    ) { }
+    ) {}
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
         const res = await Promise.all([
@@ -48,16 +48,17 @@ export class UpdateregisteredFoldersService {
         }
 
         const registeredFoldersFromRepo = registeredFoldersFromRepoResult.value();
-        const filteredregisteredFolders = this.filterAlreadyUpdated(registeredFoldersFromRepo, upsertedBasicFolders);
-        const foldersFromAPIResult = await this.fetchFoldersFromAPI(filteredregisteredFolders);
-        if (Result.combine(foldersFromAPIResult).isFail()) {
+        const filteredRegisteredFolders = this.filterAlreadyUpdated(registeredFoldersFromRepo, upsertedBasicFolders);
+        const unigedRegisterdFolders = this.getUniqedRegisteredFolders(filteredRegisteredFolders);
+        const foldersFromAPIResult = await this.fetchFoldersFromAPI(unigedRegisterdFolders);
+        if (foldersFromAPIResult.isFail()) {
             this.logger.error('failed to fetch folders from API by ids and passwords');
             return Result.fail();
         }
 
-        const foldersFromAPI = foldersFromAPIResult.flatMap((x) => x.value());
+        const foldersFromAPI = foldersFromAPIResult.value();
         const newUpsertedregisteredFoldersResult = this.folderService.updateFoldersToRegisteredFolders(
-            filteredregisteredFolders,
+            filteredRegisteredFolders,
             foldersFromAPI,
         );
         if (newUpsertedregisteredFoldersResult.isFail()) {
@@ -79,42 +80,33 @@ export class UpdateregisteredFoldersService {
         }
     }
 
-    private fetchFoldersFromAPI(upsertedregisteredFolders: RegisteredFolder[]) {
-        const nonUniquedFolders = uniqBy(
-            upsertedregisteredFolders,
-            (item) => `${item.getProps().folderId}-${item.getProps().password}`,
-        );
+    private fetchFoldersFromAPI(registeredFolders: RegisteredFolder[]) {
+        const folderIdsWithPasswords = registeredFolders.map((folder) => ({
+            folderId: folder.getProps().folderId,
+            password: folder.getProps().password,
+        }));
 
-        const [passwordProtected, notPasswordProtected] = partition(
-            nonUniquedFolders,
-            (registeredFolder) => registeredFolder.getProps().isPasswordProtected,
-        );
-
-        const folderIdsWithPasswords = passwordProtected.map((folder) =>
-            pick(folder.getProps(), ['folderId', 'password']),
-        );
-        const folderIdsWithoutPassword = notPasswordProtected.map((folder) => folder.getProps().folderId);
-
-        const foldersFromAPIwithPassword = this.romachApi.fetchFoldersByIdsWithPassword(folderIdsWithPasswords); // azarzar - why to split with password or without
-        const foldersFromAPIWithoutPassword = this.romachApi.fetchFoldersByIdsWithoutPassword(folderIdsWithoutPassword);
-
-        return Promise.all([foldersFromAPIwithPassword, foldersFromAPIWithoutPassword]);
+        return this.romachApi.fetchFoldersByIdsAndPasswords(folderIdsWithPasswords);
     }
 
-    private filterAlreadyUpdated(registeredFoldersFromRepo: RegisteredFolder[], upsartedBasicFolders: BasicFolder[]) {
-        const upsertedregisteredFolders = registeredFoldersFromRepo.filter(
+    private filterAlreadyUpdated(registeredFoldersFromRepo: RegisteredFolder[], basicFolders: BasicFolder[]) {
+        const upsertedRegisteredFolders = registeredFoldersFromRepo.filter(
             (folder) =>
-                upsartedBasicFolders
+                basicFolders
                     .find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id)
                     .getProps().updatedAt === folder.getProps().updatedAtTimestamp,
         );
 
-        return upsertedregisteredFolders;
+        return upsertedRegisteredFolders;
     }
 
     private getRegisteredFoldersByIds(basicFolders: BasicFolder[]) {
         const upsertedFoldersIds = basicFolders.map((folder) => folder.getProps().id);
         return this.repository.getRegisteredFoldersByIds(upsertedFoldersIds);
+    }
+
+    private getUniqedRegisteredFolders(registeredFolders: RegisteredFolder[]) {
+        return uniqBy(registeredFolders, (item) => `${item.getProps().folderId}-${item.getProps().password}`);
     }
 }
 
