@@ -4,8 +4,7 @@ import { BasicFolderChange } from 'src/application/interfaces/basic-folder-chang
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from 'src/domain/entities/Timestamp';
-import { filter, partition, pick, uniqBy } from 'lodash';
+import { uniqBy } from 'lodash';
 import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
 
@@ -15,7 +14,7 @@ export class UpdateregisteredFoldersService {
         private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
-    ) {}
+    ) { }
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
         const res = await Promise.all([

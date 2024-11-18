@@ -123,41 +123,50 @@ export class FoldersService {
     private changeStatusToregisteredFolders(registeredFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
         const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(newStatus);
 
-        const createregisteredfoldersResult = registeredFolders.map((registeredFolder) =>
+        const createRegisteredfoldersResult = registeredFolders.map((registeredFolder) =>
             createregisteredFolder({
                 ...registeredFolder.getProps(),
                 lastValidPasswordTimestamp: newStatus === 'valid' ? Timestamp.now() : null,
             }),
         );
 
-        if (Result.combine(createregisteredfoldersResult).isFail()) {
+        if (Result.combine(createRegisteredfoldersResult).isFail()) {
             this.logger.error('failed to change status to registeredFolders');
             return Result.fail();
         }
 
-        return Result.Ok(createregisteredfoldersResult.map((x) => x.value()));
+        return Result.Ok(createRegisteredfoldersResult.map((x) => x.value()));
     }
 
-    updateFoldersToRegisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {
-        const yair = folders.flatMap((folder) => {
-            const registeredFoldersWithSameFolder = filter(
-                registeredFolders,
+    updateFoldersToRegisteredFolders(
+        registeredFolders: RegisteredFolder[],
+        folders: Folder[]
+    ) {
+        const folderUpdates = folders.flatMap((folder) => {
+            const matchingRegisteredFolders = registeredFolders.filter(
                 (registeredFolder) =>
-                    registeredFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
+                    registeredFolder.getProps().folderId ===
+                    folder.getProps().basicFolder.getProps().id
             );
-            return this.updateFolderToRegisteredFolders(registeredFoldersWithSameFolder, folder);
+
+            return this.updateFolderToRegisteredFolders(
+                matchingRegisteredFolders,
+                folder
+            );
         });
 
-        if (Result.combine(yair).isFail()) return Result.fail();
+        if (Result.combine(folderUpdates).isFail()) {
+            return Result.fail();
+        }
 
-        const snir = yair.flatMap((x) => {
-            // azarzar help
-            const y = x.value();
-            if (y) return y;
+        const successfulUpdates = folderUpdates.flatMap((result) => {
+            const value = result.value();
+            return value ? value : [];
         });
 
-        return Result.Ok(snir);
+        return Result.Ok(successfulUpdates);
     }
+
 
     updateFolderToRegisteredFolders(registeredFolders: RegisteredFolder[], folder: Folder) {
         const createregisteredfoldersResult = registeredFolders.map((registeredFolder) => {
