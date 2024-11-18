@@ -202,4 +202,15 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
     }
   }
 
+  async deleteRegisteredFoldersByIds(ids: string[]): Promise<Result<void>> {
+    try {
+      await this.knex('registered_folders')
+        .whereIn('id', ids)
+        .del();
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error('Error deleting registered folders by IDs');
+      return Result.fail('DatabaseError');
+    }
+  }
 }
