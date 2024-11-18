@@ -2,16 +2,17 @@ import { RegisteredFolderErrorStatus, RegisteredFolderStatus } from 'src/domain/
 import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
+import { ResultUtils } from 'src/utils/ResultUtils/ResultUtils';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
-import { filter } from 'lodash';
+import { find } from 'lodash';
 import { Result } from 'rich-domain';
 
 export class FoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly repository: RomachRepositoryInterface,
-    ) { }
+    ) {}
 
     async upsertGeneralError(
         upn: string,
@@ -51,10 +52,9 @@ export class FoldersService {
             this.logger.error('failed to get registeredFolders with same folderId and password');
             return Result.fail('general-error');
         }
-        const changedValidregisteredFoldersResult = this.updateFolderToRegisteredFolders(
-            currentregisteredFolders,
+        const changedValidregisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentregisteredFolders, [
             folder,
-        );
+        ]);
         if (changedValidregisteredFoldersResult.isFail()) {
             this.logger.error('failed to update registeredFolders');
             return Result.fail('general-error');
@@ -139,44 +139,33 @@ export class FoldersService {
     }
 
     updateFoldersToRegisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {
-        const yair = folders.flatMap((folder) => {
-            const registeredFoldersWithSameFolder = filter(
-                registeredFolders,
-                (registeredFolder) =>
-                    registeredFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
+        const newRegisteredFoldersResult = registeredFolders.map((registeredFolder) => {
+            const folder = find(
+                folders,
+                (folder) => registeredFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
             );
-            return this.updateFolderToRegisteredFolders(registeredFoldersWithSameFolder, folder);
+            return this.updateFolderToRegisteredFolder(registeredFolder, folder);
         });
 
-        if (Result.combine(yair).isFail()) return Result.fail();
-
-        const snir = yair.flatMap((x) => {
-            // azarzar help
-            const y = x.value();
-            if (y) return y;
-        });
-
-        return Result.Ok(snir);
+        if (Result.combine(newRegisteredFoldersResult).isFail()) return Result.fail();
+        const newRegisteredFolders = ResultUtils.resultsToValues(newRegisteredFoldersResult);
+        return Result.Ok(newRegisteredFolders);
     }
 
-    updateFolderToRegisteredFolders(registeredFolders: RegisteredFolder[], folder: Folder) {
-        const createregisteredfoldersResult = registeredFolders.map((registeredFolder) => {
-            const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(
-                registeredFolder.getProps().status,
-            );
-            return createregisteredFolder({
-                ...registeredFolder.getProps(),
-                folder,
-                lastValidPasswordTimestamp: Timestamp.now(),
-            });
+    private updateFolderToRegisteredFolder(registeredFolder: RegisteredFolder, folder: Folder) {
+        const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
+        const createregisteredfoldersResult = createregisteredFolder({
+            ...registeredFolder.getProps(),
+            folder,
+            lastValidPasswordTimestamp: Timestamp.now(),
         });
 
-        if (Result.combine(createregisteredfoldersResult).isFail()) {
+        if (createregisteredfoldersResult.isFail()) {
             this.logger.error('failed update folder to registeredFolders');
             return Result.fail();
         }
 
-        return Result.Ok(createregisteredfoldersResult.map((x) => x.value()));
+        return createregisteredfoldersResult;
     }
 }
 

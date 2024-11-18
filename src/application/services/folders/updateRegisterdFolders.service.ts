@@ -4,12 +4,11 @@ import { BasicFolderChange } from 'src/application/interfaces/basic-folder-chang
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from 'src/domain/entities/Timestamp';
-import { filter, partition, pick, uniqBy } from 'lodash';
+import { uniqBy } from 'lodash';
 import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
 
-export class UpdateregisteredFoldersService {
+export class UpdateRegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly folderService: FoldersService,
