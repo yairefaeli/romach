@@ -14,7 +14,7 @@ export class UpdateRegisteredFoldersService {
         private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly repository: RomachRepositoryInterface,
-    ) {}
+    ) { }
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
         const res = await Promise.all([

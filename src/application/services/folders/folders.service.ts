@@ -123,19 +123,19 @@ export class FoldersService {
     private changeStatusToregisteredFolders(registeredFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
         const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(newStatus);
 
-        const createregisteredfoldersResult = registeredFolders.map((registeredFolder) =>
+        const createRegisteredfoldersResult = registeredFolders.map((registeredFolder) =>
             createregisteredFolder({
                 ...registeredFolder.getProps(),
                 lastValidPasswordTimestamp: newStatus === 'valid' ? Timestamp.now() : null,
             }),
         );
 
-        if (Result.combine(createregisteredfoldersResult).isFail()) {
+        if (Result.combine(createRegisteredfoldersResult).isFail()) {
             this.logger.error('failed to change status to registeredFolders');
             return Result.fail();
         }
 
-        return Result.Ok(createregisteredfoldersResult.map((x) => x.value()));
+        return Result.Ok(createRegisteredfoldersResult.map((x) => x.value()));
     }
 
     updateFoldersToRegisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {
