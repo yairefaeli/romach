@@ -4,11 +4,16 @@ import { AppLoggerService } from '../../logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
-import { FolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
 import { gql } from 'graphql-request';
-import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
+import { FolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
+import { isEmpty } from 'lodash';
+
+interface apiInput {
+  folderId: string;
+  password?: string;
+}
 
 export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
   constructor(
@@ -16,65 +21,28 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     private logger: AppLoggerService,
   ) { }
 
-  async fetchFolderByIdWithoutPassword(folderId: string): Promise<Result<Folder, FolderErrorStatus>> {
-    try {
-      const query = gql`
-        query getFolderByIdWithoutPassword($folderId: String!) {
-          getFolder(id: $folderId) {
-            id
-            name
-            deleted
-            isLocal
-            isViewProtected
-            isEditProtected
-            creationDate
-            updatedAt: lastUpdatedTime
-            category
-            entites
-          }
+  async fetchFolderByIdAndPassword(input: apiInput): Promise<Result<Folder, FolderErrorStatus>> {
+    const query = gql`
+      query getFolderByIdAndPassword($id: String!, $password: String) {
+        folder(id: $id, password: $password) {
+          id
+          name
+          deleted
+          isLocal
+          creationDate
+          category
+          isViewProtected
+          updatedAt: lastUpdatedTime
         }
-      `;
-
-      const variables = { folderId };
-
-      const response = await this.romachApiGraphqlClientService.query<{ folder: RegisteredFolder }>(query, variables);
-
-      if (response.folder) {
-        Result.Ok(response.folder);
-      } else {
-        return Result.fail('not-found');
       }
-    } catch (error) {
-      this.logger.error('Error fetching folder by ID without password', error);
-      return Result.fail('general-error');
-    }
-  }
+    `;
 
-  async fetchFolderByIdWithPassword(folderId: string, password: string): Promise<Result<Folder, FolderErrorStatus>> {
+    const variables = { id: input.folderId, password: input.password };
+
     try {
-      const query = gql`
-        query getFolderByIdWithPassword($folderId: String!, $password: String!) {
-          getFolder(id: $folderId, password: $password) {
-            id
-            name
-            deleted
-            isLocal
-            isViewProtected
-            isEditProtected
-            creationDate
-            updatedAt: lastUpdatedTime
-            category
-            entites
-          }
-        }
-      `;
-
-      const variables = { folderId, password };
-
       const response = await this.romachApiGraphqlClientService.query<{ folder: Folder }>(query, variables);
-
       if (response.folder) {
-        Result.Ok(response.folder);
+        return Result.Ok(response.folder);
       } else {
         return Result.fail('not-found');
       }
@@ -83,6 +51,38 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
       return Result.fail('general-error');
     }
   }
+
+  async fetchFoldersByIdsAndPasswords(input: apiInput[]): Promise<Result<Folder[], FolderErrorStatus>> {
+    const query = gql`
+      query getFoldersByIdsAndPasswords($inputs: [$id: String!, $password: String]!) {
+        folders(inputs: $inputs) {
+          id
+          name
+          deleted
+          isLocal
+          creationDate
+          category
+          isViewProtected
+          updatedAt: lastUpdatedTime
+        }
+      }
+    `;
+
+    const variables = { inputs: input };
+
+    try {
+      const response = await this.romachApiGraphqlClientService.query<{ folders: Folder[] }>(query, variables);
+      if (!isEmpty(response.folders)) {
+        return Result.Ok(response.folders);
+      } else {
+        return Result.fail('not-found');
+      }
+    } catch (error) {
+      this.logger.error('Error fetching folders by IDs and passwords', error);
+      return Result.fail('general-error');
+    }
+  }
+
 
   async fetchBasicFoldersByTimestamp(timestamp: Timestamp): Promise<Result<BasicFolder[]>> {
     try {
@@ -116,11 +116,6 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     }
   }
 
-  fetchHierarchies(): Promise<Result<Hierarchy[]>> {
-
-    throw new Error('Method not implemented.');
-  }
-
   async checkPassword(id: string, password: string): Promise<Result<boolean>> {
     const query = gql`
         query checkPassword($folderId: String!, $viewPassword: String!) {
@@ -140,5 +135,10 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     } catch (error) {
       return Result.fail(`Failed to check password: ${error.message}`);
     }
+  }
+
+  fetchHierarchies(): Promise<Result<Hierarchy[]>> {
+
+    throw new Error('Method not implemented.');
   }
 }

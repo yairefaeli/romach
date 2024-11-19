@@ -4,9 +4,10 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { Result } from 'rich-domain';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
-import { Subject, timer } from 'rxjs';
+import { Subject } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { Folder } from 'src/domain/entities/Folder';
+import { isEmpty } from 'lodash';
 
 export interface RetryFailedStatusServiceOptions {
     logger: AppLoggerService,
@@ -25,22 +26,11 @@ export class RetryFailedStatusService {
 
         // Listen to the retry requests and process them in batches using debounce
         this.folderRetrySubject.pipe(
-            debounceTime(10000), // Wait for 10 seconds before processing the batch
-            switchMap(async (failedFolders: RegisteredFolder[]) => {
-                return await this.retryFoldersInBatch(failedFolders);
-            })
-        ).subscribe({
-            next: (result) => {
-                if (result.isFail()) {
-                    this.options.logger.error('Batch retry for folders failed.');
-                } else {
-                    this.options.logger.info('Batch retry for folders succeeded.');
-                }
-            },
-            error: (err) => {
-                this.options.logger.error(`Error during batch retry: ${err}`);
-            }
-        });
+            debounceTime(5000), // Wait for 5 seconds before processing the batch
+            switchMap(async (failedFolders: RegisteredFolder[]) =>
+                await this.retryFoldersInBatch(failedFolders)
+            )
+        ).subscribe();
     }
 
     private async retryFailedStatuses(): Promise<Result<void>> {
@@ -53,7 +43,7 @@ export class RetryFailedStatusService {
         }
 
         const failedFolders = failedFoldersResult.value();
-        if (failedFolders.length === 0) {
+        if (isEmpty(failedFolders)) {
             this.options.logger.info('No failed registered folders found for retry.');
             return Result.Ok();
         }
@@ -78,18 +68,59 @@ export class RetryFailedStatusService {
     }
 
     private async retryFoldersInBatch(failedFolders: RegisteredFolder[]): Promise<Result<void>> {
-        this.options.logger.info(`Retrying a batch of ${failedFolders.length} failed folders...`);
+        this.options.logger.info(`Retrying a batch of ${failedFolders.length} failed folders.`);
 
-        const results = await Promise.all(failedFolders.map(folder => this.retryFolder(folder)));
+        const succeededRegisteredFolders: RegisteredFolder[] = [];
+        const failedRegsiteredFolders: RegisteredFolder[] = [];
+        const removeRegsiteredFolders: RegisteredFolder[] = [];
 
-        const failedResults = results.filter(result => result.isFail());
+        // Process all folders and collect results
+        const results = await Promise.all(
+            failedFolders.map(folder => this.retryFolder(folder).then(result => ({ folder, result })))
+        );
 
-        if (failedResults.length > 0) {
-            this.options.logger.error(`Failed to retry ${failedResults.length} folders in batch.`);
-            return Result.fail('Failed to retry some folders in batch.');
+
+        // Split results into success, failures, and folders to remove
+
+        results.forEach(({ folder, result }) => {
+            if (result.isOk()) {
+                succeededRegisteredFolders.push(folder);
+            } else if (result.error().includes("not-found")) {
+                removeRegsiteredFolders.push(folder);
+            } else {
+                failedRegsiteredFolders.push(folder);
+            }
+        });
+
+        // Handle successes
+        if (!isEmpty(succeededRegisteredFolders)) {
+            this.options.logger.info(`Successfully retried ${succeededRegisteredFolders.length} folders.`);
+            this.options.repository.upsertRegisteredFolders(succeededRegisteredFolders)
         }
 
-        this.options.logger.info(`Successfully retried all ${failedFolders.length} folders in batch.`);
+        // Handle removals
+        if (!isEmpty(removeRegsiteredFolders)) {
+            const removeRegisterFoldersIds = removeRegsiteredFolders.map(foldersIds => foldersIds.getProps().folderId)
+            this.options.logger.info(`Removing ${removeRegsiteredFolders.length} folders from the database.`);
+            await this.deleteRegisterFoldersFromRepository(removeRegisterFoldersIds);
+        }
+
+        // Handle failures
+        if (!isEmpty(failedRegsiteredFolders)) {
+            this.options.logger.error(`Failed to retry ${failedRegsiteredFolders.length} folders.`);
+            failedRegsiteredFolders.forEach(folder => {
+                this.options.logger.error(`Folder ID: ${folder.getProps().folderId} failed with error.`);
+            });
+
+            // Optionally re-queue failed folders for a later retry
+            this.folderRetrySubject.next(failedRegsiteredFolders);
+        }
+
+        // Return combined result
+        if (!isEmpty(failedRegsiteredFolders)) {
+            return Result.fail(`Failed to retry some folders in batch.`);
+        }
+
         return Result.Ok();
     }
 
@@ -101,18 +132,33 @@ export class RetryFailedStatusService {
 
         let retryFetchResult: Result<Folder>;
         retryFetchResult = await RetryUtils.retry(
-            () => this.options.romachEntitiesApi.fetchFolderByIdWithPassword(folderId, password),
+            () => this.options.romachEntitiesApi.fetchFolderByIdAndPassword({ folderId, password }),
             this.options.maxRetry,
             this.options.logger
         );
 
         if (retryFetchResult.isFail()) {
+            const error = retryFetchResult.error();
+            if (error && error.includes("not found")) {
+                this.options.logger.info(`Folder ID: ${folderId} not found. Marking for removal.`);
+                Result.fail({ reason: "not found", folderId });
+            }
+
             this.options.logger.error(`Failed to retry operation for folder ID: ${folderId}`);
             return Result.fail(`Failed to retry operation for folder ID: ${folderId}`);
         }
 
         this.options.logger.info(`Successfully retried operation for folder ID: ${folderId}`);
         return Result.Ok();
+    }
+
+    private async deleteRegisterFoldersFromRepository(folders: string[]): Promise<void> {
+        try {
+            await this.options.repository.deleteRegisteredFoldersByIds(folders);
+            this.options.logger.info(`Successfully removed folders ID: ${folders} from the database.`);
+        } catch (error) {
+            this.options.logger.error(`Failed to remove folder ID: ${folders} from the database. Error: ${error}`);
+        }
     }
 
 }

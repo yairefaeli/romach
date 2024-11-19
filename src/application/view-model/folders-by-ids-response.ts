@@ -11,5 +11,3 @@ export interface FoldersByIdResponse {
 
 
 export type FoldersIdsAndsUpdatedAt = { id: string, updatedAt: string };
-
-export type FolderErrorStatus = 'general-error' | 'not-found';

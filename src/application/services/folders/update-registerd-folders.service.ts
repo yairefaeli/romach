@@ -17,6 +17,7 @@ export class UpdateRegisteredFoldersService {
     ) { }
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
+
         const res = await Promise.all([
             this.handleDeletedBasicFolders(change.deleted),
             this.handleUpsertedBasicFolders([...change.updated, ...change.inserted]),
@@ -30,7 +31,9 @@ export class UpdateRegisteredFoldersService {
     }
 
     private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
+
         const deletedResult = await this.repository.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
+
         if (deletedResult.isFail()) {
             this.logger.error('failed to delete registeredFolders from repo by ids');
             return Result.fail();
@@ -40,16 +43,22 @@ export class UpdateRegisteredFoldersService {
     }
 
     private async handleUpsertedBasicFolders(upsertedBasicFolders: BasicFolder[]): Promise<Result<void>> {
+
         const registeredFoldersFromRepoResult = await this.getRegisteredFoldersByIds(upsertedBasicFolders);
+
         if (registeredFoldersFromRepoResult.isFail()) {
             this.logger.error('failed to get registeredFolders from repo by ids');
             return Result.fail();
         }
 
         const registeredFoldersFromRepo = registeredFoldersFromRepoResult.value();
+
         const filteredRegisteredFolders = this.filterAlreadyUpdated(registeredFoldersFromRepo, upsertedBasicFolders);
+
         const unigedRegisterdFolders = this.getUniqedRegisteredFolders(filteredRegisteredFolders);
+
         const foldersFromAPIResult = await this.fetchFoldersFromAPI(unigedRegisterdFolders);
+
         if (foldersFromAPIResult.isFail()) {
             this.logger.error('failed to fetch folders from API by ids and passwords');
             return Result.fail();

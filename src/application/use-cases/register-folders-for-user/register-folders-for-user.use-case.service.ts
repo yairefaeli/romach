@@ -5,6 +5,7 @@ import { isEmpty, partition } from 'lodash';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Result } from 'rich-domain';
+import { UPN } from 'src/domain/entities/UPN';
 
 export interface RegisterFoldersForUserOption {
     maxRetry: number;
@@ -52,7 +53,7 @@ export class RegisterFoldersForUserUseCase {
         return Result.Ok();
     }
 
-    private async getRegisteredFolders(upn: string): Promise<Result<RegisteredFolder[]>> {
+    private async getRegisteredFolders(upn: UPN): Promise<Result<RegisteredFolder[]>> {
         this.options.logger.debug(`Fetching registered folders for user ${upn}`);
         const result = await RetryUtils.retry(
             () => this.options.repository.getRegisteredFoldersByUpn(upn),

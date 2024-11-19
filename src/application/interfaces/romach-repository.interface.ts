@@ -19,7 +19,7 @@ export interface RomachRepositoryInterface {
     getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 
     // all get registeredFolders are only valids, not other kinds of error !!!
-    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>; // why you are return RegisteredFolder array?
     getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;

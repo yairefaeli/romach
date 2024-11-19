@@ -20,7 +20,7 @@ export class AddProtectedFolderToUserUseCase {
         private repository: RomachRepositoryInterface,
         private api: RomachEntitiesApiInterface,
         private registeredFolderService: FoldersService,
-    ) {}
+    ) { }
 
     async execute(input: AddProtectedFolderToUserInput): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const { upn, folderId } = input;
@@ -88,7 +88,7 @@ export class AddProtectedFolderToUserUseCase {
 
 /*
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    
+
     #PSUDO:
      - user requested new folder (upn, id, password)
             select basicFolder from repo by folderId
@@ -101,34 +101,34 @@ export class AddProtectedFolderToUserUseCase {
                             get current registeredFolders from repo by folderId, password
                             create registeredFolder with status 'valid' - on create fail 'error'
                             update current registeredFolders status and folder
-                            upsert all registeredFolders to repo 
+                            upsert all registeredFolders to repo
                         on wrong password
                             get current registeredFolders from repo by folderId, password
                             create registeredFolder with status 'wrong-password'
                             update current registeredFolders status
-                            upsert all registeredFolders to repo 
+                            upsert all registeredFolders to repo
                     on fail
                         get current registeredFolders from repo by folderId
                         create new registeredFolder with status 'error'
                         update current registeredFolders status
-                        upsert all registeredFolders to repo 
+                        upsert all registeredFolders to repo
                 if not passwordProtected
                     fetch folder from API with id
                     get current registeredFolders from repo by folderId
                     create new registeredFolder with status 'valid' - on create fail 'error'
                     update current registeredFolders status and folder
-                    upsert all registeredFolders to repo 
+                    upsert all registeredFolders to repo
             on failed
                 create registeredFolder with status 'error'
                 insert registeredFolder to repo
-                
+
 
 
             updateregisteredFolders(upn, id, password, status, folder):
                 get current registeredFolders from repo by folderId
                 create new registeredFolder with status 'status'
                 update current registeredFolders status 'status' and folder
-                upsert all registeredFolders to repo 
+                upsert all registeredFolders to repo
     */
 
 // const { upn, password, folderId } = input;

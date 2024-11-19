@@ -4,14 +4,14 @@ import { BasicFolderChange } from "../../interfaces/basic-folder-changes.interfa
 import { BasicFolder } from "src/domain/entities/BasicFolder";
 import { AppLoggerService } from "src/infra/logging/app-logger.service";
 import { RetryUtils } from "src/utils/RetryUtils/RetryUtils";
-import { FoldersService } from "../folders/folders.service";
 import { TreeCalculationHandlerService } from "../tree-calculation-handler/tree-calculation-handler.service";
 import { BasicFolderChangeDetectionService } from "../basic-folder-change-detection.service/basic-folder-change-detection.service";
+import { UpdateRegisteredFoldersService } from "../folders/update-registerd-folders.service";
 
 export interface BasicFolderChangeHandlerServiceOptions {
     maxRetry: number;
     logger: AppLoggerService;
-    foldersService: FoldersService;
+    updateRegisteredFoldersService: UpdateRegisteredFoldersService;
     treeCalculatorService: TreeCalculationHandlerService;
     basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
     updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService;
@@ -108,7 +108,7 @@ export class BasicFolderChangeHandlerService {
         )
         const folderChanges = await RetryUtils.retry(
             () =>
-                this.options.foldersService.execute(
+                this.options.updateRegisteredFoldersService.basicFolderUpdated(
                     change,
                 ),
             this.options.maxRetry,

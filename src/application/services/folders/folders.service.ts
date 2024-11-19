@@ -12,7 +12,7 @@ export class FoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly repository: RomachRepositoryInterface,
-    ) {}
+    ) { }
 
     async upsertGeneralError(
         upn: string,
@@ -60,7 +60,7 @@ export class FoldersService {
             this.logger.error('failed to get registeredFolders with same folderId and password');
             return Result.fail('general-error');
         }
-        
+
         const changedValidregisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentregisteredFolders, [
             folder,
         ]);
