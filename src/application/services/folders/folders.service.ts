@@ -25,18 +25,23 @@ export class FoldersService {
             isPasswordProtected,
             lastValidPasswordTimestamp: Timestamp.ts1970(), // need to think about it
         };
+
         const newRegisteredFolderResult = RegisteredFolder.createGeneralErrorRegisteredFolder(input);
+
         if (newRegisteredFolderResult.isFail()) {
             this.logger.error('failed to create new registeredFolder');
             return Result.fail('general-error');
         }
 
         const newRegisteredFolder = newRegisteredFolderResult.value();
+
         const upsertFolderResult = await this.repository.upsertRegisteredFolder(newRegisteredFolder);
+
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail('general-error');
         }
+
         return Result.fail();
     }
 
@@ -46,12 +51,16 @@ export class FoldersService {
         folder: Folder,
         password?: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
+
         const registeredFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
+
         const currentregisteredFolders = registeredFoldersResult.value();
+
         if (!currentregisteredFolders) {
             this.logger.error('failed to get registeredFolders with same folderId and password');
             return Result.fail('general-error');
         }
+        
         const changedValidregisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentregisteredFolders, [
             folder,
         ]);
