@@ -14,6 +14,7 @@ import { reduce } from 'lodash';
 export type BasicFolderReplicationHandlerFn = (
   basicFolders: BasicFolder[],
 ) => Result<void> | Promise<Result<void>>;
+
 export interface BasicFoldersReplicationUseCaseOptions {
   romachApi: RomachEntitiesApiInterface;
   romachRepository: RomachRepositoryInterface;
@@ -145,7 +146,7 @@ export class BasicFoldersReplicationUseCase {
     return reduce(
       basicFolders,
       (acc, curr) => {
-        const currTimestamp = Timestamp.fromString(curr.getProps().updatedAt);
+        const currTimestamp = curr.getProps().updatedAt;
         return currTimestamp.isAfter(acc) ? currTimestamp : acc;
       },
       this.timestamp,

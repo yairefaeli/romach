@@ -1,7 +1,6 @@
 import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RealityId } from '../../entities/reality-id';
-import { Injectable } from '@nestjs/common';
 import { isEmpty, partition } from 'lodash';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
@@ -20,7 +19,6 @@ export interface RegisterFoldersForUserInput {
     folderIds: string[];
 }
 
-@Injectable()
 export class RegisterFoldersForUserUseCase {
     constructor(private options: RegisterFoldersForUserOption) { }
 
