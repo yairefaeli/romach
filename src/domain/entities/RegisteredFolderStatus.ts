@@ -1,5 +1,5 @@
 export type RegisteredFolderErrorStatus =
-  | 'worng-password'
+  | 'wrong-password'
   | 'general-error'
   | 'not-found'
   | 'loading';

@@ -45,7 +45,7 @@ describe('BasicFoldersReplicationUseCase', () => {
       .mockReturnValue(Result.Ok());
 
     //@ts-ignore
-    mockApi.getBasicFoldersByTimestamp = jest
+    mockApi.fetchBasicFoldersByTimestamp = jest
       .fn()
       .mockReturnValueOnce(Result.Ok([]))
       .mockReturnValueOnce(
@@ -117,7 +117,7 @@ describe('BasicFoldersReplicationUseCase', () => {
     leaderElectionSubject.next(false);
     subscription.unsubscribe();
 
-    expect(mockApi.getBasicFoldersByTimestamp).toHaveBeenCalledTimes(5);
+    expect(mockApi.fetchBasicFoldersByTimestamp).toHaveBeenCalledTimes(5);
     expect(handlerMock).toHaveBeenCalledTimes(5);
   }, 500000);
 });

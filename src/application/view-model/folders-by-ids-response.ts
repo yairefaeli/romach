@@ -2,7 +2,9 @@ import { RegisteredFolderStatus } from '../../domain/entities/RegisteredFolderSt
 import { Folder } from '../../domain/entities/Folder';
 
 export interface FoldersByIdResponse {
-  id: string;
+  folderId: string;
+  upn: string;
+  password?: string;
   status: RegisteredFolderStatus;
   content: Folder | null;
 }

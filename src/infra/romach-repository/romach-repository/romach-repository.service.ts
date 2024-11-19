@@ -168,4 +168,49 @@ export class RomachRepositoryService implements RomachRepositoryInterface {
       return Result.fail('DatabaseError');
     }
   }
+
+  async getExpiredRegisteredFolders(): Promise<Result<RegisteredFolder[]>> {
+    try {
+      const folders = await this.knex<RegisteredFolder>('registered_folders')
+        .where(function () {
+          // Check if `registration_timestamp` is older than 60 seconds
+          this.where('registration_timestamp', '<', this.client.raw('NOW() - INTERVAL 60 SECOND'))
+            // OR if `valid_password_timestamp` is older than 24 hours
+            .orWhere('valid_password_timestamp', '<', this.client.raw('NOW() - INTERVAL 24 HOUR'));
+        })
+        .select('*');
+
+      this.logger.info(`Fetched ${folders.length} expired registered folders from repository.`);
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching expired registered folders');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async getRegisteredFoldersWithFailedStatuses(): Promise<Result<RegisteredFolder[]>> {
+    try {
+      const folders = await this.knex<RegisteredFolder>('registered_folders')
+        .whereIn('status', ['loading', 'general-error', 'not-found'])
+        .select('id', 'status');
+
+      this.logger.info(`Fetched ${folders.length} registered folders with failed statuses from repository.`);
+      return Result.Ok(folders);
+    } catch (error) {
+      this.logger.error('Error fetching registered folders with failed statuses');
+      return Result.fail('DatabaseError');
+    }
+  }
+
+  async deleteRegisteredFoldersByIds(ids: string[]): Promise<Result<void>> {
+    try {
+      await this.knex('registered_folders')
+        .whereIn('id', ids)
+        .del();
+      return Result.Ok();
+    } catch (error) {
+      this.logger.error('Error deleting registered folders by IDs');
+      return Result.fail('DatabaseError');
+    }
+  }
 }

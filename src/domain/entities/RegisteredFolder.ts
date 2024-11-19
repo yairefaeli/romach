@@ -43,6 +43,11 @@ class PasswordProtectedValidSpecification
 export class RegisteredFolder {
   private constructor(private readonly props: RegisteredFolderProps) { }
 
+
+  getProps(): RegisteredFolderProps {
+    return this.props;
+  }
+
   static createValidRegisteredFolder(
     input: Pick<
       RegisteredFolderProps,
@@ -77,12 +82,12 @@ export class RegisteredFolder {
     return Result.Ok(new RegisteredFolder(props));
   }
 
-  static createWorngPasswordRegisteredFolder(
+  static createWrongPasswordRegisteredFolder(
     input: Pick<RegisteredFolderProps, 'upn' | 'folderId'>,
   ): Result<RegisteredFolder, string> {
     return this.createInvalidRegisteredFolder({
       ...input,
-      status: 'general-error',
+      status: 'wrong-password',
       isPasswordProtected: true,
       password: null,
       lastValidPasswordTimestamp: null,
@@ -168,4 +173,19 @@ export class RegisteredFolder {
       }),
     );
   }
+
+  static getCreateFunctionByStatus(status: RegisteredFolderStatus) { // i think Eyal will not like it :)
+    switch (status) {
+        case 'valid':
+            return RegisteredFolder.createValidRegisteredFolder;
+        case 'wrong-password':
+            return RegisteredFolder.createWrongPasswordRegisteredFolder;
+        case 'general-error':
+            return RegisteredFolder.createGeneralErrorRegisteredFolder;
+        case 'not-found':
+            return RegisteredFolder.createNotFoundRegisteredFolder;
+        case 'loading':
+            return RegisteredFolder.createLoadingRegisteredFolder;
+    }
+}
 }
