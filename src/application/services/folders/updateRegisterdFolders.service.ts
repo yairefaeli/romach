@@ -8,7 +8,7 @@ import { uniqBy } from 'lodash';
 import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
 
-export class UpdateregisteredFoldersService {
+export class UpdateRegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly folderService: FoldersService,
