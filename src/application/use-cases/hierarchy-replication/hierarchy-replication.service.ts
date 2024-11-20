@@ -8,7 +8,6 @@ import {
   tap,
 } from 'rxjs/operators';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
-import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { EMPTY, Observable, OperatorFunction, from, of, timer } from 'rxjs';
@@ -18,6 +17,8 @@ import { RealityId } from '../../entities/reality-id';
 import { isEqual } from 'lodash';
 import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
+import { HierarchyRepositoryInterface } from 'src/application/interfaces/romach-hierarchies-interface';
+import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
 
 export interface HierarchyReplicationServiceOptions {
   reality: RealityId;
@@ -25,7 +26,8 @@ export interface HierarchyReplicationServiceOptions {
   logger: AppLoggerService;
   romachEntitiesApi: RomachEntitiesApiInterface;
   leaderElection: LeaderElectionInterface;
-  romachRepository: RomachRepositoryInterface;
+  hierarchyRepositoryInterface: HierarchyRepositoryInterface;
+  basicFolderRepositoryInterface: BasicFolderRepositoryInterface;
   treeCalculationService: TreeCalculationService;
   maxRetry: number;
 }
@@ -106,7 +108,7 @@ export class HierarchyReplicationService {
     return (source: Observable<Hierarchy[]>) =>
       source.pipe(
         switchMap((newHierarchy) =>
-          from(this.options.romachRepository.getHierarchies()).pipe(
+          from(this.options.hierarchyRepositoryInterface.getHierarchies()).pipe(
             tap((currentHierarchyResult) => {
               if (currentHierarchyResult.isFail()) {
                 throw new Error('');
@@ -164,7 +166,7 @@ export class HierarchyReplicationService {
       return source.pipe(
         switchMap((newHierarchy) =>
           from(
-            this.options.romachRepository.saveHierarchies(newHierarchy),
+            this.options.hierarchyRepositoryInterface.saveHierarchies(newHierarchy),
           ).pipe(
             tap((result) => {
               if (result.isFail()) {
@@ -218,7 +220,7 @@ export class HierarchyReplicationService {
 
   private async getCurrentFoldersFromRepository() {
     const result = await RetryUtils.retry(
-      () => this.options.romachRepository.getBasicFolders(),
+      () => this.options.basicFolderRepositoryInterface.getBasicFolders(),
       this.options.maxRetry,
       this.options.logger,
     );

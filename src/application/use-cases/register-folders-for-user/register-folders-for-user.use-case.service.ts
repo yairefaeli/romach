@@ -1,4 +1,3 @@
-import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RealityId } from '../../entities/reality-id';
 import { isEmpty, partition } from 'lodash';
@@ -6,11 +5,12 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Result } from 'rich-domain';
 import { UPN } from 'src/domain/entities/UPN';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
 
 export interface RegisterFoldersForUserOption {
     maxRetry: number;
     logger: AppLoggerService;
-    repository: RomachRepositoryInterface;
+    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface;
 }
 
 
@@ -56,7 +56,7 @@ export class RegisterFoldersForUserUseCase {
     private async getRegisteredFolders(upn: UPN): Promise<Result<RegisteredFolder[]>> {
         this.options.logger.debug(`Fetching registered folders for user ${upn}`);
         const result = await RetryUtils.retry(
-            () => this.options.repository.getRegisteredFoldersByUpn(upn),
+            () => this.options.registeredFolderRepositoryInterface.getRegisteredFoldersByUpn(upn),
             this.options.maxRetry,
             this.options.logger,
         );
@@ -94,7 +94,7 @@ export class RegisterFoldersForUserUseCase {
 
         this.options.logger.info(`Deleting ${folders.length} irrelevant folders for user ${upn}`);
         const result = await RetryUtils.retry(
-            () => this.options.repository.deleteRegisteredFoldersByIdsForUpn(folderIds, upn),
+            () => this.options.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIdsForUpn(folderIds, upn),
             this.options.maxRetry,
             this.options.logger,
         );
@@ -118,7 +118,7 @@ export class RegisterFoldersForUserUseCase {
 
         this.options.logger.info(`Updating registration timestamps for ${folders.length} folders for user ${upn}`);
         const result = await RetryUtils.retry(
-            () => this.options.repository.updateRegistrationByUpnAndFolderIds(folderIds, upn),
+            () => this.options.registeredFolderRepositoryInterface.updateRegistrationByUpnAndFolderIds(folderIds, upn),
             this.options.maxRetry,
             this.options.logger,
         );

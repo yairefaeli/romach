@@ -1,13 +1,13 @@
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { Result } from 'rich-domain';
 import { isEmpty } from 'lodash';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
 
 export interface GarbageCollectorServiceOptions {
     logger: AppLoggerService,
-    repository: RomachRepositoryInterface,
+    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
     maxRetry: number,
     gcInterval: number,
 }
@@ -41,7 +41,7 @@ export class GarbageCollectorService {
 
     private async fetchExpiredFolders(): Promise<Result<RegisteredFolder[]>> {
         return RetryUtils.retry(
-            () => this.options.repository.getExpiredRegisteredFolders(),
+            () => this.options.registeredFolderRepositoryInterface.getExpiredRegisteredFolders(),
             this.options.maxRetry,
             this.options.logger
         ).then(result => {
@@ -54,7 +54,7 @@ export class GarbageCollectorService {
 
     private async deleteExpiredFolders(folderIdsToDelete: string[]): Promise<Result<void>> {
         const deleteResult = await RetryUtils.retry(
-            () => this.options.repository.deleteRegisteredFoldersByIds(folderIdsToDelete),
+            () => this.options.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(folderIdsToDelete),
             this.options.maxRetry,
             this.options.logger
         );

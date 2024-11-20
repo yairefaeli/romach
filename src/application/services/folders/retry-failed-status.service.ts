@@ -1,5 +1,4 @@
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { Result } from 'rich-domain';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
@@ -8,10 +7,11 @@ import { Subject } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { Folder } from 'src/domain/entities/Folder';
 import { isEmpty } from 'lodash';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
 
 export interface RetryFailedStatusServiceOptions {
     logger: AppLoggerService,
-    repository: RomachRepositoryInterface,
+    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
     maxRetry: number,
     retryInterval: number,
     romachEntitiesApi: RomachEntitiesApiInterface,
@@ -56,7 +56,7 @@ export class RetryFailedStatusService {
 
     private async fetchFailedRegisteredFolders(): Promise<Result<RegisteredFolder[]>> {
         return RetryUtils.retry(
-            () => this.options.repository.getRegisteredFoldersWithFailedStatuses(),
+            () => this.options.registeredFolderRepositoryInterface.getRegisteredFoldersWithFailedStatuses(),
             this.options.maxRetry,
             this.options.logger
         ).then(result => {
@@ -95,7 +95,7 @@ export class RetryFailedStatusService {
         // Handle successes
         if (!isEmpty(succeededRegisteredFolders)) {
             this.options.logger.info(`Successfully retried ${succeededRegisteredFolders.length} folders.`);
-            this.options.repository.upsertRegisteredFolders(succeededRegisteredFolders)
+            this.options.registeredFolderRepositoryInterface.upsertRegisteredFolders(succeededRegisteredFolders)
         }
 
         // Handle removals
@@ -154,7 +154,7 @@ export class RetryFailedStatusService {
 
     private async deleteRegisterFoldersFromRepository(folders: string[]): Promise<void> {
         try {
-            await this.options.repository.deleteRegisteredFoldersByIds(folders);
+            await this.options.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(folders);
             this.options.logger.info(`Successfully removed folders ID: ${folders} from the database.`);
         } catch (error) {
             this.options.logger.error(`Failed to remove folder ID: ${folders} from the database. Error: ${error}`);

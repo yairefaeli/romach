@@ -1,13 +1,13 @@
-import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { Result } from 'rich-domain';
 import { differenceBy } from 'lodash';
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
+import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
 
 export interface BasicFolderChangeDetectionServiceOptions {
-    repository: RomachRepositoryInterface;
+    basicFolderRepositoryInterface: BasicFolderRepositoryInterface;
     logger: AppLoggerService;
     maxRetry: number;
 }
@@ -50,7 +50,7 @@ export class BasicFolderChangeDetectionService {
         )
         const folderChanges = await RetryUtils.retry(
             () =>
-                this.options.repository.getBasicFoldersIdsAndsUpdatedAt(
+                this.options.basicFolderRepositoryInterface.getBasicFoldersIdsAndsUpdatedAt(
                     folderIds,
                 ),
             this.options.maxRetry,

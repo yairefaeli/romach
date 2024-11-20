@@ -69,7 +69,7 @@ export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     `;
 
     const variables = { inputs: input };
-
+    
     try {
       const response = await this.romachApiGraphqlClientService.query<{ folders: Folder[] }>(query, variables);
       if (!isEmpty(response.folders)) {

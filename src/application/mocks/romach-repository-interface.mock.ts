@@ -12,5 +12,15 @@ export function romachRepositoryInterfaceMockBuilder(): RomachRepositoryInterfac
     upsertRegisteredFolders: jest.fn(),
     saveBasicFoldersTimestamp: jest.fn(),
     getBasicFoldersTimestamp: jest.fn(),
+    getBasicFolderById: jest.fn(),
+    getRegisteredFoldersById: jest.fn(),
+    getRegisteredFoldersByIds: jest.fn(),
+    getRegisteredFoldersByIdAndPassword: jest.fn(),
+    upsertRegisteredFolder: jest.fn(),
+    deleteRegisteredFoldersByIds: jest.fn(),
+    deleteRegisteredFoldersByIdsForUpn: jest.fn(),
+    getExpiredRegisteredFolders: jest.fn(),
+    getRegisteredFoldersWithFailedStatuses: jest.fn(),
+    updateRegistrationByUpnAndFolderIds: jest.fn(),
   };
 }

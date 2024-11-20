@@ -1,5 +1,4 @@
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
-import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
@@ -7,13 +6,14 @@ import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { uniqBy } from 'lodash';
 import { FoldersService } from './folders.service';
 import { Result } from 'rich-domain';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
 
 export class UpdateRegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly folderService: FoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
-        private readonly repository: RomachRepositoryInterface,
+        private readonly registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
     ) { }
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
@@ -32,7 +32,7 @@ export class UpdateRegisteredFoldersService {
 
     private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
 
-        const deletedResult = await this.repository.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
+        const deletedResult = await this.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
 
         if (deletedResult.isFail()) {
             this.logger.error('failed to delete registeredFolders from repo by ids');
@@ -78,7 +78,7 @@ export class UpdateRegisteredFoldersService {
         const newUpsertedregisteredFolders = newUpsertedregisteredFoldersResult.value();
         if (newUpsertedregisteredFolders) {
             const upsertregisteredFoldersResult =
-                await this.repository.upsertRegisteredFolders(newUpsertedregisteredFolders);
+                await this.registeredFolderRepositoryInterface.upsertRegisteredFolders(newUpsertedregisteredFolders);
             if (upsertregisteredFoldersResult.isFail()) {
                 this.logger.error('failed to  upsert registeredFolders to repo');
                 return Result.fail();
@@ -110,29 +110,10 @@ export class UpdateRegisteredFoldersService {
 
     private getRegisteredFoldersByIds(basicFolders: BasicFolder[]) {
         const upsertedFoldersIds = basicFolders.map((folder) => folder.getProps().id);
-        return this.repository.getRegisteredFoldersByIds(upsertedFoldersIds);
+        return this.registeredFolderRepositoryInterface.getRegisteredFoldersByIds(upsertedFoldersIds);
     }
 
     private getUniqedRegisteredFolders(registeredFolders: RegisteredFolder[]) {
         return uniqBy(registeredFolders, (item) => `${item.getProps().folderId}-${item.getProps().password}`);
     }
-}
-
-/*
-    # PSUDO:
-        - basic folder updated (inserted, updated, deleted)
-            handle deleted
-                remove deleted from repo by folderId
-            handle updated and inserted
-                get current registeredFolders from repo by folderId
-                filter only lastUpdateTime is different - ?
-                uniq by folderId, password
-                fetch folders from API with folderIds, passwords
-                on Success
-                    update registeredFolder folder in repo by folderId, password
-                on Fail
-                    update registeredFolder's status=failed and content=null in repo by folderId, password
-                registeredFolders with same folderId, password
-
-
-    */
+} 

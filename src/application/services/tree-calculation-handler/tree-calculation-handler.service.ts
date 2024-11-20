@@ -5,14 +5,16 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Hierarchy } from 'src/domain/entities/Hierarchy';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
+import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
+import { HierarchyRepositoryInterface as HierarchiesRepositoryInterface } from 'src/application/interfaces/romach-hierarchies-interface';
 
 export interface TreeCalculationHandlerServiceOptions {
     maxRetry: number
     logger: AppLoggerService,
-    romachRepository: RomachRepositoryInterface,
+    basicFolderRepositoryInterface: BasicFolderRepositoryInterface,
+    hierarchiesRepositoryInterface: HierarchiesRepositoryInterface,
     treeCalculationService: TreeCalculationService,
     romachEntitiesApiInterface: RomachEntitiesApiInterface,
 }
@@ -65,7 +67,7 @@ export class TreeCalculationHandlerService {
             return updatedFolders.some(updatedFolder => {// maybe updatedFolders is enough
                 const filteredProps = filteredFolder.getProps('id', 'name', 'categoryId');
                 const updatedProps = updatedFolder.getProps('id', 'name', 'categoryId');
-                
+
                 return (
                     filteredProps.id === updatedProps.id &&
                     (filteredProps.name !== updatedProps.name || filteredProps.categoryId !== updatedProps.categoryId)
@@ -103,7 +105,7 @@ export class TreeCalculationHandlerService {
     private async getCurrentFoldersFromRepository(): Promise<Result<BasicFolder[]>> {
         return RetryUtils.retry(
             async () => {
-                const result = await this.options.romachRepository.getBasicFolders();
+                const result = await this.options.basicFolderRepositoryInterface.getBasicFolders();
                 if (result.isFail()) {
                     throw new Error(`Failed to fetch current folders from repository: ${result.error()}`);
                 }
@@ -119,7 +121,7 @@ export class TreeCalculationHandlerService {
     private async getCurrentHierarchiesFromRepository(): Promise<Result<Hierarchy[]>> {
         return RetryUtils.retry(
             async () => {
-                const result = await this.options.romachRepository.getHierarchies();
+                const result = await this.options.hierarchiesRepositoryInterface.getHierarchies();
                 if (result.isFail()) {
                     throw new Error(`Failed to fetch current hierarchies from repository: ${result.error()}`);
                 }

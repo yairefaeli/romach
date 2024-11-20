@@ -1,5 +1,4 @@
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
-import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
@@ -10,6 +9,7 @@ import { Timestamp } from '../../../domain/entities/Timestamp';
 import { FlowUtils } from '../../../utils/FlowUtils/FlowUtils';
 import { Result } from 'rich-domain';
 import { reduce } from 'lodash';
+import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
 
 export type BasicFolderReplicationHandlerFn = (
   basicFolders: BasicFolder[],
@@ -17,7 +17,7 @@ export type BasicFolderReplicationHandlerFn = (
 
 export interface BasicFoldersReplicationUseCaseOptions {
   romachApi: RomachEntitiesApiInterface;
-  romachRepository: RomachRepositoryInterface;
+  romachBasicFolderRepositoryInterface: BasicFolderRepositoryInterface;
   leaderElection: LeaderElectionInterface;
   pollInterval: number;
   retryInterval: number;
@@ -82,7 +82,7 @@ export class BasicFoldersReplicationUseCase {
 
   private async getCurrentTimestamp() {
     const currentTimestampResult = await RetryUtils.retry(
-      () => this.options.romachRepository.getBasicFoldersTimestamp(),
+      () => this.options.romachBasicFolderRepositoryInterface.getBasicFoldersTimestamp(),
       this.options.maxRetry,
       this.options.logger,
     );
@@ -102,7 +102,7 @@ export class BasicFoldersReplicationUseCase {
 
   private async saveTimestamp(timestamp: Timestamp) {
     const saveTimestampResult = await RetryUtils.retry(
-      () => this.options.romachRepository.saveBasicFoldersTimestamp(timestamp),
+      () => this.options.romachBasicFolderRepositoryInterface.saveBasicFoldersTimestamp(timestamp),
       this.options.maxRetry,
       this.options.logger,
     );
