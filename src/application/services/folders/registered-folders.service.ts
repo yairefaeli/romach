@@ -1,18 +1,18 @@
-import { RegisteredFolderErrorStatus, RegisteredFolderStatus } from 'src/domain/entities/RegisteredFolderStatus';
+import { RegisteredFolderErrorStatus } from 'src/domain/entities/RegisteredFolderStatus';
+import { RegisteredFoldersRepository } from 'src/infra/romach-repository/registered-folders-repository';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { ResultUtils } from 'src/utils/ResultUtils/ResultUtils';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
 import { Result } from 'rich-domain';
-import { RegisteredFoldersRepository } from 'src/infra/romach-repository/registered-folders-repository';
 import { find } from 'lodash';
 
 export class RegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly registeredFoldersRepository: RegisteredFoldersRepository,
-    ) { }
+    ) {}
 
     async upsertGeneralError(
         upn: string,
@@ -51,17 +51,19 @@ export class RegisteredFoldersService {
         folder: Folder,
         password?: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
+        const registeredFoldersResult = await this.registeredFoldersRepository.getRegisteredFoldersByIdAndPassword(
+            folderId,
+            password,
+        );
 
-        const registeredFoldersResult = await this.registeredFoldersRepository.getRegisteredFoldersByIdAndPassword(folderId, password);
+        const currentRegisteredFolders = registeredFoldersResult.value();
 
-        const currentregisteredFolders = registeredFoldersResult.value();
-
-        if (!currentregisteredFolders) {
+        if (!currentRegisteredFolders) {
             this.logger.error('failed to get registeredFolders with same folderId and password');
             return Result.fail('general-error');
         }
 
-        const changedValidRegisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentregisteredFolders, [
+        const changedValidRegisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentRegisteredFolders, [
             folder,
         ]);
         if (changedValidRegisteredFoldersResult.isFail()) {
@@ -75,6 +77,7 @@ export class RegisteredFoldersService {
             password,
             lastValidPasswordTimestamp: Timestamp.now(),
         });
+
         if (newRegisteredFolderResult.isFail()) {
             this.logger.error('failed to create new registeredFolder');
             return Result.fail('general-error');
@@ -82,15 +85,18 @@ export class RegisteredFoldersService {
 
         const newRegisteredFolder = newRegisteredFolderResult.value();
         const updatedRegisteredFolders = changedValidRegisteredFoldersResult.value();
-        if (updatedRegisteredFolders) {
-            const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolders([
-                newRegisteredFolder,
-                ...updatedRegisteredFolders,
-            ]);
-            if (upsertFolderResult.isFail()) {
-                this.logger.error('failed to upsert registeredFolder to repo');
-                return Result.fail('general-error');
-            }
+        if (!updatedRegisteredFolders) {
+            return Result.fail('general-error');
+        }
+
+        const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolders([
+            newRegisteredFolder,
+            ...updatedRegisteredFolders,
+        ]);
+        
+        if (upsertFolderResult.isFail()) {
+            this.logger.error('failed to upsert registeredFolder to repo');
+            return Result.fail('general-error');
         }
 
         return Result.Ok(folder);
@@ -100,36 +106,38 @@ export class RegisteredFoldersService {
         upn: string,
         folderId: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
-        const currentRegisteredFoldersResult = await this.registeredFoldersRepository.getRegisteredFoldersById(folderId);
+        const currentRegisteredFoldersResult =
+            await this.registeredFoldersRepository.getRegisteredFoldersById(folderId);
 
         const currentRegisteredFolders = currentRegisteredFoldersResult.value();
-        
+
         if (!currentRegisteredFolders) return Result.fail('general-error');
 
         const newRegisteredFolderResult = RegisteredFolder.createWrongPasswordRegisteredFolder({
             upn,
             folderId,
         });
-        
+
         const newRegisteredFolder = newRegisteredFolderResult.value();
-        
+
         this.logger.error('failed to create new registeredFolder');
-        
+
         if (!newRegisteredFolder) return Result.fail('general-error');
 
         const changedRegisteredFoldersResult = RegisteredFolder.changeStatusToRegisteredFolders(
             currentRegisteredFolders,
             'wrong-password',
         );
-        
+
         const changedRegisteredFolders = changedRegisteredFoldersResult.value();
-        
+
         if (!changedRegisteredFolders) return Result.fail('general-error');
 
         const allRegisteredFoldersToUpsert = [...changedRegisteredFolders, newRegisteredFolder];
-        
-        const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolders(allRegisteredFoldersToUpsert);
-        
+
+        const upsertFolderResult =
+            await this.registeredFoldersRepository.upsertRegisteredFolders(allRegisteredFoldersToUpsert);
+
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail('general-error');
@@ -148,9 +156,9 @@ export class RegisteredFoldersService {
         });
 
         if (Result.combine(newRegisteredFoldersResult).isFail()) return Result.fail();
-        
+
         const newRegisteredFolders = ResultUtils.resultsToValues(newRegisteredFoldersResult);
-        
+
         return Result.Ok(newRegisteredFolders);
     }
 }
