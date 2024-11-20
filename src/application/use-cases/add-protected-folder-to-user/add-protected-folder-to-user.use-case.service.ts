@@ -20,7 +20,7 @@ export class AddProtectedFolderToUserUseCase {
         private repository: RomachRepositoryInterface,
         private api: RomachEntitiesApiInterface,
         private registeredFolderService: FoldersService,
-    ) { }
+    ) {}
 
     async execute(input: AddProtectedFolderToUserInput): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const { upn, folderId } = input;
@@ -44,7 +44,7 @@ export class AddProtectedFolderToUserUseCase {
         basicFolder: BasicFolder,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         if (basicFolder.getProps().isPasswordProtected) {
-            return this.handleProtectedFolders(input, basicFolder);
+            return this.handleProtectedFolders(input);
         }
 
         const { upn, folderId, password } = input;
@@ -60,7 +60,6 @@ export class AddProtectedFolderToUserUseCase {
 
     private async handleProtectedFolders(
         input: AddProtectedFolderToUserInput,
-        basicFolder: BasicFolder,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const { upn, password, folderId } = input;
 

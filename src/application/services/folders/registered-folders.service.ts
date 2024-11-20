@@ -8,7 +8,7 @@ import { Folder } from 'src/domain/entities/Folder';
 import { find } from 'lodash';
 import { Result } from 'rich-domain';
 
-export class FoldersService {
+export class RegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
         private readonly repository: RomachRepositoryInterface,
@@ -162,19 +162,19 @@ export class FoldersService {
     }
 
     private updateFolderToRegisteredFolder(registeredFolder: RegisteredFolder, folder: Folder) {
-        const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
-        const createregisteredfoldersResult = createregisteredFolder({
+        const createRegisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
+        const createRegisteredfoldersResult = createRegisteredFolder({
             ...registeredFolder.getProps(),
             folder,
             lastValidPasswordTimestamp: Timestamp.now(),
         });
 
-        if (createregisteredfoldersResult.isFail()) {
+        if (createRegisteredfoldersResult.isFail()) {
             this.logger.error('failed update folder to registeredFolders');
             return Result.fail();
         }
 
-        return createregisteredfoldersResult;
+        return createRegisteredfoldersResult;
     }
 }
 
