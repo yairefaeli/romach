@@ -17,8 +17,8 @@ import { RealityId } from '../../entities/reality-id';
 import { isEqual } from 'lodash';
 import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
-import { HierarchyRepositoryInterface } from 'src/application/interfaces/romach-hierarchies-interface';
-import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
+import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
 
 export interface HierarchyReplicationServiceOptions {
   reality: RealityId;
@@ -26,8 +26,8 @@ export interface HierarchyReplicationServiceOptions {
   logger: AppLoggerService;
   romachEntitiesApi: RomachEntitiesApiInterface;
   leaderElection: LeaderElectionInterface;
-  hierarchyRepositoryInterface: HierarchyRepositoryInterface;
-  basicFolderRepositoryInterface: BasicFolderRepositoryInterface;
+  hierarchyRepositoryInterface: HierarchiesRepositoryInterface;
+  basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
   treeCalculationService: TreeCalculationService;
   maxRetry: number;
 }

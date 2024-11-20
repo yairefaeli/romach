@@ -1,5 +1,5 @@
 import { Result } from 'rich-domain';
-import { RegisteredFolderRepositoryInterface as RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
+import { RegisteredFolderRepositoryInterface as RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 
 export interface GetUserRegisteredFoldersUseCaseInput {
   upn: string;

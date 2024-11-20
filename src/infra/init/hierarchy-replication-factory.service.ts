@@ -1,5 +1,5 @@
 import { HierarchyReplicationService } from '../../application/use-cases/hierarchy-replication/hierarchy-replication.service';
-import { RomachRepositoryFactoryService } from '../romach-repository/romach-repository/romach-repository-factory.service';
+import { RomachRepositoryFactoryService } from '../romach-repository/romach-repository-factory.service';
 import { RomachEntitiesApiFactoryService } from '../romach-api/romach-entities-api/romach-entities-api-factory.service';
 import { LeaderElectionInterface } from '../../application/interfaces/leader-election.interface';
 import { AppConfigService } from '../config/app-config/app-config.service';

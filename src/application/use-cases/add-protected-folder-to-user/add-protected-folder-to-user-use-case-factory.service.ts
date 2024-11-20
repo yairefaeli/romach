@@ -1,4 +1,4 @@
-import { RomachRepositoryFactoryService } from '../../../infra/romach-repository/romach-repository/romach-repository-factory.service';
+import { RomachRepositoryFactoryService } from '../../../infra/romach-repository/romach-repository-factory.service';
 import { RomachEntitiesApiFactoryService } from '../../../infra/romach-api/romach-entities-api/romach-entities-api-factory.service';
 import { AddProtectedFolderToUserUseCase } from './add-protected-folder-to-user.use-case.service';
 import { RealityId } from '../../entities/reality-id';

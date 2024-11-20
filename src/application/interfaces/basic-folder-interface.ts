@@ -5,7 +5,7 @@ import { Result } from 'rich-domain';
 
 export type NullableTimestamp = Timestamp | null;
 
-export interface BasicFolderRepositoryInterface {
+export interface BasicFoldersRepositoryInterface {
     saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>>;
     getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
     getBasicFolders(): Promise<Result<BasicFolder[]>>;

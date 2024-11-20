@@ -7,7 +7,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { Folder } from 'src/domain/entities/Folder';
 import { isEmpty } from 'lodash';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 
 export interface RetryFailedStatusServiceOptions {
     logger: AppLoggerService,

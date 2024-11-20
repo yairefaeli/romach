@@ -4,10 +4,10 @@ import { Result } from 'rich-domain';
 import { differenceBy } from 'lodash';
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
-import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
 
 export interface BasicFolderChangeDetectionServiceOptions {
-    basicFolderRepositoryInterface: BasicFolderRepositoryInterface;
+    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
     logger: AppLoggerService;
     maxRetry: number;
 }

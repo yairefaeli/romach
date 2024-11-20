@@ -1,5 +1,4 @@
 import { RegisteredFolderErrorStatus, RegisteredFolderStatus } from 'src/domain/entities/RegisteredFolderStatus';
-import { RomachRepositoryInterface } from 'src/application/interfaces/romach-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { ResultUtils } from 'src/utils/ResultUtils/ResultUtils';
@@ -7,11 +6,12 @@ import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
 import { find } from 'lodash';
 import { Result } from 'rich-domain';
+import { RegisteredFoldersRepository } from 'src/infra/romach-repository/registered-folders-repository';
 
 export class RegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
-        private readonly repository: RomachRepositoryInterface,
+        private readonly registeredFoldersRepository: RegisteredFoldersRepository,
     ) { }
 
     async upsertGeneralError(
@@ -35,7 +35,7 @@ export class RegisteredFoldersService {
 
         const newRegisteredFolder = newRegisteredFolderResult.value();
 
-        const upsertFolderResult = await this.repository.upsertRegisteredFolder(newRegisteredFolder);
+        const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolder(newRegisteredFolder);
 
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
@@ -52,7 +52,7 @@ export class RegisteredFoldersService {
         password?: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
 
-        const registeredFoldersResult = await this.repository.getRegisteredFoldersByIdAndPassword(folderId, password);
+        const registeredFoldersResult = await this.registeredFoldersRepository.getRegisteredFoldersByIdAndPassword(folderId, password);
 
         const currentregisteredFolders = registeredFoldersResult.value();
 
@@ -83,7 +83,7 @@ export class RegisteredFoldersService {
         const newRegisteredFolder = newRegisteredFolderResult.value();
         const updatedRegisteredFolders = changedValidRegisteredFoldersResult.value();
         if (updatedRegisteredFolders) {
-            const upsertFolderResult = await this.repository.upsertRegisteredFolders([
+            const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolders([
                 newRegisteredFolder,
                 ...updatedRegisteredFolders,
             ]);
@@ -100,7 +100,7 @@ export class RegisteredFoldersService {
         upn: string,
         folderId: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
-        const currentRegisteredFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
+        const currentRegisteredFoldersResult = await this.registeredFoldersRepository.getRegisteredFoldersById(folderId);
         const currentRegisteredFolders = currentRegisteredFoldersResult.value();
         if (!currentRegisteredFolders) return Result.fail('general-error');
 
@@ -120,7 +120,7 @@ export class RegisteredFoldersService {
         if (!changedRegisteredFolders) return Result.fail('general-error');
 
         const allRegisteredFoldersToUpsert = [...changedRegisteredFolders, newRegisteredFolder];
-        const upsertFolderResult = await this.repository.upsertRegisteredFolders(allRegisteredFoldersToUpsert);
+        const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolders(allRegisteredFoldersToUpsert);
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail('general-error');

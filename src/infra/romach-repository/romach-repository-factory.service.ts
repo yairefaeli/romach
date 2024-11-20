@@ -1,7 +1,7 @@
 import { RomachRepositoryInterface } from '../../../application/interfaces/romach-repository.interface';
 import { RomachRepositoryService } from './romach-repository.service';
-import { RealityId } from '../../../application/entities/reality-id';
-import { AppLoggerService } from '../../logging/app-logger.service';
+import { RealityId } from '../../application/entities/reality-id';
+import { AppLoggerService } from '../logging/app-logger.service';
 import { Injectable } from '@nestjs/common';
 import { InjectKnex } from 'nestjs-knex';
 import { Knex } from 'knex';

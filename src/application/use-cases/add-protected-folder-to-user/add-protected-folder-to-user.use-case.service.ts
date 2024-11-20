@@ -4,7 +4,7 @@ import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Folder } from '../../../domain/entities/Folder';
 import { Result } from 'rich-domain';
-import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
 import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders.service';
 
 export interface AddProtectedFolderToUserInput {
@@ -16,7 +16,7 @@ export interface AddProtectedFolderToUserInput {
 export class AddProtectedFolderToUserUseCase {
     constructor(
         private readonly logger: AppLoggerService,
-        private romachBasicFolderRepositoryInterface: BasicFolderRepositoryInterface,
+        private romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
         private api: RomachEntitiesApiInterface,
         private registeredFolderService: RegisteredFoldersService,
     ) { }

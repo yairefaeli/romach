@@ -9,7 +9,7 @@ import { Timestamp } from '../../../domain/entities/Timestamp';
 import { FlowUtils } from '../../../utils/FlowUtils/FlowUtils';
 import { Result } from 'rich-domain';
 import { reduce } from 'lodash';
-import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
 
 export type BasicFolderReplicationHandlerFn = (
   basicFolders: BasicFolder[],
@@ -17,7 +17,7 @@ export type BasicFolderReplicationHandlerFn = (
 
 export interface BasicFoldersReplicationUseCaseOptions {
   romachApi: RomachEntitiesApiInterface;
-  romachBasicFolderRepositoryInterface: BasicFolderRepositoryInterface;
+  romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
   leaderElection: LeaderElectionInterface;
   pollInterval: number;
   retryInterval: number;

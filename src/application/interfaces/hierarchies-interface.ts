@@ -4,7 +4,7 @@ import { Result } from 'rich-domain';
 
 export type NullableTimestamp = Timestamp | null;
 
-export interface HierarchyRepositoryInterface {
+export interface HierarchiesRepositoryInterface {
     saveHierarchies(hierarchy: Hierarchy[]): Promise<Result<void>>;
     getHierarchies(): Promise<Result<Hierarchy[]>>;
 }

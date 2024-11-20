@@ -5,7 +5,7 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Result } from 'rich-domain';
 import { UPN } from 'src/domain/entities/UPN';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 
 export interface RegisterFoldersForUserOption {
     maxRetry: number;

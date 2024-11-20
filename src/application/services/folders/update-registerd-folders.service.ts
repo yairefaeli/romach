@@ -6,7 +6,7 @@ import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { uniqBy } from 'lodash';
 import { RegisteredFoldersService } from './registered-folders.service';
 import { Result } from 'rich-domain';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 
 export class UpdateRegisteredFoldersService {
     constructor(

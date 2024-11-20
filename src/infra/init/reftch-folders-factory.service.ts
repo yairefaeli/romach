@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { AppConfigService } from "../config/app-config/app-config.service";
-import { RomachRepositoryFactoryService } from "../romach-repository/romach-repository/romach-repository-factory.service";
+import { RomachRepositoryFactoryService } from "../romach-repository/romach-repository-factory.service";
 import { RomachEntitiesApiFactoryService } from "../romach-api/romach-entities-api/romach-entities-api-factory.service";
 import { RefetchFoldersService } from "src/application/use-cases/refetch-folders/refetch-folders.use-case.service";
 import { AppLoggerService } from "../logging/app-logger.service";

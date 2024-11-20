@@ -1,11 +1,13 @@
 import { Knex } from 'knex';
 import { Result } from 'rich-domain';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 
-export class RegisteredFoldersRepository {
+export class RegisteredFoldersRepository implements RegisteredFolderRepositoryInterface {
     constructor(private readonly knex: Knex, private readonly logger: AppLoggerService) { }
+
 
     async getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>> {
         try {
@@ -37,14 +39,13 @@ export class RegisteredFoldersRepository {
         }
     }
 
-    async getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>> {
+    async getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>> {
         try {
             const folders = await this.knex<RegisteredFolder>('registered_folders')
-                .where('id', folderId)
-                .andWhere('password', password);
+                .where('upn', upn);
             return Result.Ok(folders);
         } catch (error) {
-            this.logger.error(`Error fetching registered folders by ID and password: ${folderId}`, error);
+            this.logger.error(`Error fetching registered folders by UPN: ${upn}`, error);
             return Result.fail('DatabaseError');
         }
     }
@@ -88,4 +89,19 @@ export class RegisteredFoldersRepository {
             return Result.fail('DatabaseError');
         }
     }
+
+    async upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>> {
+        try {
+            await this.knex('registered_folders')
+                .insert(folders)
+                .onConflict('id')
+                .merge();
+
+            return Result.Ok();
+        } catch (error) {
+            this.logger.error('Error upserting registered folders');
+            return Result.fail('DatabaseError');
+        }
+    }
+
 }

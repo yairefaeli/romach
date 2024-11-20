@@ -3,7 +3,7 @@ import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { Result } from 'rich-domain';
 import { isEmpty } from 'lodash';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 
 export interface GarbageCollectorServiceOptions {
     logger: AppLoggerService,
