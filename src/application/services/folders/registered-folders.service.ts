@@ -4,9 +4,9 @@ import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { ResultUtils } from 'src/utils/ResultUtils/ResultUtils';
 import { Timestamp } from 'src/domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
-import { find } from 'lodash';
 import { Result } from 'rich-domain';
 import { RegisteredFoldersRepository } from 'src/infra/romach-repository/registered-folders-repository';
+import { find } from 'lodash';
 
 export class RegisteredFoldersService {
     constructor(
@@ -135,28 +135,12 @@ export class RegisteredFoldersService {
                 folders,
                 (folder) => registeredFolder.getProps().folderId === folder.getProps().basicFolder.getProps().id,
             );
-            return this.updateFolderToRegisteredFolder(registeredFolder, folder);
+            return registeredFolder.updateFolder(folder);
         });
 
         if (Result.combine(newRegisteredFoldersResult).isFail()) return Result.fail();
         const newRegisteredFolders = ResultUtils.resultsToValues(newRegisteredFoldersResult);
         return Result.Ok(newRegisteredFolders);
-    }
-
-    private updateFolderToRegisteredFolder(registeredFolder: RegisteredFolder, folder: Folder) {
-        const createRegisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
-        const createRegisteredFoldersResult = createRegisteredFolder({
-            ...registeredFolder.getProps(),
-            folder,
-            lastValidPasswordTimestamp: Timestamp.now(),
-        });
-
-        if (createRegisteredFoldersResult.isFail()) {
-            this.logger.error('failed update folder to registeredFolders');
-            return Result.fail();
-        }
-
-        return createRegisteredFoldersResult;
     }
 }
 
