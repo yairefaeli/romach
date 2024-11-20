@@ -61,30 +61,30 @@ export class RegisteredFoldersService {
             return Result.fail('general-error');
         }
 
-        const changedValidregisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentregisteredFolders, [
+        const changedValidRegisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentregisteredFolders, [
             folder,
         ]);
-        if (changedValidregisteredFoldersResult.isFail()) {
+        if (changedValidRegisteredFoldersResult.isFail()) {
             this.logger.error('failed to update registeredFolders');
             return Result.fail('general-error');
         }
 
-        const newregisteredFolderResult = RegisteredFolder.createValidRegisteredFolder({
+        const newRegisteredFolderResult = RegisteredFolder.createValidRegisteredFolder({
             upn,
             folder,
             password,
             lastValidPasswordTimestamp: Timestamp.now(),
         });
-        if (newregisteredFolderResult.isFail()) {
+        if (newRegisteredFolderResult.isFail()) {
             this.logger.error('failed to create new registeredFolder');
             return Result.fail('general-error');
         }
 
-        const newregisteredFolder = newregisteredFolderResult.value();
-        const updatedRegisteredFolders = changedValidregisteredFoldersResult.value();
+        const newRegisteredFolder = newRegisteredFolderResult.value();
+        const updatedRegisteredFolders = changedValidRegisteredFoldersResult.value();
         if (updatedRegisteredFolders) {
             const upsertFolderResult = await this.repository.upsertRegisteredFolders([
-                newregisteredFolder,
+                newRegisteredFolder,
                 ...updatedRegisteredFolders,
             ]);
             if (upsertFolderResult.isFail()) {
@@ -100,51 +100,33 @@ export class RegisteredFoldersService {
         upn: string,
         folderId: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
-        const currentregisteredFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
-        const currentregisteredfolders = currentregisteredFoldersResult.value();
-        if (!currentregisteredfolders) return Result.fail('general-error');
+        const currentRegisteredFoldersResult = await this.repository.getRegisteredFoldersById(folderId);
+        const currentRegisteredFolders = currentRegisteredFoldersResult.value();
+        if (!currentRegisteredFolders) return Result.fail('general-error');
 
-        const newregisteredFolderResult = RegisteredFolder.createWrongPasswordRegisteredFolder({
+        const newRegisteredFolderResult = RegisteredFolder.createWrongPasswordRegisteredFolder({
             upn,
             folderId,
         });
-        const newregisteredFolder = newregisteredFolderResult.value();
+        const newRegisteredFolder = newRegisteredFolderResult.value();
         this.logger.error('failed to create new registeredFolder');
-        if (!newregisteredFolder) return Result.fail('general-error');
+        if (!newRegisteredFolder) return Result.fail('general-error');
 
-        const changedregisteredFoldersResult = this.changeStatusToregisteredFolders(
-            currentregisteredfolders,
+        const changedRegisteredFoldersResult = RegisteredFolder.changeStatusToRegisteredFolders(
+            currentRegisteredFolders,
             'wrong-password',
         );
-        const changedregisteredFolders = changedregisteredFoldersResult.value();
-        if (!changedregisteredFolders) return Result.fail('general-error');
+        const changedRegisteredFolders = changedRegisteredFoldersResult.value();
+        if (!changedRegisteredFolders) return Result.fail('general-error');
 
-        const allregisteredFoldersToUpsert = [...changedregisteredFolders, newregisteredFolder];
-        const upsertFolderResult = await this.repository.upsertRegisteredFolders(allregisteredFoldersToUpsert);
+        const allRegisteredFoldersToUpsert = [...changedRegisteredFolders, newRegisteredFolder];
+        const upsertFolderResult = await this.repository.upsertRegisteredFolders(allRegisteredFoldersToUpsert);
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail('general-error');
         }
 
         // return Result.Ok();
-    }
-
-    private changeStatusToregisteredFolders(registeredFolders: RegisteredFolder[], newStatus: RegisteredFolderStatus) {
-        const createregisteredFolder = RegisteredFolder.getCreateFunctionByStatus(newStatus);
-
-        const createRegisteredfoldersResult = registeredFolders.map((registeredFolder) =>
-            createregisteredFolder({
-                ...registeredFolder.getProps(),
-                lastValidPasswordTimestamp: newStatus === 'valid' ? Timestamp.now() : null,
-            }),
-        );
-
-        if (Result.combine(createRegisteredfoldersResult).isFail()) {
-            this.logger.error('failed to change status to registeredFolders');
-            return Result.fail();
-        }
-
-        return Result.Ok(createRegisteredfoldersResult.map((x) => x.value()));
     }
 
     updateFoldersToRegisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {
@@ -163,18 +145,18 @@ export class RegisteredFoldersService {
 
     private updateFolderToRegisteredFolder(registeredFolder: RegisteredFolder, folder: Folder) {
         const createRegisteredFolder = RegisteredFolder.getCreateFunctionByStatus(registeredFolder.getProps().status);
-        const createRegisteredfoldersResult = createRegisteredFolder({
+        const createRegisteredFoldersResult = createRegisteredFolder({
             ...registeredFolder.getProps(),
             folder,
             lastValidPasswordTimestamp: Timestamp.now(),
         });
 
-        if (createRegisteredfoldersResult.isFail()) {
+        if (createRegisteredFoldersResult.isFail()) {
             this.logger.error('failed update folder to registeredFolders');
             return Result.fail();
         }
 
-        return createRegisteredfoldersResult;
+        return createRegisteredFoldersResult;
     }
 }
 

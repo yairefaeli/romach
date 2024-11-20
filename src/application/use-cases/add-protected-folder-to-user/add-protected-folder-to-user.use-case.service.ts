@@ -1,11 +1,11 @@
 import { RegisteredFolderErrorStatus } from '../../../domain/entities/RegisteredFolderStatus';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
 import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
-import { FoldersService } from 'src/application/services/folders/folders.service';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Folder } from '../../../domain/entities/Folder';
 import { Result } from 'rich-domain';
+import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders.service';
 
 export interface AddProtectedFolderToUserInput {
     // not only protected
@@ -19,7 +19,7 @@ export class AddProtectedFolderToUserUseCase {
         private readonly logger: AppLoggerService,
         private repository: RomachRepositoryInterface,
         private api: RomachEntitiesApiInterface,
-        private registeredFolderService: FoldersService,
+        private registeredFolderService: RegisteredFoldersService,
     ) {}
 
     async execute(input: AddProtectedFolderToUserInput): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
@@ -130,43 +130,3 @@ export class AddProtectedFolderToUserUseCase {
                 upsert all registeredFolders to repo
     */
 
-// const { upn, password, folderId } = input;
-// const checkPasswordResult = await this.api.checkPassword(folderId, password);
-
-// if (checkPasswordResult.isFail()) {
-//     Result.fail(checkPasswordResult.error());
-// }
-
-// const isPasswordCorrect = checkPasswordResult.value();
-
-// if (!isPasswordCorrect) {
-//     Result.fail('wrong-password');
-// }
-
-// const folderResult = await this.api.getFolderByIdWithPassword(folderId, password);
-
-// if (folderResult.isFail()) {
-//     return Result.fail('not-found');
-// }
-
-// const folder = folderResult.value();
-// const createValidRegisteredFolderResult = RegisteredFolder.createValidRegisteredFolder({
-//     folder,
-//     upn,
-//     lastValidPasswordTimestamp: Timestamp.now(),
-//     password,
-// });
-
-// if (createValidRegisteredFolderResult.isFail()) {
-//     return Result.fail('general-error');
-// }
-
-// const upsertRegisteredFoldersResult = await this.repo.upsertRegisteredFolders([
-//     createValidRegisteredFolderResult.value(),
-// ]);
-
-// if (upsertRegisteredFoldersResult.isFail()) {
-//     return Result.fail('general-error');
-// }
-
-// return Result.Ok(folder);
