@@ -3,7 +3,7 @@ import {
   BasicFoldersReplicationUseCase,
   BasicFoldersReplicationUseCaseOptions,
 } from './basic-folder-replication-use-case.service';
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-interface.mock';
+import { repositoryInitialHierarchiesBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
 import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';

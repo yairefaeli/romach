@@ -1,4 +1,4 @@
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-interface.mock';
+import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Result } from 'rich-domain';

@@ -1,4 +1,4 @@
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-interface.mock';
+import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { AddProtectedFolderToUserUseCase } from './add-protected-folder-to-user.use-case.service';
 import { folderMock } from '../../mocks/entities.mock';

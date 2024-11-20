@@ -2,7 +2,7 @@ import {
   HierarchyReplicationService,
   HierarchyReplicationServiceOptions,
 } from './hierarchy-replication.service';
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-interface.mock';
+import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
