@@ -178,4 +178,8 @@ export class RegisteredFolder {
     updateFolder(folder: Folder) {
         return RegisteredFolder.createValidRegisteredFolder({ ...this.props, folder });
     }
+
+    changeStatus(status: RegisteredFolderStatus) {
+        return RegisteredFolder.getCreateFunctionByStatus(status)(this.props);
+    }
 }

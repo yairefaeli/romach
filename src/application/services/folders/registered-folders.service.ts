@@ -101,26 +101,35 @@ export class RegisteredFoldersService {
         folderId: string,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const currentRegisteredFoldersResult = await this.registeredFoldersRepository.getRegisteredFoldersById(folderId);
+
         const currentRegisteredFolders = currentRegisteredFoldersResult.value();
+        
         if (!currentRegisteredFolders) return Result.fail('general-error');
 
         const newRegisteredFolderResult = RegisteredFolder.createWrongPasswordRegisteredFolder({
             upn,
             folderId,
         });
+        
         const newRegisteredFolder = newRegisteredFolderResult.value();
+        
         this.logger.error('failed to create new registeredFolder');
+        
         if (!newRegisteredFolder) return Result.fail('general-error');
 
         const changedRegisteredFoldersResult = RegisteredFolder.changeStatusToRegisteredFolders(
             currentRegisteredFolders,
             'wrong-password',
         );
+        
         const changedRegisteredFolders = changedRegisteredFoldersResult.value();
+        
         if (!changedRegisteredFolders) return Result.fail('general-error');
 
         const allRegisteredFoldersToUpsert = [...changedRegisteredFolders, newRegisteredFolder];
+        
         const upsertFolderResult = await this.registeredFoldersRepository.upsertRegisteredFolders(allRegisteredFoldersToUpsert);
+        
         if (upsertFolderResult.isFail()) {
             this.logger.error('failed to upsert registeredFolder to repo');
             return Result.fail('general-error');
@@ -139,7 +148,9 @@ export class RegisteredFoldersService {
         });
 
         if (Result.combine(newRegisteredFoldersResult).isFail()) return Result.fail();
+        
         const newRegisteredFolders = ResultUtils.resultsToValues(newRegisteredFoldersResult);
+        
         return Result.Ok(newRegisteredFolders);
     }
 }
