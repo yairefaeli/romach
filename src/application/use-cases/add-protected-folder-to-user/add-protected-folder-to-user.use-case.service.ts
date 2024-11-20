@@ -1,11 +1,11 @@
 import { RegisteredFolderErrorStatus } from '../../../domain/entities/RegisteredFolderStatus';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
-import { FoldersService } from 'src/application/services/folders/folders.service';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Folder } from '../../../domain/entities/Folder';
 import { Result } from 'rich-domain';
 import { BasicFolderRepositoryInterface } from 'src/application/interfaces/romach-basic-folder-interface';
+import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders.service';
 
 export interface AddProtectedFolderToUserInput {
     upn: string;
@@ -18,7 +18,7 @@ export class AddProtectedFolderToUserUseCase {
         private readonly logger: AppLoggerService,
         private romachBasicFolderRepositoryInterface: BasicFolderRepositoryInterface,
         private api: RomachEntitiesApiInterface,
-        private registeredFolderService: FoldersService,
+        private registeredFolderService: RegisteredFoldersService,
     ) { }
 
     async execute(input: AddProtectedFolderToUserInput): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
@@ -43,7 +43,7 @@ export class AddProtectedFolderToUserUseCase {
         basicFolder: BasicFolder,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         if (basicFolder.getProps().isPasswordProtected) {
-            return this.handleProtectedFolders(input, basicFolder);
+            return this.handleProtectedFolders(input);
         }
 
         const { upn, folderId, password } = input;
@@ -59,7 +59,6 @@ export class AddProtectedFolderToUserUseCase {
 
     private async handleProtectedFolders(
         input: AddProtectedFolderToUserInput,
-        basicFolder: BasicFolder,
     ): Promise<Result<Folder | void, RegisteredFolderErrorStatus>> {
         const { upn, password, folderId } = input;
 

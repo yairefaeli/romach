@@ -4,14 +4,14 @@ import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { uniqBy } from 'lodash';
-import { FoldersService } from './folders.service';
+import { RegisteredFoldersService } from './registered-folders.service';
 import { Result } from 'rich-domain';
 import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/romach-regsitered-folder-interface';
 
 export class UpdateRegisteredFoldersService {
     constructor(
         private readonly logger: AppLoggerService,
-        private readonly folderService: FoldersService,
+        private readonly folderService: RegisteredFoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
     ) { }
