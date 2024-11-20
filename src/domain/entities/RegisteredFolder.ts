@@ -174,4 +174,8 @@ export class RegisteredFolder {
 
         return Result.Ok(newRegisteredFoldersResult.map((x) => x.value()));
     }
+
+    updateFolder(folder: Folder) {
+        return RegisteredFolder.createValidRegisteredFolder({ ...this.props, folder });
+    }
 }
