@@ -1,5 +1,5 @@
 import { Result } from 'rich-domain';
-import { isEmpty, isEqual } from 'lodash';
+import { isEmpty, isEqual, keyBy } from 'lodash';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
@@ -31,8 +31,10 @@ export class TreeCalculationHandlerService {
         }
 
         const currentFolders = currentFoldersFromRepositoryResult.value();
+        const updatedFolder = this.getUpdatedFolders(currentFolders, changes.updated);
 
-        if (this.needToCalcTree(currentFolders, changes)) {
+        if (this.needToCalcTree({ ...changes, updated: updatedFolder })) {
+
             const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
 
             if (currentHierarchiesFromRepositoryResult.isFail()) {
@@ -41,7 +43,7 @@ export class TreeCalculationHandlerService {
             }
             const currentHierarchies = currentHierarchiesFromRepositoryResult.value();
 
-            const updatedFolders = this.mergeFolders(currentFolders, changes);
+            const updatedFolders = this.mergeFolders(currentFolders, { ...changes, updated: updatedFolder });
             const treeCalculationResult = await this.calculateTree(updatedFolders, currentHierarchies);
 
             if (treeCalculationResult.isFail()) {
@@ -59,46 +61,29 @@ export class TreeCalculationHandlerService {
 
         //filter from the current folders that get from repository the deleted folders
         const folderFromRepositoyWithoutDeletedFolders = currentFoldersFromRepository.filter(
-            folder => !deletedFolderIds.includes(folder.getProps().id),
+            folder => !deletedFolderIds.includes(folder.getProps().id) ||
+                !(updatedFolders.find(updatedFolders => updatedFolders.getProps().id === folder.getProps().id)),
         );
 
-        //filter from the current folders the folders that their name or category has changed
-        const updatedFilteredFolders = folderFromRepositoyWithoutDeletedFolders.filter(filteredFolder => {
-            return updatedFolders.some(updatedFolder => {// maybe updatedFolders is enough
-                const filteredProps = filteredFolder.getProps('id', 'name', 'categoryId');
-                const updatedProps = updatedFolder.getProps('id', 'name', 'categoryId');
-
-                return (
-                    filteredProps.id === updatedProps.id &&
-                    (filteredProps.name !== updatedProps.name || filteredProps.categoryId !== updatedProps.categoryId)
-                );
-            });
-        });
-
         // get the final result of the folders that need to send to calculate tree function
-        const resultFolders = [...updatedFilteredFolders, ...insertedFolders];
+        const resultFolders = [...folderFromRepositoyWithoutDeletedFolders, ...insertedFolders, ...updatedFolders];
 
         this.options.logger.info(`Filtered folders for tree calculation: ${resultFolders.length} folders.`);
         return resultFolders;
     }
 
+    private getUpdatedFolders(currentFoldersFromRepository: BasicFolder[], changes: BasicFolderChange['updated']): BasicFolder[] {
+        const folderFromRepositoryById = keyBy(currentFoldersFromRepository, folder => folder.getProps().id)
+        return changes.filter(folder => {
+            const folderFromRepository = folderFromRepositoryById[folder.getProps().id];
+            return !isEqual(folderFromRepository?.getProps().categoryId, folder.getProps().categoryId ||
+                !isEqual(folderFromRepository?.getProps().name, folder.getProps().name));
+        })
+    }
 
-    private needToCalcTree(currentFoldersFromRepository: BasicFolder[], changes: BasicFolderChange): boolean {
-        const currentFoldersFromRepositoryProps = currentFoldersFromRepository.map(folder => folder.getProps('name', 'categoryId'));
 
-        const needToCalculate = (
-            !isEmpty(changes.deleted) ||
-            !isEmpty(changes.inserted) ||
-            changes.updated.some(folder => {
-                const props = folder.getProps('name', 'categoryId');
-                return currentFoldersFromRepositoryProps.some(existingProps =>
-                    !isEqual(props.name, existingProps.name) || !isEqual(props.categoryId, existingProps.categoryId)
-                );
-            })
-        );
-
-        this.options.logger.debug(`Tree calculation needed: ${needToCalculate}`);
-        return needToCalculate;
+    private needToCalcTree(changes: BasicFolderChange): boolean {
+        return !Object.values(changes).every(isEmpty)
     }
 
 
