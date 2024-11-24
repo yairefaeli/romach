@@ -1,4 +1,3 @@
-import { RegisteredFolderErrorStatus, RegisteredFolderStatus } from 'src/domain/entities/RegisteredFolderStatus';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { ResultUtils } from 'src/utils/ResultUtils/ResultUtils';
@@ -7,6 +6,7 @@ import { Folder } from 'src/domain/entities/Folder';
 import { Result } from 'rich-domain';
 import { RegisteredFoldersRepository } from 'src/infra/romach-repository/registered-folders-repository';
 import { find } from 'lodash';
+import { RegisteredFolderErrorStatus } from 'src/domain/entities/RegisteredFolderTypes';
 
 export class RegisteredFoldersService {
     constructor(
