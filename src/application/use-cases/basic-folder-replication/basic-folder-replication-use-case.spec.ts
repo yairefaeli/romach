@@ -3,7 +3,6 @@ import {
   BasicFoldersReplicationUseCase,
   BasicFoldersReplicationUseCaseOptions,
 } from './basic-folder-replication-use-case.service';
-import { repositoryInitialHierarchiesBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
 import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';
@@ -13,6 +12,7 @@ import { Timestamp } from '../../../domain/entities/Timestamp';
 import { BehaviorSubject } from 'rxjs';
 import { jest } from '@jest/globals';
 import { Result } from 'rich-domain';
+import { repositoryInitialBasicFolderBuilder } from '../../mocks/romach-repository-basic-folder.mock';
 
 describe('BasicFoldersReplicationUseCase', () => {
   function createTest() {
@@ -22,7 +22,8 @@ describe('BasicFoldersReplicationUseCase', () => {
 
     const mockApi = romachEntitiesApiInterfaceMockBuilder();
 
-    const mockRepository = romachRepositoryInterfaceMockBuilder();
+    const mockRepository = repositoryInitialBasicFolderBuilder();
+
 
     // @ts-ignore
     mockRepository.getBasicFoldersTimestamp = jest
@@ -80,7 +81,7 @@ describe('BasicFoldersReplicationUseCase', () => {
 
     const options: BasicFoldersReplicationUseCaseOptions = {
       romachApi: mockApi,
-      romachRepository: mockRepository,
+      romachBasicFolderRepositoryInterface: mockRepository,
       leaderElection: leaderElectionMock,
       pollInterval: 100,
       retryInterval: 300,
@@ -109,15 +110,14 @@ describe('BasicFoldersReplicationUseCase', () => {
   });
 
   it('valid input', async () => {
-    const { replicator, mockApi, handlerMock, leaderElectionSubject } =
-      createTest();
+    const { replicator, mockApi, handlerMock, leaderElectionSubject } = createTest();
 
     const subscription = replicator.execute().subscribe();
-    await FlowUtils.delay(500);
+    await FlowUtils.delay(600);
     leaderElectionSubject.next(false);
     subscription.unsubscribe();
 
     expect(mockApi.fetchBasicFoldersByTimestamp).toHaveBeenCalledTimes(5);
     expect(handlerMock).toHaveBeenCalledTimes(5);
-  }, 500000);
+  }, 5000);
 });

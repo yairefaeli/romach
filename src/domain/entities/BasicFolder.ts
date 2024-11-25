@@ -29,16 +29,8 @@ export class BasicFolder {
     return Result.Ok(new BasicFolder(props));
   }
 
-  getProps(...keys: (keyof BasicFolderProps)[]): Partial<BasicFolderProps> {
-    if (keys.length === 0) {
-      return this.props;
-    } else {
-      const result = Object.assign(
-        {},
-        ...keys.map((key) => ({ [key]: this.props[key] }))
-      );
-      return result;
-    }
+  getProps(): BasicFolderProps {
+    return this.props;
   }
 
   private static isValid(props: BasicFolderProps): ValidationResult {

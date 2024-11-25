@@ -2,9 +2,10 @@ import { RomachEntitiesApiInterface } from '../interfaces/romach-entities-api.in
 
 export function romachEntitiesApiInterfaceMockBuilder(): RomachEntitiesApiInterface {
   return {
+    checkPassword: jest.fn(),
     fetchBasicFoldersByTimestamp: jest.fn(),
+    fetchFolderByIdAndPassword: jest.fn(),
+    fetchFoldersByIdsAndPasswords: jest.fn(),
     fetchHierarchies: jest.fn(),
-    fetchFolderByIdWithoutPassword: jest.fn(),
-    checkPassword: jest.fn()
-  };
+  }
 };

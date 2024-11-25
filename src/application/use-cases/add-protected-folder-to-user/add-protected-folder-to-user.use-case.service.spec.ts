@@ -1,10 +1,8 @@
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { AddProtectedFolderToUserUseCase } from './add-protected-folder-to-user.use-case.service';
 import { folderMock } from '../../mocks/entities.mock';
 import { Result } from 'rich-domain';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { FoldersService } from 'src/application/services/folders/folders.service';
 
 describe('AddProtectedFolderToUserUseCase', () => {
   function createTest() {
@@ -19,7 +17,7 @@ describe('AddProtectedFolderToUserUseCase', () => {
       upsertGeneralError: jest.fn(),
       upsertWrongPassword: jest.fn(),
       upsertValid: jest.fn().mockResolvedValue(Result.Ok()),
-    } as unknown as FoldersService;
+    }
 
     const mockFolder = folderMock[0];
 
@@ -85,7 +83,7 @@ describe('AddProtectedFolderToUserUseCase', () => {
   it('should handle incorrect password for protected folder', async () => {
     const { service, mockApi, mockFolderService } = createTest();
 
-    mockApi.checkPassword = jest.fn(async () => Result.Ok(false)); // Simulate wrong password
+    mockApi.checkPassword = jest.fn(async () => Result.Ok(false)); 
 
     const result = await service.execute({
       upn: 'test-user',
@@ -116,3 +114,10 @@ describe('AddProtectedFolderToUserUseCase', () => {
     expect(result.isFail()).toBe(true);
   });
 });
+
+function romachRepositoryInterfaceMockBuilder() {
+  return {
+    getBasicFolderById: jest.fn(),
+    // Add other methods as needed for the tests
+  };
+}

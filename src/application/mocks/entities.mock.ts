@@ -11,7 +11,7 @@ export const basicFoldersMock: BasicFolder[] = [
     deleted: false,
     isLocal: false,
     isPasswordProtected: false,
-    updatedAt: Timestamp.now().toString(),
+    updatedAt: Timestamp.now(),
   }).value(),
   BasicFolder.create({
     id: '2',
@@ -21,7 +21,7 @@ export const basicFoldersMock: BasicFolder[] = [
     deleted: false,
     isLocal: false,
     isPasswordProtected: false,
-    updatedAt: Timestamp.now().toString(),
+    updatedAt: Timestamp.now(),
   }).value(),
   BasicFolder.create({
     id: '3',
@@ -31,7 +31,7 @@ export const basicFoldersMock: BasicFolder[] = [
     deleted: false,
     isLocal: false,
     isPasswordProtected: false,
-    updatedAt: Timestamp.now().toString(),
+    updatedAt: Timestamp.now(),
   }).value(),
 ];
 

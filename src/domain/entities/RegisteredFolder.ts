@@ -1,10 +1,10 @@
 import { ISpecification } from '../../utils/SpecificationUtils.ts/SpecificationUtils';
-import { RegisteredFolderStatus } from './RegisteredFolderStatus';
 import { Timestamp } from './Timestamp';
 import { Result } from 'rich-domain';
 import { Folder } from './Folder';
 import { isNil } from 'lodash';
 import { UPN } from './UPN';
+import { RegisteredFolderStatus } from './RegisteredFolderTypes';
 
 export interface RegisteredFolderProps {
     upn: UPN;
@@ -33,7 +33,7 @@ class PasswordProtectedValidSpecification implements ISpecification<PasswordProt
 }
 
 export class RegisteredFolder {
-    private constructor(private readonly props: RegisteredFolderProps) {}
+    private constructor(private readonly props: RegisteredFolderProps) { }
 
     getProps(): RegisteredFolderProps {
         return this.props;
@@ -42,7 +42,7 @@ export class RegisteredFolder {
     static createValidRegisteredFolder(
         input: Pick<RegisteredFolderProps, 'upn' | 'folder' | 'password' | 'lastValidPasswordTimestamp'>,
     ): Result<RegisteredFolder, string> {
-        const basicFolderProps = input.folder.getProps().basicFolder.getProps('id', 'isPasswordProtected');
+        const basicFolderProps = input.folder.getProps().basicFolder.getProps();
         const passwordProtectedValidSpecification = new PasswordProtectedValidSpecification().isSatisfiedBy({
             isPasswordProtected: basicFolderProps.isPasswordProtected,
             password: input.password,
