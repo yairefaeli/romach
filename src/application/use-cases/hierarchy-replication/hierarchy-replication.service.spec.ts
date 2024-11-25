@@ -2,11 +2,9 @@ import {
   HierarchyReplicationService,
   HierarchyReplicationServiceOptions,
 } from './hierarchy-replication.service';
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
-import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
@@ -16,6 +14,8 @@ import { TreeCalculationService } from 'src/domain/services/tree-calculation/tre
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Tree } from 'src/domain/entities/Tree';
 import { Timestamp } from '../../../domain/entities/Timestamp';
+import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
 
 describe('HierarchyReplicationService', () => {
   const hierarchy1 = Hierarchy.create({
@@ -35,17 +35,17 @@ describe('HierarchyReplicationService', () => {
   const mockHierarchies: Hierarchy[] = [hierarchy1, hierarchy2];
 
   function mockRomachApiInterfaceBuilder(options?: {
-    getHierarchies?: () => Promise<Result<Hierarchy[]>>;
+    fetchHierarchies?: () => Promise<Result<Hierarchy[], string>>;
   }): RomachEntitiesApiInterface {
     return {
       ...romachEntitiesApiInterfaceMockBuilder(),
       fetchHierarchies:
-        options?.getHierarchies ??
+        options?.fetchHierarchies ??
         jest
           .fn()
-          .mockResolvedValueOnce([])
-          .mockResolvedValueOnce([mockHierarchies[0]])
-          .mockResolvedValue([mockHierarchies[1]]),
+          .mockResolvedValueOnce(Result.Ok([]))
+          .mockResolvedValueOnce(Result.Ok([mockHierarchies[0]]))
+          .mockResolvedValue(Result.Ok([mockHierarchies[1]])),
     };
   }
 
@@ -61,20 +61,24 @@ describe('HierarchyReplicationService', () => {
     };
   }
 
-  function mockRomachRepositoryInterfaceBuilder(
+  function mockRomacBasicFoldersRepositoryBuilder(): BasicFoldersRepositoryInterface {
+    return
+  }
+
+  function mockRomacHierarchiesRepositoryBuilder(
     initialHierarchies: Hierarchy[] = [],
-  ): RomachRepositoryInterface {
+  ): HierarchiesRepositoryInterface {
     let hierarchies: Hierarchy[] = initialHierarchies;
     const saveHierarchies = jest.fn().mockImplementation((hierarchy) => {
       hierarchies = hierarchy;
-      return Promise.resolve();
+      return Promise.resolve(Result.Ok());
     });
 
     const getHierarchies = jest.fn().mockImplementation((reality) => {
-      return Promise.resolve(hierarchies);
+      return Promise.resolve(Result.Ok(hierarchies));
     });
     return {
-      ...romachRepositoryInterfaceMockBuilder(),
+      ...mockRomacHierarchiesRepositoryBuilder(),
       saveHierarchies,
       getHierarchies,
     };
@@ -102,7 +106,8 @@ describe('HierarchyReplicationService', () => {
       logger: mockAppLoggerServiceBuilder(),
       romachEntitiesApi: mockRomachApiInterfaceBuilder(),
       leaderElection: mockLeaderElectionInterfaceBuilder(),
-      romachRepository: mockRomachRepositoryInterfaceBuilder(),
+      hierarchyRepositoryInterface: mockRomacHierarchiesRepositoryBuilder(),
+      basicFolderRepositoryInterface: mockRomacBasicFoldersRepositoryBuilder(),
       treeCalculationService: mockTreeCalculationServiceBuilder(),
       maxRetry: 3,
       ...input,
@@ -122,12 +127,12 @@ describe('HierarchyReplicationService', () => {
   interface ScenarioTestBuilderOptions {
     reality: string;
     leaderElectionValues: boolean[];
-    getHierarchies: jest.Mock;
+    fetchHierarchies: jest.Mock;
     duration: number;
     repositoryInitialHierarchies?: Hierarchy[];
     leaderElectionPollInterval: number;
-    getHierarchiesPollInterval: number;
-    getHierarchiesExpectedCalls: number;
+    fetchHierarchiesPollInterval: number;
+    fetchHierarchiesExpectedCalls: number;
     saveHierarchiesExpectedCalls: number;
   }
 
@@ -135,20 +140,20 @@ describe('HierarchyReplicationService', () => {
     const {
       reality,
       leaderElectionValues,
-      getHierarchies,
+      fetchHierarchies,
       duration,
       repositoryInitialHierarchies,
       leaderElectionPollInterval,
-      getHierarchiesPollInterval,
-      getHierarchiesExpectedCalls,
+      fetchHierarchiesPollInterval,
+      fetchHierarchiesExpectedCalls,
       saveHierarchiesExpectedCalls,
     } = options;
     return (done) => {
       const mockRomachApiInterface = mockRomachApiInterfaceBuilder({
-        getHierarchies,
+        fetchHierarchies,
       });
       const mockRomachRepositoryInterface =
-        mockRomachRepositoryInterfaceBuilder(repositoryInitialHierarchies);
+        mockRomacHierarchiesRepositoryBuilder(repositoryInitialHierarchies);
       const mockHierarchyLeaderElectionInterface =
         mockLeaderElectionInterfaceBuilder(
           leaderElectionValues,
@@ -158,18 +163,18 @@ describe('HierarchyReplicationService', () => {
       testingModuleBuilder({
         romachEntitiesApi: mockRomachApiInterface,
         leaderElection: mockHierarchyLeaderElectionInterface,
-        romachRepository: mockRomachRepositoryInterface,
+        hierarchyRepositoryInterface: mockRomachRepositoryInterface,
         logger: mockAppLoggerServiceBuilder(),
         reality,
-        interval: getHierarchiesPollInterval,
-      }).then(({ options, service }) => {
+        interval: fetchHierarchiesPollInterval,
+      }).then(({ service }) => {
         const subscription = service.execute().subscribe();
 
         setTimeout(() => {
           subscription.unsubscribe();
           try {
             expect(mockRomachApiInterface.fetchHierarchies).toHaveBeenCalledTimes(
-              getHierarchiesExpectedCalls,
+              fetchHierarchiesExpectedCalls,
             );
             expect(
               mockRomachRepositoryInterface.saveHierarchies,
@@ -184,46 +189,47 @@ describe('HierarchyReplicationService', () => {
   }
 
   it(
-    'when leader is true, should call getHierarchies',
+    'when leader is true, should call fetchHierarchies',
     scenarioTestBuilder({
       reality: 'reality1',
       leaderElectionValues: [true],
-      getHierarchies: jest.fn().mockResolvedValue([]),
+      fetchHierarchies: jest.fn().mockResolvedValue(Result.Ok([])),
       duration: 1000,
       leaderElectionPollInterval: 2000,
-      getHierarchiesPollInterval: 100,
-      getHierarchiesExpectedCalls: 10,
+      fetchHierarchiesPollInterval: 100,
+      fetchHierarchiesExpectedCalls: 10,
       saveHierarchiesExpectedCalls: 0,
     }),
   );
 
   it(
-    'when leader is changed to false, should not call getHierarchies',
+    'when leader is changed to false, should not call fetchHierarchies',
     scenarioTestBuilder({
       reality: 'reality1',
       leaderElectionValues: [true, false],
-      getHierarchies: jest.fn().mockResolvedValue([]),
+      fetchHierarchies: jest.fn().mockResolvedValue(Result.Ok([])),
       duration: 1000,
       leaderElectionPollInterval: 500,
-      getHierarchiesPollInterval: 100,
-      getHierarchiesExpectedCalls: 5,
+      fetchHierarchiesPollInterval: 100,
+      fetchHierarchiesExpectedCalls: 5,
       saveHierarchiesExpectedCalls: 0,
     }),
   );
+
   it(
-    'when leader is true, should call getHierarchies, fetch and print mock hierarchies',
+    'when leader is true, should call fetchHierarchies, fetch and print mock hierarchies',
     scenarioTestBuilder({
       reality: 'reality1',
       leaderElectionValues: [true],
-      getHierarchies: jest.fn().mockImplementation(() => {
+      fetchHierarchies: jest.fn().mockImplementation(() => {
         const hierarchies = [hierarchy1, hierarchy2];
         console.log("Fetched hierarchies:", hierarchies);
-        return Promise.resolve(hierarchies);
+        return Promise.resolve(Result.Ok(hierarchies));
       }),
       duration: 1000,
       leaderElectionPollInterval: 500,
-      getHierarchiesPollInterval: 100,
-      getHierarchiesExpectedCalls: 5,
+      fetchHierarchiesPollInterval: 100,
+      fetchHierarchiesExpectedCalls: 5,
       saveHierarchiesExpectedCalls: 0,
     }),
   );

@@ -8,7 +8,7 @@ import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
-import { HierarchiesRepositoryInterface as HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface';
+import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface';
 
 export interface TreeCalculationHandlerServiceOptions {
     maxRetry: number

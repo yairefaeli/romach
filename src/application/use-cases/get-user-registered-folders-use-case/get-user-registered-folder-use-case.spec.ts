@@ -1,5 +1,4 @@
 import { GetUserRegisteredFoldersUseCase } from './get-user-registered-folders-use-case.service';
-import { romachRepositoryInterfaceMockBuilder } from '../../mocks/romach-repository-regsiter-folder.mock';
 import { Result } from 'rich-domain';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 
@@ -17,7 +16,7 @@ describe('GetUserRegisteredFoldersUseCase', () => {
             .fn()
             .mockResolvedValue(Result.Ok(registeredFolders));
         return {
-            ...romachRepositoryInterfaceMockBuilder(),
+            ...mockRomachRepositoryInterfaceBuilder(),
             getRegisteredFoldersByUpn,
         };
     }
