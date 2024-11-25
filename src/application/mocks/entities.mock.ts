@@ -1,6 +1,8 @@
 import { BasicFolder } from '../../domain/entities/BasicFolder';
 import { Timestamp } from '../../domain/entities/Timestamp';
 import { Folder } from '../../domain/entities/Folder';
+import { Hierarchy } from '../../domain/entities/Hierarchy';
+import { Tree } from '../../domain/entities/Tree';
 
 export const basicFoldersMock: BasicFolder[] = [
   BasicFolder.create({
@@ -13,6 +15,7 @@ export const basicFoldersMock: BasicFolder[] = [
     isPasswordProtected: false,
     updatedAt: Timestamp.now(),
   }).value(),
+
   BasicFolder.create({
     id: '2',
     name: 'folder2',
@@ -58,3 +61,28 @@ export const folderMock: Folder[] = [
     },
   }).value(),
 ];
+
+
+export const HierarchiesMock: Hierarchy[] = [
+  Hierarchy.create({
+    id: 'hierarchy1', name: 'Hierarchy 1',
+    displayName: '',
+    children: []
+  }).value(),
+];
+
+export const TreeMock: Tree = {
+  updatedAt: Timestamp.now(),
+  nodes: [
+    {
+      id: '1',
+      name: 'matan',
+      type: 'category'
+    },
+    {
+      id: '2',
+      name: 'snir',
+      type: 'category'
+    },
+  ],
+};

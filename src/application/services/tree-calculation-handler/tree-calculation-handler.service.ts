@@ -20,7 +20,7 @@ export interface TreeCalculationHandlerServiceOptions {
 }
 
 export class TreeCalculationHandlerService {
-    constructor(private options: TreeCalculationHandlerServiceOptions) {}
+    constructor(private options: TreeCalculationHandlerServiceOptions) { }
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
@@ -33,6 +33,7 @@ export class TreeCalculationHandlerService {
         }
 
         const currentFolders = currentFoldersFromRepositoryResult.value();
+
         const updatedFolder = this.getUpdatedFolders(currentFolders, changes.updated);
 
         if (this.needToCalcTree({ ...changes, updated: updatedFolder })) {
@@ -44,6 +45,8 @@ export class TreeCalculationHandlerService {
                 );
                 return Result.fail();
             }
+
+
             const currentHierarchies = currentHierarchiesFromRepositoryResult.value();
 
             const updatedFolders = this.mergeFolders(currentFolders, { ...changes, updated: updatedFolder });
