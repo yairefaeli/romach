@@ -1,32 +1,34 @@
-import { Result } from 'rich-domain';
+import { TreeCalculationService } from '../../../domain/services/tree-calculation/tree-calculation.service';
+import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
+import { BasicFoldersRepositoryInterface } from '../../interfaces/basic-folder-interface';
+import { HierarchiesRepositoryInterface } from '../../interfaces/hierarchies-interface';
+import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
+import { AppLoggerService } from '../../../infra/logging/app-logger.service';
+import { BasicFolder } from '../../../domain/entities/BasicFolder';
+import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
+import { Hierarchy } from '../../../domain/entities/hierarchy';
 import { isEmpty, isEqual, keyBy } from 'lodash';
-import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
-import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
-import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Hierarchy } from 'src/domain/entities/Hierarchy';
-import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
-import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
-import { HierarchiesRepositoryInterface as HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface';
+import { Result } from 'rich-domain';
 
 export interface TreeCalculationHandlerServiceOptions {
-    maxRetry: number
-    logger: AppLoggerService,
-    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
-    hierarchiesRepositoryInterface: HierarchiesRepositoryInterface,
-    treeCalculationService: TreeCalculationService,
-    romachEntitiesApiInterface: RomachEntitiesApiInterface,
+    maxRetry: number;
+    logger: AppLoggerService;
+    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
+    hierarchiesRepositoryInterface: HierarchiesRepositoryInterface;
+    treeCalculationService: TreeCalculationService;
+    romachEntitiesApiInterface: RomachEntitiesApiInterface;
 }
 
 export class TreeCalculationHandlerService {
-    constructor(private options: TreeCalculationHandlerServiceOptions) { }
+    constructor(private options: TreeCalculationHandlerServiceOptions) {}
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
 
         if (currentFoldersFromRepositoryResult.isFail()) {
-            this.options.logger.error(`Failed to fetch current folders from repository: ${currentFoldersFromRepositoryResult.error()}`);
+            this.options.logger.error(
+                `Failed to fetch current folders from repository: ${currentFoldersFromRepositoryResult.error()}`,
+            );
             return Result.fail();
         }
 
@@ -34,11 +36,12 @@ export class TreeCalculationHandlerService {
         const updatedFolder = this.getUpdatedFolders(currentFolders, changes.updated);
 
         if (this.needToCalcTree({ ...changes, updated: updatedFolder })) {
-
             const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
 
             if (currentHierarchiesFromRepositoryResult.isFail()) {
-                this.options.logger.error(`Failed to fetch current hierarchies from repository: ${currentHierarchiesFromRepositoryResult.error()}`);
+                this.options.logger.error(
+                    `Failed to fetch current hierarchies from repository: ${currentHierarchiesFromRepositoryResult.error()}`,
+                );
                 return Result.fail();
             }
             const currentHierarchies = currentHierarchiesFromRepositoryResult.value();
@@ -50,19 +53,22 @@ export class TreeCalculationHandlerService {
                 this.options.logger.error(`Failed to calculate tree: ${treeCalculationResult.error()}`);
                 return Result.fail();
             }
-
         }
 
         return Result.Ok();
     }
 
-    private mergeFolders(currentFoldersFromRepository: BasicFolder[], changedFolders: BasicFolderChange): BasicFolder[] {
+    private mergeFolders(
+        currentFoldersFromRepository: BasicFolder[],
+        changedFolders: BasicFolderChange,
+    ): BasicFolder[] {
         const { deleted: deletedFolderIds, inserted: insertedFolders, updated: updatedFolders } = changedFolders;
 
         //filter from the current folders that get from repository the deleted folders
         const folderFromRepositoyWithoutDeletedFolders = currentFoldersFromRepository.filter(
-            folder => !deletedFolderIds.includes(folder.getProps().id) ||
-                !(updatedFolders.find(updatedFolders => updatedFolders.getProps().id === folder.getProps().id)),
+            (folder) =>
+                !deletedFolderIds.includes(folder.getProps().id) ||
+                !updatedFolders.find((updatedFolders) => updatedFolders.getProps().id === folder.getProps().id),
         );
 
         // get the final result of the folders that need to send to calculate tree function
@@ -72,20 +78,23 @@ export class TreeCalculationHandlerService {
         return resultFolders;
     }
 
-    private getUpdatedFolders(currentFoldersFromRepository: BasicFolder[], changes: BasicFolderChange['updated']): BasicFolder[] {
-        const folderFromRepositoryById = keyBy(currentFoldersFromRepository, folder => folder.getProps().id)
-        return changes.filter(folder => {
+    private getUpdatedFolders(
+        currentFoldersFromRepository: BasicFolder[],
+        changes: BasicFolderChange['updated'],
+    ): BasicFolder[] {
+        const folderFromRepositoryById = keyBy(currentFoldersFromRepository, (folder) => folder.getProps().id);
+        return changes.filter((folder) => {
             const folderFromRepository = folderFromRepositoryById[folder.getProps().id];
-            return !isEqual(folderFromRepository?.getProps().categoryId, folder.getProps().categoryId ||
-                !isEqual(folderFromRepository?.getProps().name, folder.getProps().name));
-        })
+            return !isEqual(
+                folderFromRepository?.getProps().categoryId,
+                folder.getProps().categoryId || !isEqual(folderFromRepository?.getProps().name, folder.getProps().name),
+            );
+        });
     }
-
 
     private needToCalcTree(changes: BasicFolderChange): boolean {
-        return !Object.values(changes).every(isEmpty)
+        return !Object.values(changes).every(isEmpty);
     }
-
 
     private async getCurrentFoldersFromRepository(): Promise<Result<BasicFolder[]>> {
         return RetryUtils.retry(
@@ -98,10 +107,9 @@ export class TreeCalculationHandlerService {
                 return result;
             },
             this.options.maxRetry,
-            this.options.logger
+            this.options.logger,
         );
     }
-
 
     private async getCurrentHierarchiesFromRepository(): Promise<Result<Hierarchy[]>> {
         return RetryUtils.retry(
@@ -114,12 +122,12 @@ export class TreeCalculationHandlerService {
                 return result;
             },
             this.options.maxRetry,
-            this.options.logger
+            this.options.logger,
         );
     }
 
     private async calculateTree(currentFolders: BasicFolder[], currentHierarchies: Hierarchy[]): Promise<Result<void>> {
-        this.options.logger.debug("Starting tree calculation");
+        this.options.logger.debug('Starting tree calculation');
         try {
             await RetryUtils.retry(
                 async () => {
@@ -129,7 +137,7 @@ export class TreeCalculationHandlerService {
                 this.options.maxRetry,
                 this.options.logger,
             );
-            this.options.logger.info("Tree calculation completed successfully.");
+            this.options.logger.info('Tree calculation completed successfully.');
             return Result.Ok();
         } catch (error) {
             this.options.logger.error(`Error calculating tree: ${error.message}`);
@@ -137,4 +145,3 @@ export class TreeCalculationHandlerService {
         }
     }
 }
-
