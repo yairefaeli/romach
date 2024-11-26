@@ -1,11 +1,11 @@
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders.service';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Result } from 'rich-domain';
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
-import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders.service';
-import { from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { Result } from 'rich-domain';
+import { from, of } from 'rxjs';
 
 export interface AddProtectedFolderToUserInput {
     upn: string;
@@ -19,7 +19,7 @@ export class AddProtectedFolderToUserUseCase {
         private romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
         private api: RomachEntitiesApiInterface,
         private registeredFolderService: RegisteredFoldersService,
-    ) { }
+    ) {}
 
     execute(input: AddProtectedFolderToUserInput) {
         const { upn, folderId } = input;
@@ -35,7 +35,10 @@ export class AddProtectedFolderToUserUseCase {
                 return this.handleNewFolder(input, basicFolder);
             }),
             catchError((error) => {
-                this.logger.error('Unexpected error during AddProtectedFolderToUserUseCase execution', { error, input });
+                this.logger.error('Unexpected error during AddProtectedFolderToUserUseCase execution', {
+                    error,
+                    input,
+                });
                 return of(Result.fail('general-error'));
             }),
         );

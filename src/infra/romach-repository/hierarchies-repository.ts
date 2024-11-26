@@ -1,12 +1,16 @@
-import { Knex } from 'knex';
-import { Result } from 'rich-domain';
-import { Hierarchy } from 'src/domain/entities/Hierarchy';
-import { RealityId } from 'src/application/entities/reality-id';
+import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface/hierarchies.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface';
+import { RealityId } from 'src/application/entities/reality-id';
+import { Hierarchy } from 'src/domain/entities/Hierarchy';
+import { Result } from 'rich-domain';
+import { Knex } from 'knex';
 
 export class HierarchiesRepository implements HierarchiesRepositoryInterface {
-    constructor(private readonly knex: Knex, private readonly logger: AppLoggerService, private readonly reality: RealityId) { }
+    constructor(
+        private readonly knex: Knex,
+        private readonly logger: AppLoggerService,
+        private readonly reality: RealityId,
+    ) {}
 
     async saveHierarchies(hierarchy: Hierarchy[]): Promise<Result<void>> {
         try {

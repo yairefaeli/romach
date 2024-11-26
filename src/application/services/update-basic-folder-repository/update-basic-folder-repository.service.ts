@@ -1,13 +1,13 @@
-import { AppLoggerService } from "src/infra/logging/app-logger.service";
-import { Result } from "rich-domain";
-import { BasicFolderChange } from "../../interfaces/basic-folder-changes.interface";
-import { BasicFoldersRepositoryInterface } from "src/application/interfaces/basic-folder-interface";
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
+import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { Result } from 'rich-domain';
 
 export class UpdateBasicFoldersRepositoryService {
     constructor(
         private readonly basicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
-        private readonly logger: AppLoggerService
-    ) { }
+        private readonly logger: AppLoggerService,
+    ) {}
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const folders = [...changes.inserted, ...changes.updated];
@@ -21,12 +21,13 @@ export class UpdateBasicFoldersRepositoryService {
             this.logger.info(`Successfully saved ${folders.length} folders`);
         }
 
-        const deleteBasicFolderResult = await this.basicFolderRepositoryInterface.deleteBasicFolderByIds(changes.deleted);
+        const deleteBasicFolderResult = await this.basicFolderRepositoryInterface.deleteBasicFolderByIds(
+            changes.deleted,
+        );
 
         if (deleteBasicFolderResult.isFail()) {
             this.logger.error(`Error deleting basic folders: ${deleteBasicFolderResult.error()}`);
             return Result.fail(deleteBasicFolderResult.error());
-
         }
         this.logger.info(`Successfully deleted ${changes.deleted.length} folders`);
         return Result.Ok();

@@ -1,12 +1,15 @@
-import { Knex } from 'knex';
-import { Result } from 'rich-domain';
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder-interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';
-import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { Result } from 'rich-domain';
+import { Knex } from 'knex';
 
 export class BasicFoldersRepository implements BasicFoldersRepositoryInterface {
-    constructor(private readonly knex: Knex, private readonly logger: AppLoggerService) { }
+    constructor(
+        private readonly knex: Knex,
+        private readonly logger: AppLoggerService,
+    ) {}
 
     async getBasicFolderById(id: string): Promise<Result<BasicFolder>> {
         try {
@@ -20,7 +23,6 @@ export class BasicFoldersRepository implements BasicFoldersRepositoryInterface {
             return Result.fail('DatabaseError');
         }
     }
-
 
     async getBasicFolders(): Promise<Result<BasicFolder[]>> {
         try {
@@ -44,9 +46,7 @@ export class BasicFoldersRepository implements BasicFoldersRepositoryInterface {
 
     async deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>> {
         try {
-            await this.knex('basic_folders')
-                .whereIn('id', ids)
-                .del();
+            await this.knex('basic_folders').whereIn('id', ids).del();
             Result.Ok();
         } catch (error) {
             this.logger.error('Error deleting folders by ID');
@@ -54,10 +54,11 @@ export class BasicFoldersRepository implements BasicFoldersRepositoryInterface {
         }
     }
 
-
     async getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<any[]>> {
         try {
-            const folders = await this.knex('basic_folders').whereIn('id', folderIds).select('id', 'updated_at as updatedAt');
+            const folders = await this.knex('basic_folders')
+                .whereIn('id', folderIds)
+                .select('id', 'updated_at as updatedAt');
             return Result.Ok(folders);
         } catch (error) {
             this.logger.error('Error fetching folder IDs and updatedAt', error);
@@ -84,5 +85,4 @@ export class BasicFoldersRepository implements BasicFoldersRepositoryInterface {
             return Result.fail('DatabaseError');
         }
     }
-
 }

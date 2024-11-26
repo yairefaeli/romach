@@ -1,6 +1,6 @@
-import { FoldersIdsAndsUpdatedAt } from '../view-model/folders-by-ids-response';
+import { FoldersIdsAndsUpdatedAt } from '../../view-model/folders-by-ids-response';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from '../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 
 export type NullableTimestamp = Timestamp | null;

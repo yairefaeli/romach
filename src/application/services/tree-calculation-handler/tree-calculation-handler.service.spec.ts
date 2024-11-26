@@ -1,5 +1,5 @@
+import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/basic-folder-change.builder';
 import { TreeCalculationHandlerServiceDriver } from './tree-calculation-handler.service.driver';
-import { basicFoldersMock, HierarchiesMock, TreeMock } from '../../mocks/entities.mock';
 import { Result } from 'rich-domain';
 
 describe('TreeCalculationHandlerService', () => {
@@ -30,32 +30,47 @@ describe('TreeCalculationHandlerService', () => {
     });
 
     describe('Calc Tree', () => {
-        // const updatedFolder = aBasicFolder();
-        // const deletedFolder = aBasicFolder();
-        // const updatedFolders = [aBasicFolder({ ...updatedFolder.getProps(), name: 'updated' })];
-        // const existingRepositoryFolders = [updatedFolder, deletedFolder];
-        //
-        // beforeEach(async () => {
-        //     await driver.given.repositoryFolders(Result.Ok(existingRepositoryFolders)).when.build();
-        // });
-
-        describe('Fetch hierarchies error', () => {
+        describe('No changes', () => {
             let result: Result;
-            const error = jest.fn();
+            const getHierarchies = jest.fn();
+            const calculateTree = jest.fn();
 
             beforeEach(async () => {
-                await driver.given.loggerError(error).given.repositoryHierarchies(Result.fail()).when.build();
-                result = await driver.when.execute();
+                await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
+
+                result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
+                describe('No Changes', () => {
+                    it('should not fetch hierarchies', () => {
+                        expect(getHierarchies).not.toHaveBeenCalled();
+                    });
+
+                    it('should return empty ok response', () => {
+                        expect(result.isOk()).toBe(true);
+                    });
+
+                    it('should not call to calc tree function', () => {
+                        expect(calculateTree).not.toHaveBeenCalled();
+                    });
+                });
             });
 
-            it('should log error when error', () => {
-                expect(error).toHaveBeenCalledWith(
-                    expect.stringContaining('Failed to fetch current hierarchies from repository'),
-                );
+            describe('No Updates', () => {
+                let result: Result;
+                await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
+                result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
             });
+            describe('With Updates', () => {});
+        });
 
-            it('should return fail when error', () => {
-                expect(result.isFail()).toBe(true);
+        describe('With Changes', () => {
+            describe('with no updated', () => {
+                let result: Result;
+
+                beforeEach(async () => {
+                    await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
+
+                    result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
+                });
             });
         });
     });
