@@ -20,7 +20,7 @@ export interface TreeCalculationHandlerServiceOptions {
 }
 
 export class TreeCalculationHandlerService {
-    constructor(private options: TreeCalculationHandlerServiceOptions) { }
+    constructor(private options: TreeCalculationHandlerServiceOptions) {}
 
     async execute(changes: BasicFolderChange): Promise<Result<void>> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
@@ -34,9 +34,9 @@ export class TreeCalculationHandlerService {
 
         const currentFolders = currentFoldersFromRepositoryResult.value();
 
-        const updatedFolder = this.getUpdatedFolders(currentFolders, changes.updated);
+        const updatedFolders = this.getUpdatedFolders(currentFolders, changes.updated);
 
-        if (this.needToCalcTree({ ...changes, updated: updatedFolder })) {
+        if (this.needToCalcTree({ ...changes, updated: updatedFolders })) {
             const currentHierarchiesFromRepositoryResult = await this.getCurrentHierarchiesFromRepository();
 
             if (currentHierarchiesFromRepositoryResult.isFail()) {
@@ -46,11 +46,10 @@ export class TreeCalculationHandlerService {
                 return Result.fail();
             }
 
-
             const currentHierarchies = currentHierarchiesFromRepositoryResult.value();
 
-            const updatedFolders = this.mergeFolders(currentFolders, { ...changes, updated: updatedFolder });
-            const treeCalculationResult = await this.calculateTree(updatedFolders, currentHierarchies);
+            const upsertedFolders = this.mergeFolders(currentFolders, { ...changes, updated: updatedFolders });
+            const treeCalculationResult = await this.calculateTree(upsertedFolders, currentHierarchies);
 
             if (treeCalculationResult.isFail()) {
                 this.options.logger.error(`Failed to calculate tree: ${treeCalculationResult.error()}`);
@@ -104,7 +103,7 @@ export class TreeCalculationHandlerService {
             async () => {
                 const result = await this.options.basicFolderRepositoryInterface.getBasicFolders();
                 if (result.isFail()) {
-                    throw new Error(`Failed to fetch current folders from repository: ${result.error()}`);
+                    return Result.fail(`Failed to fetch current folders from repository: ${result.error()}`);
                 }
                 this.options.logger.info(`Fetched ${result.value().length} current folders from repository.`);
                 return result;
@@ -119,7 +118,7 @@ export class TreeCalculationHandlerService {
             async () => {
                 const result = await this.options.hierarchiesRepositoryInterface.getHierarchies();
                 if (result.isFail()) {
-                    throw new Error(`Failed to fetch current hierarchies from repository: ${result.error()}`);
+                    return Result.fail(`Failed to fetch current hierarchies from repository: ${result.error()}`);
                 }
                 this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
                 return result;

@@ -1,17 +1,21 @@
-import { isNil } from "lodash";
-import { Result } from "rich-domain";
-import { BasicFolderChange } from "src/application/interfaces/basic-folder-changes.interface";
-import { BasicFolder } from "src/domain/entities/BasicFolder";
-import { Hierarchy } from "src/domain/entities/Hierarchy";
-import { Tree } from "src/domain/entities/Tree";
-import { TreeCalculationHandlerServiceOptions, TreeCalculationHandlerService } from "./tree-calculation-handler.service";
+import {
+    TreeCalculationHandlerServiceOptions,
+    TreeCalculationHandlerService,
+} from './tree-calculation-handler.service';
+import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/basic-folder-change.builder';
+import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
+import { BasicFolder } from 'src/domain/entities/BasicFolder';
+import { Hierarchy } from 'src/domain/entities/Hierarchy';
+import { Tree } from 'src/domain/entities/Tree';
+import { Result } from 'rich-domain';
+import { isNil } from 'lodash';
 
 export class TreeCalculationHandlerServiceDriver {
     private mockOptions: jest.Mocked<TreeCalculationHandlerServiceOptions> = {
         // @ts-ignore
-        basicFolderRepositoryInterface: { getBasicFolders: jest.fn() },
+        basicFolderRepositoryInterface: { getBasicFolders: jest.fn().mockReturnValue },
         // @ts-ignore
-        hierarchiesRepositoryInterface: { saveHierarchies: jest.fn(), getHierarchies: jest.fn() },
+        hierarchiesRepositoryInterface: { getHierarchies: jest.fn() },
         // @ts-ignore
         treeCalculationService: { calculateTree: jest.fn() },
         // @ts-ignore
@@ -26,36 +30,34 @@ export class TreeCalculationHandlerServiceDriver {
     private treeCalculationHandlerService: TreeCalculationHandlerService;
 
     given = {
-        repositoryFolders: (basicFolders: BasicFolder[] | null): this => {
-            (
-                this.mockOptions.basicFolderRepositoryInterface.getBasicFolders as jest.Mock<ReturnType<
-                    typeof this.mockOptions.basicFolderRepositoryInterface.getBasicFolders
-                >>
-            ).mockReturnValue(
-                Promise.resolve(!isNil(basicFolders) ? Result.Ok(basicFolders) : Result.fail('No folders found')),
+        repositoryFolders: (result: Result<BasicFolder[]>): this => {
+            (this.mockOptions.basicFolderRepositoryInterface.getBasicFolders as jest.Mock).mockReturnValue(
+                Promise.resolve(result),
             );
+
             return this;
         },
+        loggerError: (error: jest.Mock): this => {
+            this.mockOptions.logger.error = error;
 
-        repositoryHierarchies: (hierarchies: Hierarchy[] | null): this => {
-            (
-                this.mockOptions.hierarchiesRepositoryInterface.getHierarchies as jest.Mock
-            ).mockReturnValue(
-                Promise.resolve(
-                    isNil(hierarchies) ? Result.fail('No hierarchies found') : Result.Ok(hierarchies),
-                ),
+            return this;
+        },
+        repositoryHierarchies: (result: Result<Hierarchy>): this => {
+            (this.mockOptions.hierarchiesRepositoryInterface.getHierarchies as jest.Mock).mockReturnValue(
+                Promise.resolve(result),
             );
             return this;
         },
 
         calculateTree: (treeResult: Result<Tree>): this => {
-            (this.mockOptions.treeCalculationService.calculateTree as jest.Mock).mockReturnValue(Promise.resolve(treeResult));
+            (this.mockOptions.treeCalculationService.calculateTree as jest.Mock).mockReturnValue(
+                Promise.resolve(treeResult),
+            );
             return this;
         },
 
         loggerBehavior: (infoMessages: string[], errorMessages: string[]): this => {
-            (
-                this.mockOptions.logger.info as jest.Mock).mockImplementation((msg) => {
+            (this.mockOptions.logger.info as jest.Mock).mockImplementation((msg) => {
                 if (!infoMessages.includes(msg)) {
                     throw new Error(`Unexpected info message: ${msg}`);
                 }
@@ -74,8 +76,8 @@ export class TreeCalculationHandlerServiceDriver {
             this.treeCalculationHandlerService = new TreeCalculationHandlerService(this.mockOptions);
             return this;
         },
-        execute: async (changes: BasicFolderChange) => {
-            return this.treeCalculationHandlerService.execute(changes);
+        execute: async (changes?: BasicFolderChange) => {
+            return this.treeCalculationHandlerService.execute(changes || aBasicFolderChange());
         },
     };
 
