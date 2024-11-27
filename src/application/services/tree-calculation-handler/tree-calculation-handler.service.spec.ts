@@ -77,7 +77,7 @@ describe('TreeCalculationHandlerService', () => {
             });
         });
 
-        xdescribe('With Updates', () => {
+        describe('With Updates', () => {
             let result: Result;
             const [updatedFolder, deletedFolder, insertedFolder] = [aBasicFolder(), aBasicFolder(), aBasicFolder()];
             const changes = aBasicFolderChange({
@@ -93,101 +93,45 @@ describe('TreeCalculationHandlerService', () => {
                 result = await driver.when.execute(changes);
             });
 
-            it('should calc when deleted array is not empty', () => {});
+            it('should calc when deleted array is not empty', () => {
+                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        deleted: [deletedFolder.getProps().id],
+                    }),
+                );
+            });
 
-            it('should calc when inserted array is not empty', () => {});
+            it('should calc when inserted array is not empty', () => {
+                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        inserted: [insertedFolder],
+                    }),
+                );
+            });
 
-            it('should calc when deleted array is not empty', () => {});
+            it('should calc when updated array meets the condition (name changed)', () => {
+                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        updated: expect.arrayContaining([
+                            expect.objectContaining({ name: updatedFolder.getProps().name }),
+                        ]),
+                    }),
+                );
+            });
 
-            it('should calc when updated array meet the condition(name or categoryId changed)', () => {});
+            it('should calc when updated array meets the condition (categoryId changed)', () => {
+                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        updated: expect.arrayContaining([
+                            expect.objectContaining({ categoryId: updatedFolder.getProps().categoryId }),
+                        ]),
+                    }),
+                );
+            });
+
+            it('should return success result after calculation', () => {
+                expect(result.isOk()).toBe(true);
+            });
         });
     });
-
-    //
-    // describe('With Changes', () => {
-    //     describe('with no updated', () => {
-    //         let result: Result;
-    //
-    //         beforeEach(async () => {
-    //             await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
-    //
-    //             result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
-    //         });
-    //     });
-    // });
-
-    // it('should compute updated folders and proceed if changes exist', async () => {
-    //     await driver.given.repositoryFolders(existingRepositoryFolders).when.build();
-    //
-    //     const response = await driver.when.execute({
-    //         deleted: [],
-    //         inserted: [],
-    //         updated: updatedFolders,
-    //     });
-    //
-    //     expect(driver.get.loggerInfoCalls()).toContain('Filtered folders for tree calculation: 1 folders.');
-    //     expect(response.isOk()).toBe(true);
-    // });
-    //
-    // it('should skip tree calculation if no changes are present', async () => {
-    //     await driver.given.repositoryFolders([]).when.build();
-    //
-    //     const response = await driver.when.execute({
-    //         deleted: [],
-    //         inserted: [],
-    //         updated: [],
-    //     });
-    //
-    //     expect(response.isOk()).toBe(true);
-    //     expect(driver.get.loggerInfoCalls()).not.toContain('Starting tree calculation');
-    // });
-    //
-    // it('should log error and return fail if fetching hierarchies fails', async () => {
-    //     await driver.given.repositoryFolders(basicFoldersMock).given.repositoryHierarchies(null).when.build();
-    //
-    //     const response = await driver.when.execute({
-    //         deleted: [],
-    //         inserted: [],
-    //         updated: [],
-    //     });
-    //
-    //     expect(driver.get.loggerErrorCalls()).toContain(
-    //         'Failed to fetch current hierarchies from repository: No hierarchies found',
-    //     );
-    //     expect(response.isFail()).toBe(true);
-    // });
-    //
-    // it('should call calculateTree and succeed', async () => {
-    //     await driver.given
-    //         .repositoryFolders(basicFoldersMock)
-    //         .given.repositoryHierarchies(HierarchiesMock)
-    //         .given.calculateTree(Result.Ok(TreeMock))
-    //         .when.build();
-    //
-    //     const response = await driver.when.execute({
-    //         deleted: [],
-    //         inserted: [],
-    //         updated: [],
-    //     });
-    //
-    //     expect(response.isOk()).toBe(true);
-    //     expect(driver.get.loggerInfoCalls()).toContain('Tree calculation completed successfully.');
-    // });
-    //
-    // it('should log error and return fail if calculateTree fails', async () => {
-    //     await driver.given
-    //         .repositoryFolders(basicFoldersMock)
-    //         .given.repositoryHierarchies(HierarchiesMock)
-    //         .given.calculateTree(Result.fail('Tree calculation error'))
-    //         .when.build();
-    //
-    //     const response = await driver.when.execute({
-    //         deleted: [],
-    //         inserted: [],
-    //         updated: [],
-    //     });
-    //
-    //     expect(response.isFail()).toBe(true);
-    //     expect(driver.get.loggerErrorCalls()).toContain('Failed to calculate tree: Tree calculation error');
-    // });
 });

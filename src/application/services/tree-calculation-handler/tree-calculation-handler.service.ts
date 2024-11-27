@@ -1,7 +1,7 @@
+import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { HierarchiesRepositoryInterface } from '../../interfaces/hierarchies-interface/hierarchies.interface';
 import { TreeCalculationService } from '../../../domain/services/tree-calculation/tree-calculation.service';
 import { BasicFoldersRepositoryInterface } from '../../interfaces/basic-folder/basic-folder.interface';
-import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';

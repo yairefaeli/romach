@@ -1,12 +1,12 @@
-import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entities-api.interface';
+import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entites-api/romach-entities-api.interface';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { uniqBy } from 'lodash';
 import { RegisteredFoldersService } from './registered-folders.service';
+import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Result } from 'rich-domain';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
+import { uniqBy } from 'lodash';
 
 export class UpdateRegisteredFoldersService {
     constructor(
@@ -14,10 +14,9 @@ export class UpdateRegisteredFoldersService {
         private readonly folderService: RegisteredFoldersService,
         private readonly romachApi: RomachEntitiesApiInterface,
         private readonly registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
-    ) { }
+    ) {}
 
     async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
-
         const res = await Promise.all([
             this.handleDeletedBasicFolders(change.deleted),
             this.handleUpsertedBasicFolders([...change.updated, ...change.inserted]),
@@ -31,8 +30,8 @@ export class UpdateRegisteredFoldersService {
     }
 
     private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
-
-        const deletedResult = await this.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
+        const deletedResult =
+            await this.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
 
         if (deletedResult.isFail()) {
             this.logger.error('failed to delete registeredFolders from repo by ids');
@@ -43,7 +42,6 @@ export class UpdateRegisteredFoldersService {
     }
 
     private async handleUpsertedBasicFolders(upsertedBasicFolders: BasicFolder[]): Promise<Result<void>> {
-
         const registeredFoldersFromRepoResult = await this.getRegisteredFoldersByIds(upsertedBasicFolders);
 
         if (registeredFoldersFromRepoResult.isFail()) {
@@ -100,9 +98,8 @@ export class UpdateRegisteredFoldersService {
     private filterAlreadyUpdated(registeredFoldersFromRepo: RegisteredFolder[], basicFolders: BasicFolder[]) {
         const upsertedRegisteredFolders = registeredFoldersFromRepo.filter(
             (folder) =>
-                basicFolders
-                    .find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id)
-                    .getProps().updatedAt === folder.getProps().updatedAtTimestamp,
+                basicFolders.find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id).getProps()
+                    .updatedAt === folder.getProps().updatedAtTimestamp,
         );
 
         return upsertedRegisteredFolders;
@@ -116,4 +113,4 @@ export class UpdateRegisteredFoldersService {
     private getUniqedRegisteredFolders(registeredFolders: RegisteredFolder[]) {
         return uniqBy(registeredFolders, (item) => `${item.getProps().folderId}-${item.getProps().password}`);
     }
-} 
+}

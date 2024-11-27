@@ -1,10 +1,10 @@
 import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface/hierarchies.interface';
 import { HierarchyReplicationService, HierarchyReplicationServiceOptions } from './hierarchy-replication.service';
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
-import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { mockAppLoggerServiceBuilder } from '../../mocks/app-logger.mock';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';

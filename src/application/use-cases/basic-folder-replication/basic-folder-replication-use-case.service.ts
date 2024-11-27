@@ -1,5 +1,5 @@
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
-import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
+import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';

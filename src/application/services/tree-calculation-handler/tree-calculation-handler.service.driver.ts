@@ -1,3 +1,4 @@
+import { RomachEntitiesApiInterfaceTestkit } from '../../interfaces/romach-entites-api/romach-entities-api.interface.testkit';
 import { TreeCalculationServiceTestkit } from '../../../domain/services/tree-calculation/tree-calculation.service.testkit';
 import { HierarchiesRepositoryTestkit } from '../../interfaces/hierarchies-interface/hierarchies.interface.testkit';
 import { BasicFoldersRepositoryTestkit } from '../../interfaces/basic-folder/basic-folders-repository.testkit';
@@ -16,6 +17,7 @@ export class TreeCalculationHandlerServiceDriver {
     private hierarchiesRepositoryTestkit = HierarchiesRepositoryTestkit();
     private basicFolderRepositoryTestkit = BasicFoldersRepositoryTestkit();
     private treeCalculationServiceTestkit = TreeCalculationServiceTestkit();
+    private romachEntitiesApiInterfaceTestkit = RomachEntitiesApiInterfaceTestkit();
 
     private treeCalculationHandlerService: TreeCalculationHandlerService;
 
@@ -38,6 +40,7 @@ export class TreeCalculationHandlerServiceDriver {
                 treeCalculationService: this.get.treeCalculationService(),
                 hierarchiesRepositoryInterface: this.get.hierarchiesRepository(),
                 basicFolderRepositoryInterface: this.get.basicFolderRepository(),
+                romachEntitiesApiInterface: this.get.romachEntitiesApiInterface(),
             });
             return this;
         },
@@ -51,5 +54,6 @@ export class TreeCalculationHandlerServiceDriver {
         treeCalculationService: () => this.treeCalculationServiceTestkit.treeCalculationService(),
         hierarchiesRepository: () => this.hierarchiesRepositoryTestkit.hierarchiesRepository(),
         basicFolderRepository: () => this.basicFolderRepositoryTestkit.basicFoldersRepository(),
+        romachEntitiesApiInterface: () => this.romachEntitiesApiInterfaceTestkit.romachEntitiesApiInterface(),
     };
 }
