@@ -49,6 +49,7 @@ export class TreeCalculationHandlerServiceDriver {
         },
     };
 
+    
     get = {
         logger: () => this.loggerTestkit.appLoggerService(),
         treeCalculationService: () => this.treeCalculationServiceTestkit.treeCalculationService(),
