@@ -11,6 +11,6 @@ export const aBasicFolder = (overrides?: Partial<BasicFolderProps>) =>
         categoryId: chance.guid(),
         isPasswordProtected: chance.bool(),
         creationDate: chance.date().toString(),
-        updatedAt: Timestamp.fromString(chance.date().toString()),
+        updatedAt: chance.date().toString() as unknown as Timestamp,
         ...overrides,
     }).value();

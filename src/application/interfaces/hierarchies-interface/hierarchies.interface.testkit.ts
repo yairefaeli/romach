@@ -1,4 +1,6 @@
 import { HierarchiesRepositoryInterface } from './hierarchies.interface';
+import { Hierarchy } from '../../../domain/entities/hierarchy';
+import { Result } from 'rich-domain';
 
 export const HierarchiesRepositoryTestkit = () => {
     const hierarchiesRepositoryInterface: HierarchiesRepositoryInterface = {
@@ -6,17 +8,12 @@ export const HierarchiesRepositoryTestkit = () => {
         saveHierarchies: jest.fn(),
     };
 
-    const mockGetHierarchies = (value: HierarchiesRepositoryInterface['getHierarchies']) => {
-        hierarchiesRepositoryInterface.getHierarchies = jest.fn().mockReturnValue(value);
-    };
-
-    const mockSaveHierarchies = (value: HierarchiesRepositoryInterface['saveHierarchies']) => {
-        hierarchiesRepositoryInterface.saveHierarchies = jest.fn().mockReturnValue(value);
+    const mockGetHierarchies = (value: Result<Hierarchy[]>) => {
+        hierarchiesRepositoryInterface.getHierarchies = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
     return {
         mockGetHierarchies,
-        mockSaveHierarchies,
-        hierarchiesRepositoryInterface: () => hierarchiesRepositoryInterface,
+        hierarchiesRepository: () => hierarchiesRepositoryInterface,
     };
 };

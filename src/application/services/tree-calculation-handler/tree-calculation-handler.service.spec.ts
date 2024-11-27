@@ -1,5 +1,7 @@
 import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/basic-folder-change.builder';
 import { TreeCalculationHandlerServiceDriver } from './tree-calculation-handler.service.driver';
+import { aBasicFolder } from '../../../utils/builders/BasicFolder/basic-folder.builder';
+import { chance } from '../../../utils/Chance/chance';
 import { Result } from 'rich-domain';
 
 describe('TreeCalculationHandlerService', () => {
@@ -11,15 +13,14 @@ describe('TreeCalculationHandlerService', () => {
 
     describe('Fetching current folders failed', () => {
         let result: Result;
-        const error = jest.fn();
 
         beforeEach(async () => {
-            await driver.given.repositoryFolders(Result.fail()).given.loggerError(error).when.build();
+            await driver.given.repositoryFolders(Result.fail()).when.init();
             result = await driver.when.execute();
         });
 
         it('should log error when error', () => {
-            expect(error).toHaveBeenCalledWith(
+            expect(driver.get.logger().error).toHaveBeenCalledWith(
                 expect.stringContaining('Failed to fetch current folders from repository'),
             );
         });
@@ -30,50 +31,91 @@ describe('TreeCalculationHandlerService', () => {
     });
 
     describe('Calc Tree', () => {
-        describe('No changes', () => {
+        describe('No Changes', () => {
             let result: Result;
-            const getHierarchies = jest.fn();
-            const calculateTree = jest.fn();
 
             beforeEach(async () => {
-                await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
+                await driver.when.init();
 
                 result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
-                describe('No Changes', () => {
-                    it('should not fetch hierarchies', () => {
-                        expect(getHierarchies).not.toHaveBeenCalled();
-                    });
-
-                    it('should return empty ok response', () => {
-                        expect(result.isOk()).toBe(true);
-                    });
-
-                    it('should not call to calc tree function', () => {
-                        expect(calculateTree).not.toHaveBeenCalled();
-                    });
-                });
             });
 
-            describe('No Updates', () => {
-                let result: Result;
-                await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
-                result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
+            it('should return empty ok response', () => {
+                expect(result.isOk()).toBe(true);
             });
-            describe('With Updates', () => {});
+
+            it('should not fetch hierarchies', () => {
+                expect(driver.get.hierarchiesRepository().getHierarchies).not.toHaveBeenCalled();
+            });
+
+            it('should not call to calc tree function', () => {
+                expect(driver.get.treeCalculationService().calculateTree).not.toHaveBeenCalled();
+            });
         });
 
-        describe('With Changes', () => {
-            describe('with no updated', () => {
-                let result: Result;
-
-                beforeEach(async () => {
-                    await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
-
-                    result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
-                });
+        describe('No Relevant Updates', () => {
+            let result: Result;
+            const repositoryBasicFolder = aBasicFolder();
+            const changedBasicFolder = aBasicFolder({
+                ...repositoryBasicFolder.getProps(),
+                isPasswordProtected: !repositoryBasicFolder,
             });
+
+            beforeEach(async () => {
+                await driver.given.repositoryFolders(Result.Ok([repositoryBasicFolder])).when.init();
+                result = await driver.when.execute(
+                    aBasicFolderChange({ updated: [changedBasicFolder], deleted: [], inserted: [] }),
+                );
+            });
+
+            it('should return empty ok response', () => {
+                expect(result.isOk()).toBe(true);
+            });
+
+            it('should not call to calc tree function', () => {
+                expect(driver.get.treeCalculationService().calculateTree).not.toHaveBeenCalled();
+            });
+        });
+
+        xdescribe('With Updates', () => {
+            let result: Result;
+            const [updatedFolder, deletedFolder, insertedFolder] = [aBasicFolder(), aBasicFolder(), aBasicFolder()];
+            const changes = aBasicFolderChange({
+                inserted: [insertedFolder],
+                deleted: [deletedFolder.getProps().id],
+                updated: [
+                    aBasicFolder({ ...updatedFolder.getProps(), name: chance.name(), categoryId: chance.guid() }),
+                ],
+            });
+
+            beforeEach(async () => {
+                await driver.given.repositoryFolders(Result.Ok([updatedFolder, deletedFolder])).when.init();
+                result = await driver.when.execute(changes);
+            });
+
+            it('should calc when deleted array is not empty', () => {});
+
+            it('should calc when inserted array is not empty', () => {});
+
+            it('should calc when deleted array is not empty', () => {});
+
+            it('should calc when updated array meet the condition(name or categoryId changed)', () => {});
         });
     });
+
+    //
+    // describe('With Changes', () => {
+    //     describe('with no updated', () => {
+    //         let result: Result;
+    //
+    //         beforeEach(async () => {
+    //             await driver.given.getHierarchies(getHierarchies).given.calculateTree(calculateTree).when.build();
+    //
+    //             result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
+    //         });
+    //     });
+    // });
+
     // it('should compute updated folders and proceed if changes exist', async () => {
     //     await driver.given.repositoryFolders(existingRepositoryFolders).when.build();
     //

@@ -6,11 +6,11 @@ import { Result } from 'rich-domain';
 export type NullableTimestamp = Timestamp | null;
 
 export interface BasicFoldersRepositoryInterface {
-    saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result<void>>;
+    saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result>;
     getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
     getBasicFolders(): Promise<Result<BasicFolder[]>>;
     getBasicFolderById(id: string): Promise<Result<BasicFolder>>;
-    saveBasicFolders(basicFolders: BasicFolder[]): Promise<Result<void>>;
-    deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>>;
+    saveBasicFolders(basicFolders: BasicFolder[]): Promise<Result>;
+    deleteBasicFolderByIds(ids: string[]): Promise<Result>;
     getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 }

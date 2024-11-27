@@ -1,9 +1,12 @@
-import { BasicFoldersRepositoryInterface } from './basic-folder.interface';
-import { override } from 'joi';
+import { BasicFoldersRepositoryInterface, NullableTimestamp } from './basic-folder.interface';
+import { aBasicFolder } from '../../../utils/builders/BasicFolder/basic-folder.builder';
+import { FoldersIdsAndsUpdatedAt } from '../../view-model/folders-by-ids-response';
+import { BasicFolder } from '../../../domain/entities/BasicFolder';
+import { Result } from 'rich-domain';
 
 export const BasicFoldersRepositoryTestkit = () => {
-    const basicFoldersRepository: BasicFoldersRepositoryInterface = {
-        getBasicFolders: jest.fn(),
+    const basicFoldersRepository: jest.Mocked<BasicFoldersRepositoryInterface> = {
+        getBasicFolders: jest.fn().mockReturnValue(Promise.resolve(Result.Ok([aBasicFolder(), aBasicFolder()]))),
         saveBasicFolders: jest.fn(),
         getBasicFolderById: jest.fn(),
         deleteBasicFolderByIds: jest.fn(),
@@ -12,43 +15,26 @@ export const BasicFoldersRepositoryTestkit = () => {
         getBasicFoldersIdsAndsUpdatedAt: jest.fn(),
     };
 
-    const mockGetBasicFolders = (value: BasicFoldersRepositoryInterface['getBasicFolders']) => {
-        basicFoldersRepository.getBasicFolders = jest.fn().mockReturnValue(value);
+    const mockGetBasicFolders = (value: Result<BasicFolder[]>) => {
+        basicFoldersRepository.getBasicFolders = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockSaveBasicFolders = (value: BasicFoldersRepositoryInterface['saveBasicFolders']) => {
-        basicFoldersRepository.saveBasicFolders = jest.fn().mockReturnValue(value);
+    const mockGetBasicFolderById = (value: Result<BasicFolder>) => {
+        basicFoldersRepository.getBasicFolderById = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockGetBasicFolderById = (value: BasicFoldersRepositoryInterface['getBasicFolderById']) => {
-        basicFoldersRepository.getBasicFolderById = jest.fn().mockReturnValue(value);
+    const mockGetBasicFoldersTimestamp = (value: Result<NullableTimestamp>) => {
+        basicFoldersRepository.getBasicFoldersTimestamp = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockDeleteBasicFolderByIds = (value: BasicFoldersRepositoryInterface['deleteBasicFolderByIds']) => {
-        basicFoldersRepository.deleteBasicFolderByIds = jest.fn().mockReturnValue(value);
-    };
-
-    const mockGetBasicFoldersTimestamp = (value: BasicFoldersRepositoryInterface['getBasicFoldersTimestamp']) => {
-        basicFoldersRepository.getBasicFoldersTimestamp = jest.fn().mockReturnValue(value);
-    };
-
-    const mockSaveBasicFoldersTimestamp = (value: BasicFoldersRepositoryInterface['saveBasicFoldersTimestamp']) => {
-        basicFoldersRepository.saveBasicFoldersTimestamp = jest.fn().mockReturnValue(value);
-    };
-
-    const mockGetBasicFoldersIdsAndsUpdatedAt = (
-        value: BasicFoldersRepositoryInterface['getBasicFoldersIdsAndsUpdatedAt'],
-    ) => {
-        basicFoldersRepository.getBasicFoldersIdsAndsUpdatedAt = jest.fn().mockReturnValue(value);
+    const mockGetBasicFoldersIdsAndsUpdatedAt = (value: Result<FoldersIdsAndsUpdatedAt>) => {
+        basicFoldersRepository.getBasicFoldersIdsAndsUpdatedAt = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
     return {
         mockGetBasicFolders,
-        mockSaveBasicFolders,
         mockGetBasicFolderById,
-        mockDeleteBasicFolderByIds,
         mockGetBasicFoldersTimestamp,
-        mockSaveBasicFoldersTimestamp,
         mockGetBasicFoldersIdsAndsUpdatedAt,
         basicFoldersRepository: () => basicFoldersRepository,
     };
