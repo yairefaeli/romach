@@ -1,4 +1,3 @@
-import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { HierarchiesRepositoryInterface } from '../../interfaces/hierarchies-interface/hierarchies.interface';
 import { TreeCalculationService } from '../../../domain/services/tree-calculation/tree-calculation.service';
 import { BasicFoldersRepositoryInterface } from '../../interfaces/basic-folder/basic-folder.interface';
@@ -16,11 +15,10 @@ export interface TreeCalculationHandlerServiceOptions {
     basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
     hierarchiesRepositoryInterface: HierarchiesRepositoryInterface;
     treeCalculationService: TreeCalculationService;
-    romachEntitiesApiInterface: RomachEntitiesApiInterface;
 }
 
 export class TreeCalculationHandlerService {
-    constructor(private options: TreeCalculationHandlerServiceOptions) {}
+    constructor(private options: TreeCalculationHandlerServiceOptions) { }
 
     async execute(changes: BasicFolderChange): Promise<Result> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
