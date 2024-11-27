@@ -18,7 +18,7 @@ export interface TreeCalculationHandlerServiceOptions {
 }
 
 export class TreeCalculationHandlerService {
-    constructor(private options: TreeCalculationHandlerServiceOptions) { }
+    constructor(private options: TreeCalculationHandlerServiceOptions) {}
 
     async execute(changes: BasicFolderChange): Promise<Result> {
         const currentFoldersFromRepositoryResult = await this.getCurrentFoldersFromRepository();
