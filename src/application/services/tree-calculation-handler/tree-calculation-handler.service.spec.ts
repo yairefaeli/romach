@@ -1,8 +1,7 @@
 import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/basic-folder-change.builder';
+import { aBasicFolder, aBasicFoldersList } from '../../../utils/builders/BasicFolder/basic-folder.builder';
 import { TreeCalculationHandlerServiceDriver } from './tree-calculation-handler.service.driver';
-import { aBasicFolder } from '../../../utils/builders/BasicFolder/basic-folder.builder';
 import { aHierarchy } from '../../../utils/builders/Hierarchy/hierarchy.builder';
-import { chance } from '../../../utils/Chance/chance';
 import { Result } from 'rich-domain';
 
 describe('TreeCalculationHandlerService', () => {
@@ -31,7 +30,7 @@ describe('TreeCalculationHandlerService', () => {
         });
     });
 
-    describe('Calc Tree', () => {
+    describe('Calculate Tree', () => {
         describe('No Changes', () => {
             let result: Result;
 
@@ -80,28 +79,27 @@ describe('TreeCalculationHandlerService', () => {
 
         describe('With Updates', () => {
             let result: Result;
-            const [updatedFolder, deletedFolder, insertedFolder] = [aBasicFolder(), aBasicFolder(), aBasicFolder()];
+            const [updatedCategoryFolder, updatedNameFolder, deletedFolder, insertedFolder] = aBasicFoldersList(4);
+            const repositoryFolders = [];
             const changes = aBasicFolderChange({
                 inserted: [insertedFolder],
                 deleted: [deletedFolder.getProps().id],
-                updated: [
-                    aBasicFolder({ ...updatedFolder.getProps(), name: chance.name(), categoryId: chance.guid() }),
-                ],
+                updated: [updatedCategoryFolder, updatedNameFolder],
             });
 
             beforeEach(async () => {
                 await driver.given
-                    .repositoryFolders(Result.Ok([updatedFolder, deletedFolder]))
+                    .repositoryFolders(Result.Ok([updatedCategoryFolder, updatedNameFolder, deletedFolder]))
                     .given.repositoryHierarchies(Result.Ok([aHierarchy()]))
                     .when.init();
                 result = await driver.when.execute(changes);
             });
 
-            it('should calc when deleted array is not empty', () => {
+            it('should call calculateTree without deleted folders when deleted array is not empty', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalled();
             });
 
-            it('should calc when inserted array is not empty', () => {
+            it('should calculateTree with inserted folders when inserted array is not empty', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
                     expect.objectContaining({
                         inserted: [insertedFolder],
@@ -109,11 +107,11 @@ describe('TreeCalculationHandlerService', () => {
                 );
             });
 
-            it('should calc when updated array meets the condition (name changed)', () => {
+            it('should calculateTree with updated folders when updated array meets the condition (name changed)', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
                     expect.objectContaining({
                         updated: expect.arrayContaining([
-                            expect.objectContaining({ name: updatedFolder.getProps().name }),
+                            expect.objectContaining({ name: updatedNameFolder.getProps().name }),
                         ]),
                     }),
                 );
@@ -123,7 +121,7 @@ describe('TreeCalculationHandlerService', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
                     expect.objectContaining({
                         updated: expect.arrayContaining([
-                            expect.objectContaining({ categoryId: updatedFolder.getProps().categoryId }),
+                            expect.objectContaining({ categoryId: updatedNameFolder.getProps().categoryId }),
                         ]),
                     }),
                 );

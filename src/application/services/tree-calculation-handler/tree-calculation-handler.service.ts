@@ -67,7 +67,7 @@ export class TreeCalculationHandlerService {
         //filter from the current folders that get from repository the deleted folders
         const folderFromRepositoyWithoutDeletedFolders = currentFoldersFromRepository.filter(
             (folder) =>
-                !deletedFolderIds.includes(folder.getProps().id) ||
+                !deletedFolderIds.includes(folder.getProps().id) &&
                 !updatedFolders.find((updatedFolders) => updatedFolders.getProps().id === folder.getProps().id),
         );
 

@@ -94,7 +94,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.(mock|driver|module|testkit).ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

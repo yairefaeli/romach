@@ -15,15 +15,7 @@ export const aBasicFolder = (overrides?: Partial<BasicFolderProps>) =>
         ...overrides,
     }).value();
 
-export const aDeletedFolders = (overrides?: Partial<[]>) =>
-    BasicFolder.create({
-        id: chance.guid(),
-        name: chance.name(),
-        isLocal: chance.bool(),
-        deleted: chance.bool(),
-        categoryId: chance.guid(),
-        isPasswordProtected: chance.bool(),
-        creationDate: chance.date().toString(),
-        updatedAt: chance.date().toString() as unknown as Timestamp,
-        ...overrides,
-    }).value();
+export const aBasicFoldersList = (length?: number) =>
+    Array(length ?? chance.integer({ min: 1, max: 50 }))
+        .fill(undefined)
+        .map(aBasicFolder);
