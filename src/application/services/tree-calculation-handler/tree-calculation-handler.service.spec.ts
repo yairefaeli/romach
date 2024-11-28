@@ -103,7 +103,7 @@ describe('TreeCalculationHandlerService', () => {
             });
 
             it('should call calculateTree without deleted folders when deleted array is not empty', () => {
-                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
+                expect(driver.get.treeCalculationService().calculateTree).not.toHaveBeenCalledWith(
                     expect.arrayContaining([deletedFolder]),
                     repositoryHierarchy,
                 );

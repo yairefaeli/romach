@@ -83,11 +83,12 @@ export class TreeCalculationHandlerService {
         changes: BasicFolderChange['updated'],
     ): BasicFolder[] {
         const folderFromRepositoryById = keyBy(currentFoldersFromRepository, (folder) => folder.getProps().id);
+
         return changes.filter((folder) => {
             const folderFromRepository = folderFromRepositoryById[folder.getProps().id];
-            return !isEqual(
-                folderFromRepository?.getProps().categoryId,
-                folder.getProps().categoryId || !isEqual(folderFromRepository?.getProps().name, folder.getProps().name),
+            return (
+                !isEqual(folderFromRepository?.getProps().name, folder.getProps().name) ||
+                !isEqual(folderFromRepository?.getProps().categoryId, folder.getProps().categoryId)
             );
         });
     }
