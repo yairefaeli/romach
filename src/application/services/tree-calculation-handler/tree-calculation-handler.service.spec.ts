@@ -33,6 +33,25 @@ describe('TreeCalculationHandlerService', () => {
     });
 
     describe('Calculate Tree', () => {
+        describe('Fetching current Hierarchy failed', () => {
+            let result: Result;
+
+            beforeEach(async () => {
+                await driver.given.repositoryHierarchies(Result.fail()).when.init();
+                result = await driver.when.execute();
+            });
+
+            it('should log error when error', () => {
+                expect(driver.get.logger().error).toHaveBeenCalledWith(
+                    expect.stringContaining('Failed to fetch current hierarchies from repository'),
+                );
+            });
+
+            it('should return fail when error', () => {
+                expect(result.isFail()).toBe(true);
+            });
+        });
+
         describe('No Changes', () => {
             let result: Result;
 
@@ -135,6 +154,25 @@ describe('TreeCalculationHandlerService', () => {
 
             it('should return success result after calculation', () => {
                 expect(result.isOk()).toBe(true);
+            });
+
+            describe('Calc tree failed', () => {
+                let result: Result;
+
+                beforeEach(async () => {
+                    await driver.given.calculateTree(Result.fail()).when.init();
+                    result = await driver.when.execute();
+                });
+
+                it('should log error when error', () => {
+                    expect(driver.get.logger().error).toHaveBeenCalledWith(
+                        expect.stringContaining('Failed to calculate tree'),
+                    );
+                });
+
+                it('should return fail when error', () => {
+                    expect(result.isFail()).toBe(true);
+                });
             });
         });
     });

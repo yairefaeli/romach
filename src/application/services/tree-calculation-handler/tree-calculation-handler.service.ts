@@ -65,14 +65,14 @@ export class TreeCalculationHandlerService {
         const { deleted: deletedFolderIds, inserted: insertedFolders, updated: updatedFolders } = changedFolders;
 
         //filter from the current folders that get from repository the deleted folders
-        const folderFromRepositoyWithoutDeletedFolders = currentFoldersFromRepository.filter(
+        const folderFromRepositoryWithoutDeletedFolders = currentFoldersFromRepository.filter(
             (folder) =>
                 !deletedFolderIds.includes(folder.getProps().id) &&
                 !updatedFolders.find((updatedFolders) => updatedFolders.getProps().id === folder.getProps().id),
         );
 
         // get the final result of the folders that need to send to calculate tree function
-        const resultFolders = [...folderFromRepositoyWithoutDeletedFolders, ...insertedFolders, ...updatedFolders];
+        const resultFolders = [...folderFromRepositoryWithoutDeletedFolders, ...insertedFolders, ...updatedFolders];
 
         this.options.logger.info(`Filtered folders for tree calculation: ${resultFolders.length} folders.`);
         return resultFolders;

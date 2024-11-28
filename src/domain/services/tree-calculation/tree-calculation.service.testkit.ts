@@ -1,5 +1,6 @@
 import { TreeCalculationService } from './tree-calculation.service';
 import { Tree } from '../../entities/tree';
+import { Result } from 'rich-domain';
 
 jest.mock('./tree-calculation.service', () => ({
     TreeCalculationService: jest.fn().mockImplementation(() => ({
@@ -10,8 +11,8 @@ jest.mock('./tree-calculation.service', () => ({
 export const TreeCalculationServiceTestkit = () => {
     const treeCalculationService = new TreeCalculationService();
 
-    const mockCalculateTree = (value: Tree) => {
-        treeCalculationService.calculateTree = jest.fn().mockReturnValue(value);
+    const mockCalculateTree = (value: Result<Tree>) => {
+        treeCalculationService.calculateTree = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
     return { mockCalculateTree, treeCalculationService: () => treeCalculationService };

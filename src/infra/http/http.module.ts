@@ -5,14 +5,14 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      playground: false,
-      typePaths: ['./**/*.graphql'],
-      plugins: [ApolloServerPluginLandingPageLocalDefault()],
-    }),
-    FolderGraphqlModule,
-  ],
+    imports: [
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+            driver: ApolloDriver,
+            playground: false,
+            typePaths: ['./**/*.graphql'],
+            plugins: [ApolloServerPluginLandingPageLocalDefault()],
+        }),
+        FolderGraphqlModule,
+    ],
 })
 export class HttpModule {}

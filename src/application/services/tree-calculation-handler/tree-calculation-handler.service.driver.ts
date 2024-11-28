@@ -8,6 +8,7 @@ import { TreeCalculationHandlerService } from './tree-calculation-handler.servic
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Hierarchy } from 'src/domain/entities/Hierarchy';
 import { chance } from '../../../utils/Chance/chance';
+import { Tree } from '../../../domain/entities/tree';
 import { Result } from 'rich-domain';
 
 export class TreeCalculationHandlerServiceDriver {
@@ -25,6 +26,10 @@ export class TreeCalculationHandlerServiceDriver {
         },
         repositoryHierarchies: (result: Result<Hierarchy[]>): this => {
             this.hierarchiesRepositoryTestkit.mockGetHierarchies(Promise.resolve(result));
+            return this;
+        },
+        calculateTree: (result: Result<Tree>): this => {
+            this.treeCalculationServiceTestkit.mockCalculateTree(result);
             return this;
         },
     };

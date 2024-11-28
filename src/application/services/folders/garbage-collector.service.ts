@@ -1,15 +1,15 @@
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { Result } from 'rich-domain';
 import { isEmpty } from 'lodash';
-import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 
 export interface GarbageCollectorServiceOptions {
-    logger: AppLoggerService,
-    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
-    maxRetry: number,
-    gcInterval: number,
+    logger: AppLoggerService;
+    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface;
+    maxRetry: number;
+    gcInterval: number;
 }
 
 export class GarbageCollectorService {
@@ -34,7 +34,7 @@ export class GarbageCollectorService {
         }
 
         // Get the folder IDs to be deleted
-        const folderIdsToDelete = expiredFolders.map(folder => folder.getProps().folderId);
+        const folderIdsToDelete = expiredFolders.map((folder) => folder.getProps().folderId);
 
         return this.deleteExpiredFolders(folderIdsToDelete);
     }
@@ -43,8 +43,8 @@ export class GarbageCollectorService {
         return RetryUtils.retry(
             () => this.options.registeredFolderRepositoryInterface.getExpiredRegisteredFolders(),
             this.options.maxRetry,
-            this.options.logger
-        ).then(result => {
+            this.options.logger,
+        ).then((result) => {
             if (result.isFail()) {
                 this.options.logger.error(`Failed to fetch expired registered folders: ${result.error()}`);
             }
@@ -56,7 +56,7 @@ export class GarbageCollectorService {
         const deleteResult = await RetryUtils.retry(
             () => this.options.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(folderIdsToDelete),
             this.options.maxRetry,
-            this.options.logger
+            this.options.logger,
         );
 
         if (deleteResult.isFail()) {

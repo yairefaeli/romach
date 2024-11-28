@@ -9,6 +9,7 @@ export interface BasicFolderProps {
     name: string;
     deleted: boolean;
     isLocal: boolean;
+    isViewProtected?: boolean;
     isPasswordProtected: boolean;
     creationDate: string;
     updatedAt: Timestamp;
