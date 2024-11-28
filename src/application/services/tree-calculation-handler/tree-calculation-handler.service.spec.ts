@@ -16,7 +16,8 @@ describe('TreeCalculationHandlerService', () => {
         let result: Result;
 
         beforeEach(async () => {
-            await driver.given.repositoryFolders(Result.fail()).when.init();
+            driver.given.repositoryFolders(Result.fail()).when.init();
+
             result = await driver.when.execute();
         });
 
@@ -36,7 +37,7 @@ describe('TreeCalculationHandlerService', () => {
             let result: Result;
 
             beforeEach(async () => {
-                await driver.when.init();
+                driver.when.init();
 
                 result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
             });
@@ -63,7 +64,8 @@ describe('TreeCalculationHandlerService', () => {
             });
 
             beforeEach(async () => {
-                await driver.given.repositoryFolders(Result.Ok([repositoryBasicFolder])).when.init();
+                driver.given.repositoryFolders(Result.Ok([repositoryBasicFolder])).when.init();
+
                 result = await driver.when.execute(
                     aBasicFolderChange({ updated: [changedBasicFolder], deleted: [], inserted: [] }),
                 );
@@ -95,10 +97,11 @@ describe('TreeCalculationHandlerService', () => {
             });
 
             beforeEach(async () => {
-                await driver.given
+                driver.given
                     .repositoryFolders(Result.Ok(repositoryFolders))
                     .given.repositoryHierarchies(Result.Ok(repositoryHierarchy))
                     .when.init();
+
                 result = await driver.when.execute(changes);
             });
 

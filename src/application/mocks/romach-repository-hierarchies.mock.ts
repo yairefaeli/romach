@@ -1,4 +1,4 @@
-import { HierarchiesRepositoryInterface } from '../interfaces/hierarchies-interface/hierarchies.interface';
+import { HierarchiesRepositoryInterface } from '../interfaces/hierarchies-repository/hierarchies-repository.interface';
 
 export function repositoryInitialHierarchiesBuilder(): HierarchiesRepositoryInterface {
     return {

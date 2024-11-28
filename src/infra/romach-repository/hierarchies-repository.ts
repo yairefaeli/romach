@@ -1,4 +1,4 @@
-import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface/hierarchies.interface';
+import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-repository/hierarchies-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RealityId } from 'src/application/entities/reality-id';
 import { Hierarchy } from 'src/domain/entities/Hierarchy';

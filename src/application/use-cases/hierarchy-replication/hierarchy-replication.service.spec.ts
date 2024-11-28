@@ -1,6 +1,6 @@
-import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-interface/hierarchies.interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
+import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-repository/hierarchies-repository.interface';
 import { HierarchyReplicationService, HierarchyReplicationServiceOptions } from './hierarchy-replication.service';
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';

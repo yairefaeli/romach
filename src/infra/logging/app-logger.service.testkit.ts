@@ -1,11 +1,15 @@
 import { AppLoggerService } from './app-logger.service';
 
-export const AppLoggerServiceTestkit = () => {
-    const appLoggerService = {
+jest.mock('./app-logger.service', () => ({
+    AppLoggerService: jest.fn().mockImplementation(() => ({
         info: jest.fn(),
         error: jest.fn(),
         debug: jest.fn(),
-    } as unknown as AppLoggerService;
+    })),
+}));
 
-    return { appLoggerService: () => appLoggerService };
+export const AppLoggerServiceTestkit = () => {
+    const appLoggerServiceMock = new AppLoggerService(null);
+
+    return { appLoggerService: () => appLoggerServiceMock };
 };

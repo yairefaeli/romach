@@ -1,4 +1,4 @@
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
@@ -50,7 +50,7 @@ export class BasicFolderChangeDetectionService {
         if (folderChanges.isFail()) {
             this.options.logger.error(`error to calc folder changes: ${folderChanges.error()}`);
         } else {
-            this.options.logger.debug(`detect changes succses: ${folderChanges.toString()}`);
+            this.options.logger.debug(`detect changes success: ${folderChanges.toString()}`);
         }
 
         return folderChanges;

@@ -1,4 +1,4 @@
-import { BasicFoldersRepositoryInterface } from '../interfaces/basic-folder/basic-folder.interface';
+import { BasicFoldersRepositoryInterface } from '../interfaces/basic-folders-repository/basic-folders-repository.interface';
 
 export function repositoryInitialBasicFolderBuilder(): BasicFoldersRepositoryInterface {
     {

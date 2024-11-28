@@ -1,7 +1,7 @@
-import { BasicFolderChangeDetectionService } from '../basic-folder-change-detection.service/basic-folder-change-detection.service';
 import { UpdateBasicFoldersRepositoryService } from '../update-basic-folder-repository/update-basic-folder-repository.service';
+import { BasicFolderChangeDetectionService } from '../basic-folder-change-detection/basic-folder-change-detection.service';
+import { UpdateRegisteredFoldersService } from '../folders/update-registered-folders/update-registerd-folders.service';
 import { TreeCalculationHandlerService } from '../tree-calculation-handler/tree-calculation-handler.service';
-import { UpdateRegisteredFoldersService } from '../folders/update-registerd-folders.service';
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
@@ -11,8 +11,8 @@ import { Result } from 'rich-domain';
 export interface BasicFolderChangeHandlerServiceOptions {
     maxRetry: number;
     logger: AppLoggerService;
-    updateRegisteredFoldersService: UpdateRegisteredFoldersService;
     treeCalculatorService: TreeCalculationHandlerService;
+    updateRegisteredFoldersService: UpdateRegisteredFoldersService;
     basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
     updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService;
 }
@@ -20,7 +20,7 @@ export interface BasicFolderChangeHandlerServiceOptions {
 export class BasicFolderChangeHandlerService {
     constructor(private options: BasicFolderChangeHandlerServiceOptions) {}
 
-    async execute(folders: BasicFolder[]): Promise<Result<void>> {
+    async execute(folders: BasicFolder[]): Promise<Result> {
         const changesResult = await this.detectChanges(folders);
 
         if (changesResult.isFail()) {
@@ -58,7 +58,7 @@ export class BasicFolderChangeHandlerService {
         if (detectChanges.isFail()) {
             this.options.logger.error(`error to detect changes: ${detectChanges.error()}`);
         } else {
-            this.options.logger.debug(`detect changes succses: ${this.detectChanges.toString()}`);
+            this.options.logger.debug(`detect changes success: ${this.detectChanges.toString()}`);
         }
 
         return detectChanges;
@@ -75,14 +75,14 @@ export class BasicFolderChangeHandlerService {
         if (treeCalculatorChanges.isFail()) {
             this.options.logger.error(`error to tree calculator Changes: ${treeCalculatorChanges.error()}`);
         } else {
-            this.options.logger.debug(`tree calculator changes succses: ${this.detectChanges.toString()}`);
+            this.options.logger.debug(`tree calculator changes success: ${this.detectChanges.toString()}`);
         }
 
         return treeCalculatorChanges;
     }
 
     private async foldersServiceChanges(change: BasicFolderChange) {
-        this.options.logger.debug(`starting to reftech folders`);
+        this.options.logger.debug(`starting to refetch folders`);
         const folderChanges = await RetryUtils.retry(
             () => this.options.updateRegisteredFoldersService.basicFolderUpdated(change),
             this.options.maxRetry,
@@ -92,7 +92,7 @@ export class BasicFolderChangeHandlerService {
         if (folderChanges.isFail()) {
             this.options.logger.error(`error to calc folder changes: ${folderChanges.error()}`);
         } else {
-            this.options.logger.debug(`detect changes succses: ${this.detectChanges.toString()}`);
+            this.options.logger.debug(`detect changes success: ${this.detectChanges.toString()}`);
         }
 
         return folderChanges;

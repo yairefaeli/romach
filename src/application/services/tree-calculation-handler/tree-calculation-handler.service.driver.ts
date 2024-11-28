@@ -1,6 +1,6 @@
+import { BasicFoldersRepositoryTestkit } from '../../interfaces/basic-folders-repository/basic-folders-repository.interface.testkit';
+import { HierarchiesRepositoryTestkit } from '../../interfaces/hierarchies-repository/hierarchies-repository.interface.testkit';
 import { TreeCalculationServiceTestkit } from '../../../domain/services/tree-calculation/tree-calculation.service.testkit';
-import { HierarchiesRepositoryTestkit } from '../../interfaces/hierarchies-interface/hierarchies.interface.testkit';
-import { BasicFoldersRepositoryTestkit } from '../../interfaces/basic-folder/basic-folders-repository.testkit';
 import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/basic-folder-change.builder';
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { AppLoggerServiceTestkit } from '../../../infra/logging/app-logger.service.testkit';
@@ -20,17 +20,17 @@ export class TreeCalculationHandlerServiceDriver {
 
     given = {
         repositoryFolders: (result: Result<BasicFolder[]>): this => {
-            this.basicFolderRepositoryTestkit.mockGetBasicFolders(result);
+            this.basicFolderRepositoryTestkit.mockGetBasicFolders(Promise.resolve(result));
             return this;
         },
         repositoryHierarchies: (result: Result<Hierarchy[]>): this => {
-            this.hierarchiesRepositoryTestkit.mockGetHierarchies(result);
+            this.hierarchiesRepositoryTestkit.mockGetHierarchies(Promise.resolve(result));
             return this;
         },
     };
 
     when = {
-        init: async (): Promise<this> => {
+        init: (): this => {
             this.treeCalculationHandlerService = new TreeCalculationHandlerService({
                 maxRetry: this.maxRetry,
                 logger: this.get.logger(),
@@ -38,6 +38,7 @@ export class TreeCalculationHandlerServiceDriver {
                 hierarchiesRepositoryInterface: this.get.hierarchiesRepository(),
                 basicFolderRepositoryInterface: this.get.basicFolderRepository(),
             });
+
             return this;
         },
         execute: async (changes?: BasicFolderChange) => {

@@ -1,22 +1,24 @@
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entites-api/romach-entities-api.interface';
 import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
+import { RegisteredFoldersService } from '../registered-folders.service';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { RegisteredFoldersService } from './registered-folders.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Result } from 'rich-domain';
 import { uniqBy } from 'lodash';
 
-export class UpdateRegisteredFoldersService {
-    constructor(
-        private readonly logger: AppLoggerService,
-        private readonly folderService: RegisteredFoldersService,
-        private readonly romachApi: RomachEntitiesApiInterface,
-        private readonly registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
-    ) {}
+interface UpdateRegisteredFoldersServiceOptions {
+    logger: AppLoggerService;
+    romachApi: RomachEntitiesApiInterface;
+    folderService: RegisteredFoldersService;
+    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface;
+}
 
-    async basicFolderUpdated(change: BasicFolderChange): Promise<Result<void>> {
+export class UpdateRegisteredFoldersService {
+    constructor(private readonly options: UpdateRegisteredFoldersServiceOptions) {}
+
+    async basicFolderUpdated(change: BasicFolderChange): Promise<Result> {
         const res = await Promise.all([
             this.handleDeletedBasicFolders(change.deleted),
             this.handleUpsertedBasicFolders([...change.updated, ...change.inserted]),
@@ -29,23 +31,23 @@ export class UpdateRegisteredFoldersService {
         return Result.Ok();
     }
 
-    private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result<void>> {
+    private async handleDeletedBasicFolders(deletedBasicFoldersIds: string[]): Promise<Result> {
         const deletedResult =
-            await this.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
+            await this.options.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(deletedBasicFoldersIds);
 
         if (deletedResult.isFail()) {
-            this.logger.error('failed to delete registeredFolders from repo by ids');
+            this.options.logger.error('failed to delete registeredFolders from repo by ids');
             return Result.fail();
         }
 
         return Result.Ok();
     }
 
-    private async handleUpsertedBasicFolders(upsertedBasicFolders: BasicFolder[]): Promise<Result<void>> {
+    private async handleUpsertedBasicFolders(upsertedBasicFolders: BasicFolder[]): Promise<Result> {
         const registeredFoldersFromRepoResult = await this.getRegisteredFoldersByIds(upsertedBasicFolders);
 
         if (registeredFoldersFromRepoResult.isFail()) {
-            this.logger.error('failed to get registeredFolders from repo by ids');
+            this.options.logger.error('failed to get registeredFolders from repo by ids');
             return Result.fail();
         }
 
@@ -53,32 +55,34 @@ export class UpdateRegisteredFoldersService {
 
         const filteredRegisteredFolders = this.filterAlreadyUpdated(registeredFoldersFromRepo, upsertedBasicFolders);
 
-        const unigedRegisterdFolders = this.getUniqedRegisteredFolders(filteredRegisteredFolders);
+        const uniqueRegisteredFolders = this.getUniqedRegisteredFolders(filteredRegisteredFolders);
 
-        const foldersFromAPIResult = await this.fetchFoldersFromAPI(unigedRegisterdFolders);
+        const foldersFromAPIResult = await this.fetchFoldersFromAPI(uniqueRegisteredFolders);
 
         if (foldersFromAPIResult.isFail()) {
-            this.logger.error('failed to fetch folders from API by ids and passwords');
+            this.options.logger.error('failed to fetch folders from API by ids and passwords');
             return Result.fail();
         }
 
         const foldersFromAPI = foldersFromAPIResult.value();
-        const newUpsertedregisteredFoldersResult = this.folderService.updateFoldersToRegisteredFolders(
+        const newUpsertedRegisteredFoldersResult = this.options.folderService.updateFoldersToRegisteredFolders(
             filteredRegisteredFolders,
             foldersFromAPI,
         );
-        if (newUpsertedregisteredFoldersResult.isFail()) {
-            this.logger.error('failed to update registeredFolders');
+        if (newUpsertedRegisteredFoldersResult.isFail()) {
+            this.options.logger.error('failed to update registeredFolders');
 
             return Result.fail();
         }
 
-        const newUpsertedregisteredFolders = newUpsertedregisteredFoldersResult.value();
-        if (newUpsertedregisteredFolders) {
-            const upsertregisteredFoldersResult =
-                await this.registeredFolderRepositoryInterface.upsertRegisteredFolders(newUpsertedregisteredFolders);
-            if (upsertregisteredFoldersResult.isFail()) {
-                this.logger.error('failed to  upsert registeredFolders to repo');
+        const newUpsertedRegisteredFolders = newUpsertedRegisteredFoldersResult.value();
+        if (newUpsertedRegisteredFolders) {
+            const upsertRegisteredFoldersResult =
+                await this.options.registeredFolderRepositoryInterface.upsertRegisteredFolders(
+                    newUpsertedRegisteredFolders,
+                );
+            if (upsertRegisteredFoldersResult.isFail()) {
+                this.options.logger.error('failed to  upsert registeredFolders to repo');
                 return Result.fail();
             }
 
@@ -92,22 +96,20 @@ export class UpdateRegisteredFoldersService {
             password: folder.getProps().password,
         }));
 
-        return this.romachApi.fetchFoldersByIdsAndPasswords(folderIdsWithPasswords);
+        return this.options.romachApi.fetchFoldersByIdsAndPasswords(folderIdsWithPasswords);
     }
 
     private filterAlreadyUpdated(registeredFoldersFromRepo: RegisteredFolder[], basicFolders: BasicFolder[]) {
-        const upsertedRegisteredFolders = registeredFoldersFromRepo.filter(
+        return registeredFoldersFromRepo.filter(
             (folder) =>
                 basicFolders.find((basicFolder) => folder.getProps().folderId == basicFolder.getProps().id).getProps()
                     .updatedAt === folder.getProps().updatedAtTimestamp,
         );
-
-        return upsertedRegisteredFolders;
     }
 
     private getRegisteredFoldersByIds(basicFolders: BasicFolder[]) {
         const upsertedFoldersIds = basicFolders.map((folder) => folder.getProps().id);
-        return this.registeredFolderRepositoryInterface.getRegisteredFoldersByIds(upsertedFoldersIds);
+        return this.options.registeredFolderRepositoryInterface.getRegisteredFoldersByIds(upsertedFoldersIds);
     }
 
     private getUniqedRegisteredFolders(registeredFolders: RegisteredFolder[]) {

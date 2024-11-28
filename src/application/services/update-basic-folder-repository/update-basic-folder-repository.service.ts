@@ -1,35 +1,41 @@
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { Result } from 'rich-domain';
 
-export class UpdateBasicFoldersRepositoryService {
-    constructor(
-        private readonly basicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
-        private readonly logger: AppLoggerService,
-    ) {}
+interface UpdateBasicFolderRepositoryOptions {
+    logger: AppLoggerService;
+    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
+}
 
-    async execute(changes: BasicFolderChange): Promise<Result<void>> {
+export class UpdateBasicFoldersRepositoryService {
+    constructor(private readonly options: UpdateBasicFolderRepositoryOptions) {}
+
+    async execute(changes: BasicFolderChange): Promise<Result> {
         const folders = [...changes.inserted, ...changes.updated];
-        this.logger.info(`Upserting ${folders.length} folders`);
-        const saveBasicFoldersResult = await this.basicFolderRepositoryInterface.saveBasicFolders(folders);
+        this.options.logger.info(`Upserting ${folders.length} folders`);
+        const saveBasicFoldersResult = await this.options.basicFolderRepositoryInterface.saveBasicFolders(folders);
 
         if (saveBasicFoldersResult.isFail()) {
-            this.logger.error(`Error saving basic folders: ${saveBasicFoldersResult.error()}`);
+            this.options.logger.error(`Error saving basic folders: ${saveBasicFoldersResult.error()}`);
+
             return Result.fail(saveBasicFoldersResult.error());
         } else {
-            this.logger.info(`Successfully saved ${folders.length} folders`);
+            this.options.logger.info(`Successfully saved ${folders.length} folders`);
         }
 
-        const deleteBasicFolderResult = await this.basicFolderRepositoryInterface.deleteBasicFolderByIds(
+        const deleteBasicFolderResult = await this.options.basicFolderRepositoryInterface.deleteBasicFolderByIds(
             changes.deleted,
         );
 
         if (deleteBasicFolderResult.isFail()) {
-            this.logger.error(`Error deleting basic folders: ${deleteBasicFolderResult.error()}`);
+            this.options.logger.error(`Error deleting basic folders: ${deleteBasicFolderResult.error()}`);
+
             return Result.fail(deleteBasicFolderResult.error());
         }
-        this.logger.info(`Successfully deleted ${changes.deleted.length} folders`);
+
+        this.options.logger.info(`Successfully deleted ${changes.deleted.length} folders`);
+
         return Result.Ok();
     }
 }

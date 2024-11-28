@@ -1,4 +1,4 @@
-import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folder/basic-folder.interface';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Timestamp } from 'src/domain/entities/Timestamp';

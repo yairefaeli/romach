@@ -1,40 +1,44 @@
-import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
-import { Hierarchy } from '../../../domain/entities/hierarchy';
-import { Timestamp } from '../../../domain/entities/Timestamp';
-import { Result } from 'rich-domain';
-export const RomachEntitiesApiInterfaceTestkit = () => {
-    const romachEntitiesApiInterface: jest.Mocked<RomachEntitiesApiInterface> = {
+import { RomachEntitiesApiInterface } from './romach-entities-api.interface';
+
+export const RomachEntitiesApiTestkit = () => {
+    const romachEntitiesApiInterface: RomachEntitiesApiInterface = {
         checkPassword: jest.fn(),
+        fetchHierarchies: jest.fn(),
         fetchFolderByIdAndPassword: jest.fn(),
-        fetchHierarchies: jest.fn().mockReturnValue(Promise.resolve(Result.Ok([]))),
         fetchBasicFoldersByTimestamp: jest.fn(),
         fetchFoldersByIdsAndPasswords: jest.fn(),
     };
 
-    const mockCheckPassword = (value: Result<boolean>) => {
+    const mockCheckPassword = (value: ReturnType<RomachEntitiesApiInterface['checkPassword']>) => {
         romachEntitiesApiInterface.checkPassword = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockFetchFolderByIdAndPassword = (value: Result<{ id: string; password: string }>) => {
-        romachEntitiesApiInterface.fetchFolderByIdAndPassword = jest.fn().mockReturnValue(Promise.resolve(value));
-    };
-
-    const mockFetchHierarchies = (value: Result<Hierarchy[]>) => {
+    const mockFetchHierarchies = (value: ReturnType<RomachEntitiesApiInterface['fetchHierarchies']>) => {
         romachEntitiesApiInterface.fetchHierarchies = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockFetchBasicFoldersByTimestamp = (value: Result<Timestamp>) => {
+    const mockFetchFolderByIdAndPassword = (
+        value: ReturnType<RomachEntitiesApiInterface['fetchFolderByIdAndPassword']>,
+    ) => {
+        romachEntitiesApiInterface.fetchFolderByIdAndPassword = jest.fn().mockReturnValue(Promise.resolve(value));
+    };
+
+    const mockFetchBasicFoldersByTimestamp = (
+        value: ReturnType<RomachEntitiesApiInterface['fetchBasicFoldersByTimestamp']>,
+    ) => {
         romachEntitiesApiInterface.fetchBasicFoldersByTimestamp = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockFetchFoldersByIdsAndPasswords = (value: Result<{ id: string; password: string }[]>) => {
+    const mockFetchFoldersByIdsAndPasswords = (
+        value: ReturnType<RomachEntitiesApiInterface['fetchFoldersByIdsAndPasswords']>,
+    ) => {
         romachEntitiesApiInterface.fetchFoldersByIdsAndPasswords = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
     return {
         mockCheckPassword,
-        mockFetchFolderByIdAndPassword,
         mockFetchHierarchies,
+        mockFetchFolderByIdAndPassword,
         mockFetchBasicFoldersByTimestamp,
         mockFetchFoldersByIdsAndPasswords,
         romachEntitiesApiInterface: () => romachEntitiesApiInterface,
