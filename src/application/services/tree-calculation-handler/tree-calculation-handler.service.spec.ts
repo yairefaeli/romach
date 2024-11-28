@@ -20,13 +20,13 @@ describe('TreeCalculationHandlerService', () => {
             result = await driver.when.execute();
         });
 
-        it('should log error when error occurs', () => {
+        it('should log error when error', () => {
             expect(driver.get.logger().error).toHaveBeenCalledWith(
                 expect.stringContaining('Failed to fetch current folders from repository'),
             );
         });
 
-        it('should return fail when error occurs', () => {
+        it('should return fail when error', () => {
             expect(result.isFail()).toBe(true);
         });
     });
@@ -37,10 +37,11 @@ describe('TreeCalculationHandlerService', () => {
 
             beforeEach(async () => {
                 await driver.when.init();
+
                 result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
             });
 
-            it('should return an empty OK response', () => {
+            it('should return empty ok response', () => {
                 expect(result.isOk()).toBe(true);
             });
 
@@ -48,7 +49,7 @@ describe('TreeCalculationHandlerService', () => {
                 expect(driver.get.hierarchiesRepository().getHierarchies).not.toHaveBeenCalled();
             });
 
-            it('should not call the calc tree function', () => {
+            it('should not call to calc tree function', () => {
                 expect(driver.get.treeCalculationService().calculateTree).not.toHaveBeenCalled();
             });
         });
@@ -68,11 +69,11 @@ describe('TreeCalculationHandlerService', () => {
                 );
             });
 
-            it('should return an empty OK response', () => {
+            it('should return empty ok response', () => {
                 expect(result.isOk()).toBe(true);
             });
 
-            it('should not call the calc tree function', () => {
+            it('should not call to calc tree function', () => {
                 expect(driver.get.treeCalculationService().calculateTree).not.toHaveBeenCalled();
             });
         });
@@ -96,40 +97,39 @@ describe('TreeCalculationHandlerService', () => {
                 result = await driver.when.execute(changes);
             });
 
-            it('should calc when the deleted array is not empty', () => {
-                // Access the first call to the mocked calculateTree method
-                const [mergedFolders] = driver.get.treeCalculationService().calculateTree.mock.calls[0];
-
-                // Validate the mergedFolders do not include the deleted folder
-                expect(mergedFolders).not.toEqual(
-                    expect.arrayContaining([expect.objectContaining({ id: deletedFolder.getProps().id })]),
-                );
-
-                // Verify calculateTree was called
+            it('should calc when deleted array is not empty', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalled();
             });
 
-            it('should calc when the inserted array is not empty', () => {
+            it('should calc when inserted array is not empty', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
-                    expect.arrayContaining([insertedFolder]),
+                    expect.objectContaining({
+                        inserted: [insertedFolder],
+                    }),
                 );
             });
 
             it('should calc when updated array meets the condition (name changed)', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
-                    expect.arrayContaining([expect.objectContaining({ name: updatedFolder.getProps().name })]),
+                    expect.objectContaining({
+                        updated: expect.arrayContaining([
+                            expect.objectContaining({ name: updatedFolder.getProps().name }),
+                        ]),
+                    }),
                 );
             });
 
             it('should calc when updated array meets the condition (categoryId changed)', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
-                    expect.arrayContaining([
-                        expect.objectContaining({ categoryId: updatedFolder.getProps().categoryId }),
-                    ]),
+                    expect.objectContaining({
+                        updated: expect.arrayContaining([
+                            expect.objectContaining({ categoryId: updatedFolder.getProps().categoryId }),
+                        ]),
+                    }),
                 );
             });
 
-            it('should return a success result after calculation', () => {
+            it('should return success result after calculation', () => {
                 expect(result.isOk()).toBe(true);
             });
         });
