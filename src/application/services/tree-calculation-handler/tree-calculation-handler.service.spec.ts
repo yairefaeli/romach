@@ -2,6 +2,7 @@ import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/ba
 import { aBasicFolder, aBasicFoldersList } from '../../../utils/builders/BasicFolder/basic-folder.builder';
 import { TreeCalculationHandlerServiceDriver } from './tree-calculation-handler.service.driver';
 import { aHierarchy } from '../../../utils/builders/Hierarchy/hierarchy.builder';
+import { chance } from '../../../utils/Chance/chance';
 import { Result } from 'rich-domain';
 
 describe('TreeCalculationHandlerService', () => {
@@ -79,8 +80,14 @@ describe('TreeCalculationHandlerService', () => {
 
         describe('With Updates', () => {
             let result: Result;
+            const repositoryHierarchy = [aHierarchy()];
             const [updatedCategoryFolder, updatedNameFolder, deletedFolder, insertedFolder] = aBasicFoldersList(4);
-            const repositoryFolders = [];
+            const repositoryFolders = [
+                deletedFolder,
+                aBasicFolder({ ...updatedNameFolder.getProps(), name: chance.name() }),
+                aBasicFolder({ ...updatedCategoryFolder.getProps(), categoryId: chance.guid() }),
+            ];
+
             const changes = aBasicFolderChange({
                 inserted: [insertedFolder],
                 deleted: [deletedFolder.getProps().id],
@@ -89,41 +96,37 @@ describe('TreeCalculationHandlerService', () => {
 
             beforeEach(async () => {
                 await driver.given
-                    .repositoryFolders(Result.Ok([updatedCategoryFolder, updatedNameFolder, deletedFolder]))
-                    .given.repositoryHierarchies(Result.Ok([aHierarchy()]))
+                    .repositoryFolders(Result.Ok(repositoryFolders))
+                    .given.repositoryHierarchies(Result.Ok(repositoryHierarchy))
                     .when.init();
                 result = await driver.when.execute(changes);
             });
 
             it('should call calculateTree without deleted folders when deleted array is not empty', () => {
-                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalled();
-            });
-
-            it('should calculateTree with inserted folders when inserted array is not empty', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        inserted: [insertedFolder],
-                    }),
+                    expect.arrayContaining([deletedFolder]),
+                    repositoryHierarchy,
                 );
             });
 
-            it('should calculateTree with updated folders when updated array meets the condition (name changed)', () => {
+            it('should call calculateTree with inserted folders when inserted array is not empty', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        updated: expect.arrayContaining([
-                            expect.objectContaining({ name: updatedNameFolder.getProps().name }),
-                        ]),
-                    }),
+                    expect.arrayContaining([insertedFolder]),
+                    repositoryHierarchy,
                 );
             });
 
-            it('should calc when updated array meets the condition (categoryId changed)', () => {
+            it('should call calculateTree with updated folders when updated array meets the condition (name changed)', () => {
                 expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        updated: expect.arrayContaining([
-                            expect.objectContaining({ categoryId: updatedNameFolder.getProps().categoryId }),
-                        ]),
-                    }),
+                    expect.arrayContaining([updatedNameFolder]),
+                    repositoryHierarchy,
+                );
+            });
+
+            it('should call calculateTree with updated folders when updated array meets the condition (categoryId changed)', () => {
+                expect(driver.get.treeCalculationService().calculateTree).toHaveBeenCalledWith(
+                    expect.arrayContaining([updatedCategoryFolder]),
+                    repositoryHierarchy,
                 );
             });
 
