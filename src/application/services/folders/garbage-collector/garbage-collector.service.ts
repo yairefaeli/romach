@@ -1,7 +1,7 @@
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
-import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
+import { RegisteredFolderRepositoryInterface } from '../../../interfaces/registered-folders-repository/registered-folder-repository.interface';
+import { AppLoggerService } from '../../../../infra/logging/app-logger.service';
+import { RegisteredFolder } from '../../../../domain/entities/RegisteredFolder';
+import { RetryUtils } from '../../../../utils/RetryUtils/RetryUtils';
 import { Result } from 'rich-domain';
 import { isEmpty } from 'lodash';
 
@@ -14,29 +14,31 @@ export interface GarbageCollectorServiceOptions {
 
 export class GarbageCollectorService {
     constructor(private options: GarbageCollectorServiceOptions) {
-        setInterval(() => this.performGarbageCollection(), this.options.gcInterval);
+        void this.performGarbageCollection();
     }
 
-    private async performGarbageCollection(): Promise<Result> {
+    private async performGarbageCollection(): Promise<void> {
         this.options.logger.info('Starting garbage collection for registered folders...');
 
         // Query the database to get registered folders matching the conditions
         const expiredFoldersResult = await this.fetchExpiredFolders();
+
         if (expiredFoldersResult.isFail()) {
-            return Result.fail('Failed to fetch expired registered folders');
+            this.options.logger.error('Failed to fetch expired registered folders');
+        } else {
+            const expiredFolders = expiredFoldersResult.value();
+
+            if (isEmpty(expiredFolders)) {
+                this.options.logger.info('No registered folders found for deletion');
+            }
+
+            // Get the folder IDs to be deleted
+            const folderIdsToDelete = expiredFolders.map((folder) => folder.getProps().folderId);
+
+            await this.deleteExpiredFolders(folderIdsToDelete);
         }
 
-        const expiredFolders = expiredFoldersResult.value();
-
-        if (isEmpty(expiredFolders)) {
-            this.options.logger.info('No registered folders found for deletion.');
-            return Result.Ok();
-        }
-
-        // Get the folder IDs to be deleted
-        const folderIdsToDelete = expiredFolders.map((folder) => folder.getProps().folderId);
-
-        return this.deleteExpiredFolders(folderIdsToDelete);
+        setTimeout(this.performGarbageCollection, this.options.gcInterval);
     }
 
     private async fetchExpiredFolders(): Promise<Result<RegisteredFolder[]>> {
@@ -52,7 +54,7 @@ export class GarbageCollectorService {
         });
     }
 
-    private async deleteExpiredFolders(folderIdsToDelete: string[]): Promise<Result<void>> {
+    private async deleteExpiredFolders(folderIdsToDelete: string[]): Promise<void> {
         const deleteResult = await RetryUtils.retry(
             () => this.options.registeredFolderRepositoryInterface.deleteRegisteredFoldersByIds(folderIdsToDelete),
             this.options.maxRetry,
@@ -61,10 +63,8 @@ export class GarbageCollectorService {
 
         if (deleteResult.isFail()) {
             this.options.logger.error(`Failed to delete expired registered folders: ${deleteResult.error()}`);
-            return Result.fail('Failed to delete expired registered folders');
         }
 
-        this.options.logger.info(`Deleted ${folderIdsToDelete.length} expired registered folders.`);
-        return Result.Ok();
+        this.options.logger.info(`Deleted ${folderIdsToDelete.length} expired registered folders`);
     }
 }

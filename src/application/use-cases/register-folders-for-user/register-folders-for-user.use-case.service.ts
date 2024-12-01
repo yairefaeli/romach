@@ -1,18 +1,17 @@
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RealityId } from '../../entities/reality-id';
-import { isEmpty, partition } from 'lodash';
-import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { Result } from 'rich-domain';
+import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
+import { RealityId } from '../../entities/reality-id';
 import { UPN } from 'src/domain/entities/UPN';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
+import { isEmpty, partition } from 'lodash';
+import { Result } from 'rich-domain';
 
 export interface RegisterFoldersForUserOption {
     maxRetry: number;
     logger: AppLoggerService;
     registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface;
 }
-
 
 export interface RegisterFoldersForUserInput {
     reality: RealityId;
@@ -21,7 +20,7 @@ export interface RegisterFoldersForUserInput {
 }
 
 export class RegisterFoldersForUserUseCase {
-    constructor(private options: RegisterFoldersForUserOption) { }
+    constructor(private options: RegisterFoldersForUserOption) {}
 
     async execute(registerFoldersForUserInput: RegisterFoldersForUserInput): Promise<Result<void>> {
         this.options.logger.info(`Starting folder registration process for user ${registerFoldersForUserInput.upn}`);
@@ -72,9 +71,8 @@ export class RegisterFoldersForUserUseCase {
 
     private partitionFolders(registeredFolders: RegisteredFolder[], folderIds: string[]) {
         this.options.logger.debug(`Partitioning folders into relevant and irrelevant groups`);
-        const [relevantFolders, irrelevantFolders] = partition(
-            registeredFolders,
-            (folder) => folderIds.includes(folder.getProps().folderId),
+        const [relevantFolders, irrelevantFolders] = partition(registeredFolders, (folder) =>
+            folderIds.includes(folder.getProps().folderId),
         );
 
         this.options.logger.debug(

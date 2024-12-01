@@ -22,13 +22,11 @@ export class AddProtectedFolderToUserUseCase {
     ) {}
 
     execute(input: AddProtectedFolderToUserInput) {
-        const { upn, folderId } = input;
-
-        return from(this.romachBasicFolderRepositoryInterface.getBasicFolderById(folderId)).pipe(
+        return from(this.romachBasicFolderRepositoryInterface.getBasicFolderById(input.folderId)).pipe(
             switchMap((basicFolderResult) => {
                 if (basicFolderResult.isFail()) {
                     this.logger.error('Failed to fetch basic folder from repo by folderId', { input });
-                    return this.registeredFolderService.upsertGeneralError(upn, folderId, false);
+                    return this.registeredFolderService.upsertGeneralError({ ...input, isPasswordProtected: false });
                 }
 
                 const basicFolder = basicFolderResult.value();
@@ -55,7 +53,10 @@ export class AddProtectedFolderToUserUseCase {
             switchMap((foldersResponse) => {
                 if (foldersResponse.isFail()) {
                     this.logger.error('Failed to fetch folders from API', { folderId });
-                    return this.registeredFolderService.upsertGeneralError(upn, folderId, false);
+                    return this.registeredFolderService.upsertGeneralError({
+                        ...input,
+                        isPasswordProtected: false,
+                    });
                 }
 
                 const folder = foldersResponse.value();
@@ -71,7 +72,11 @@ export class AddProtectedFolderToUserUseCase {
             switchMap((checkPasswordResult) => {
                 if (checkPasswordResult.isFail()) {
                     this.logger.error('Failed to check password for folder', { folderId, upn });
-                    return this.registeredFolderService.upsertGeneralError(upn, folderId, true);
+                    return this.registeredFolderService.upsertGeneralError({
+                        upn,
+                        folderId,
+                        isPasswordProtected: true,
+                    });
                 }
 
                 const isPasswordCorrect = checkPasswordResult.value();
@@ -83,7 +88,11 @@ export class AddProtectedFolderToUserUseCase {
                     switchMap((foldersResponse) => {
                         if (foldersResponse.isFail()) {
                             this.logger.error('Failed to fetch folders from API', { folderId });
-                            return this.registeredFolderService.upsertGeneralError(upn, folderId, true);
+                            return this.registeredFolderService.upsertGeneralError({
+                                upn,
+                                folderId,
+                                isPasswordProtected: true,
+                            });
                         }
 
                         const folder = foldersResponse.value();

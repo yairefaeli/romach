@@ -1,5 +1,5 @@
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { RomachEntitiesApiInterface } from 'src/application/interfaces/romach-entites-api/romach-entities-api.interface';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';

@@ -42,7 +42,7 @@ export class BasicFolderChangeHandlerServiceDriver {
             this.updateBasicFolderRepositoryServiceTestkit.mockExecute(result);
             return this;
         },
-        mockHandleBasicFoldersChange: (result: Result): this => {
+        handleBasicFoldersChange: (result: Result): this => {
             this.updateRegisteredFoldersServiceTestkit.mockHandleBasicFoldersChange(result);
             return this;
         },

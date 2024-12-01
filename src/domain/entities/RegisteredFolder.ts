@@ -24,7 +24,7 @@ export type PasswordProtectedValidSpecificationProps = Pick<
 >;
 
 class PasswordProtectedValidSpecification implements ISpecification<PasswordProtectedValidSpecificationProps> {
-    isSatisfiedBy(candidate: PasswordProtectedValidSpecificationProps): Result<boolean, string> {
+    isSatisfiedBy(candidate: PasswordProtectedValidSpecificationProps): Result<boolean> {
         if (candidate.isPasswordProtected && (isNil(candidate.lastValidPasswordTimestamp) || isNil(candidate.password)))
             return Result.fail('folder is password protected but no password nor timestamp provided');
 
@@ -71,7 +71,7 @@ export class RegisteredFolder {
 
     static createWrongPasswordRegisteredFolder(
         input: Pick<RegisteredFolderProps, 'upn' | 'folderId'>,
-    ): Result<RegisteredFolder, string> {
+    ): Result<RegisteredFolder> {
         return this.createInvalidRegisteredFolder({
             ...input,
             status: 'wrong-password',
@@ -86,7 +86,7 @@ export class RegisteredFolder {
             RegisteredFolderProps,
             'upn' | 'folderId' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
         >,
-    ): Result<RegisteredFolder, string> {
+    ): Result<RegisteredFolder> {
         return this.createInvalidRegisteredFolder({
             ...input,
             status: 'general-error',
@@ -98,7 +98,7 @@ export class RegisteredFolder {
             RegisteredFolderProps,
             'upn' | 'folderId' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
         >,
-    ): Result<RegisteredFolder, string> {
+    ): Result<RegisteredFolder> {
         return this.createInvalidRegisteredFolder({
             ...input,
             status: 'not-found',
@@ -110,7 +110,7 @@ export class RegisteredFolder {
             RegisteredFolderProps,
             'upn' | 'folderId' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
         >,
-    ): Result<RegisteredFolder, string> {
+    ): Result<RegisteredFolder> {
         return this.createInvalidRegisteredFolder({
             ...input,
             status: 'loading',
@@ -122,7 +122,7 @@ export class RegisteredFolder {
             RegisteredFolderProps,
             'upn' | 'folderId' | 'status' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
         >,
-    ): Result<RegisteredFolder, string> {
+    ): Result<RegisteredFolder> {
         const passwordProtectedValidSpecification = new PasswordProtectedValidSpecification().isSatisfiedBy({
             isPasswordProtected: input.isPasswordProtected,
             password: input.password,

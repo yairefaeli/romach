@@ -1,12 +1,15 @@
-import { Knex } from 'knex';
-import { Result } from 'rich-domain';
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/regsitered-folder-interface';
+import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { Timestamp } from 'src/domain/entities/Timestamp';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Result } from 'rich-domain';
+import { Knex } from 'knex';
 
 export class RegisteredFoldersRepository implements RegisteredFolderRepositoryInterface {
-    constructor(private readonly knex: Knex, private readonly logger: AppLoggerService) { }
+    constructor(
+        private readonly knex: Knex,
+        private readonly logger: AppLoggerService,
+    ) {}
 
     async getRegisteredFoldersByIdAndPassword(folderId: string, password: string): Promise<Result<RegisteredFolder[]>> {
         try {
@@ -35,7 +38,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
             return Result.Ok(folders);
         } catch (error) {
             this.logger.error('Error fetching expired registered folders');
-            return Result.fail('DatabaseError');
+            return Result.fail(`DatabaseError: ${error}`);
         }
     }
 
@@ -52,8 +55,6 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
             return Result.fail('DatabaseError');
         }
     }
-
-
 
     async getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>> {
         try {
@@ -87,8 +88,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
 
     async getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>> {
         try {
-            const folders = await this.knex<RegisteredFolder>('registered_folders')
-                .where('upn', upn);
+            const folders = await this.knex<RegisteredFolder>('registered_folders').where('upn', upn);
             return Result.Ok(folders);
         } catch (error) {
             this.logger.error(`Error fetching registered folders by UPN: ${upn}`, error);
@@ -98,10 +98,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
 
     async upsertRegisteredFolder(folder: RegisteredFolder): Promise<Result<void>> {
         try {
-            await this.knex<RegisteredFolder>('registered_folders')
-                .insert(folder)
-                .onConflict('id')
-                .merge();
+            await this.knex<RegisteredFolder>('registered_folders').insert(folder).onConflict('id').merge();
             return Result.Ok();
         } catch (error) {
             this.logger.error(`Error upserting registered folder: ${folder.getProps().folderId}`, error);
@@ -111,17 +108,13 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
 
     async deleteRegisteredFoldersByIdsForUpn(ids: string[], upn: string): Promise<Result<void>> {
         try {
-            await this.knex('registered_folders')
-                .whereIn('id', ids)
-                .andWhere('upn', upn)
-                .del();
+            await this.knex('registered_folders').whereIn('id', ids).andWhere('upn', upn).del();
             return Result.Ok();
         } catch (error) {
             this.logger.error(`Error deleting registered folders by IDs for UPN: ${upn}`, error);
             return Result.fail('DatabaseError');
         }
     }
-
 
     async updateRegistrationByUpnAndFolderIds(folderIds: string[], upn: string): Promise<Result<void>> {
         try {
@@ -138,10 +131,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
 
     async upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result<void>> {
         try {
-            await this.knex('registered_folders')
-                .insert(folders)
-                .onConflict('id')
-                .merge();
+            await this.knex('registered_folders').insert(folders).onConflict('id').merge();
 
             return Result.Ok();
         } catch (error) {
@@ -149,5 +139,4 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
             return Result.fail('DatabaseError');
         }
     }
-
 }
