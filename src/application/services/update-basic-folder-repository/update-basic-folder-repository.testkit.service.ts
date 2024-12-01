@@ -9,5 +9,8 @@ jest.mock('./update-basic-folder-repository.service', () => ({
 export const UpdateBasicFolderRepositoryServiceTestkit = () => {
     const basicFolderChangeDetectionService = new UpdateBasicFoldersRepositoryService(null);
 
-    return { basicFolderChangeDetectionService: () => basicFolderChangeDetectionService };
+    const mockExecute = (value: ReturnType<UpdateBasicFoldersRepositoryService['execute']>) =>
+        (basicFolderChangeDetectionService.execute = jest.fn().mockReturnValue(value));
+
+    return { mockExecute, basicFolderChangeDetectionService: () => basicFolderChangeDetectionService };
 };

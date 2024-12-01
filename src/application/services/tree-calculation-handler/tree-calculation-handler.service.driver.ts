@@ -19,13 +19,23 @@ export class TreeCalculationHandlerServiceDriver {
     private treeCalculationServiceTestkit = TreeCalculationServiceTestkit();
     private treeCalculationHandlerService: TreeCalculationHandlerService;
 
+    constructor() {
+        this.treeCalculationHandlerService = new TreeCalculationHandlerService({
+            maxRetry: this.maxRetry,
+            logger: this.get.logger(),
+            treeCalculationService: this.get.treeCalculationService(),
+            hierarchiesRepositoryInterface: this.get.hierarchiesRepository(),
+            basicFolderRepositoryInterface: this.get.basicFolderRepository(),
+        });
+    }
+
     given = {
         repositoryFolders: (result: Result<BasicFolder[]>): this => {
-            this.basicFolderRepositoryTestkit.mockGetBasicFolders(Promise.resolve(result));
+            this.basicFolderRepositoryTestkit.mockGetBasicFolders(result);
             return this;
         },
         repositoryHierarchies: (result: Result<Hierarchy[]>): this => {
-            this.hierarchiesRepositoryTestkit.mockGetHierarchies(Promise.resolve(result));
+            this.hierarchiesRepositoryTestkit.mockGetHierarchies(result);
             return this;
         },
         calculateTree: (result: Result<Tree>): this => {
@@ -35,17 +45,6 @@ export class TreeCalculationHandlerServiceDriver {
     };
 
     when = {
-        init: (): this => {
-            this.treeCalculationHandlerService = new TreeCalculationHandlerService({
-                maxRetry: this.maxRetry,
-                logger: this.get.logger(),
-                treeCalculationService: this.get.treeCalculationService(),
-                hierarchiesRepositoryInterface: this.get.hierarchiesRepository(),
-                basicFolderRepositoryInterface: this.get.basicFolderRepository(),
-            });
-
-            return this;
-        },
         execute: async (changes?: BasicFolderChange) => {
             return this.treeCalculationHandlerService.execute(changes || aBasicFolderChange());
         },

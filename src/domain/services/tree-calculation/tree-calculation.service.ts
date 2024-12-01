@@ -4,6 +4,7 @@ import { Timestamp } from '../../entities/Timestamp';
 import { groupBy, isEmpty, isNil } from 'lodash';
 import { Folder } from '../../entities/folder';
 import { Tree } from '../../entities/Tree';
+import { Result } from 'rich-domain';
 
 export class TreeCalculationService {
     calculateTreeTest(basicFolders: BasicFolder[], hierarchies: Hierarchy[]): Tree {
@@ -13,13 +14,7 @@ export class TreeCalculationService {
         };
     }
 
-    calculateTree(
-        basicFolders: BasicFolder[],
-        hierarchies: Hierarchy[],
-    ): {
-        categoriesCount: number;
-        tree: { nodes: Folder[] };
-    } {
+    calculateTree(basicFolders: BasicFolder[], hierarchies: Hierarchy[]): Result<Tree> {
         if (isEmpty(hierarchies) || isNil(basicFolders)) {
             return { tree: { nodes: [] }, categoriesCount: 0 };
         }

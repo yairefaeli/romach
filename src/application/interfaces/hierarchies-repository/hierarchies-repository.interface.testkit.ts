@@ -6,7 +6,7 @@ export const HierarchiesRepositoryTestkit = () => {
         saveHierarchies: jest.fn(),
     };
 
-    const mockGetHierarchies = (value: ReturnType<HierarchiesRepositoryInterface['getHierarchies']>) => {
+    const mockGetHierarchies = (value: Awaited<ReturnType<HierarchiesRepositoryInterface['getHierarchies']>>) => {
         hierarchiesRepositoryInterface.getHierarchies = jest.fn().mockReturnValue(value);
     };
 

@@ -1,13 +1,12 @@
-import { RegisteredFolderStatus } from '../../domain/entities/RegisteredFolderStatus';
+import { RegisteredFolderStatus } from '../../domain/entities/RegisteredFolderTypes';
 import { Folder } from '../../domain/entities/Folder';
 
 export interface FoldersByIdResponse {
-  folderId: string;
-  upn: string;
-  password?: string;
-  status: RegisteredFolderStatus;
-  content: Folder | null;
+    upn: string;
+    folderId: string;
+    password?: string;
+    content: Folder | null;
+    status: RegisteredFolderStatus;
 }
 
-
-export type FoldersIdsAndsUpdatedAt = { id: string, updatedAt: string };
+export type FoldersIdsAndsUpdatedAt = { id: string; updatedAt: string };

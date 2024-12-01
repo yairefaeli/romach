@@ -4,8 +4,10 @@ import { UpdateRegisteredFoldersServiceTestkit } from '../folders/update-registe
 import { TreeCalculationHandlerServiceTestkit } from '../tree-calculation-handler/tree-calculation-handler.service.testkit';
 import { AppLoggerServiceTestkit } from '../../../infra/logging/app-logger.service.testkit';
 import { BasicFolderChangeHandlerService } from './basic-folder-change-handler.service';
+import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { chance } from '../../../utils/Chance/chance';
+import { Result } from 'rich-domain';
 
 export class BasicFolderChangeHandlerServiceDriver {
     private maxRetry = chance.integer({ min: 1, max: 5 });
@@ -16,7 +18,31 @@ export class BasicFolderChangeHandlerServiceDriver {
     private basicFolderChangeDetectionServiceTestkit = BasicFolderChangeDetectionServiceTestkit();
     private updateBasicFolderRepositoryServiceTestkit = UpdateBasicFolderRepositoryServiceTestkit();
 
-    given = {};
+    constructor() {
+        this.basicFolderChangeHandlerService = new BasicFolderChangeHandlerService({
+            maxRetry: this.maxRetry,
+            logger: this.get.logger(),
+            treeCalculatorService: this.get.treeCalculationHandlerService(),
+            updateRegisteredFoldersService: this.get.updateRegisteredFoldersService(),
+            basicFolderChangeDetectionService: this.get.basicFolderChangeDetectionService(),
+            updateBasicFoldersRepositoryService: this.get.updateBasicFoldersRepositoryService(),
+        });
+    }
+
+    given = {
+        executeTreeCalculation: (result: Result): this => {
+            this.treeCalculationHandlerTestkit.mockExecute(result);
+            return this;
+        },
+        basicFolderUpdated: (result: Result): this => {
+            this.updateRegisteredFoldersServiceTestkit.mockExecute(result);
+            return this;
+        },
+        detectChanges: (result: Result<BasicFolderChange>): this => {
+            this.basicFolderChangeDetectionServiceTestkit.mockExecute(result);
+            return this;
+        },
+    };
 
     when = {
         init: (): this => {

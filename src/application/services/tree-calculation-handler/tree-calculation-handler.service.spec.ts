@@ -16,9 +16,7 @@ describe('TreeCalculationHandlerService', () => {
         let result: Result;
 
         beforeEach(async () => {
-            driver.given.repositoryFolders(Result.fail()).when.init();
-
-            result = await driver.when.execute();
+            result = await driver.given.repositoryFolders(Result.fail()).when.execute();
         });
 
         it('should log error when error', () => {
@@ -37,8 +35,7 @@ describe('TreeCalculationHandlerService', () => {
             let result: Result;
 
             beforeEach(async () => {
-                await driver.given.repositoryHierarchies(Result.fail()).when.init();
-                result = await driver.when.execute();
+                result = await driver.given.repositoryHierarchies(Result.fail()).when.execute();
             });
 
             it('should log error when error', () => {
@@ -56,8 +53,6 @@ describe('TreeCalculationHandlerService', () => {
             let result: Result;
 
             beforeEach(async () => {
-                driver.when.init();
-
                 result = await driver.when.execute(aBasicFolderChange({ updated: [], deleted: [], inserted: [] }));
             });
 
@@ -83,11 +78,9 @@ describe('TreeCalculationHandlerService', () => {
             });
 
             beforeEach(async () => {
-                driver.given.repositoryFolders(Result.Ok([repositoryBasicFolder])).when.init();
-
-                result = await driver.when.execute(
-                    aBasicFolderChange({ updated: [changedBasicFolder], deleted: [], inserted: [] }),
-                );
+                result = await driver.given
+                    .repositoryFolders(Result.Ok([repositoryBasicFolder]))
+                    .when.execute(aBasicFolderChange({ updated: [changedBasicFolder], deleted: [], inserted: [] }));
             });
 
             it('should return empty ok response', () => {
@@ -116,12 +109,10 @@ describe('TreeCalculationHandlerService', () => {
             });
 
             beforeEach(async () => {
-                driver.given
+                result = await driver.given
                     .repositoryFolders(Result.Ok(repositoryFolders))
                     .given.repositoryHierarchies(Result.Ok(repositoryHierarchy))
-                    .when.init();
-
-                result = await driver.when.execute(changes);
+                    .when.execute(changes);
             });
 
             it('should call calculateTree without deleted folders when deleted array is not empty', () => {
@@ -160,8 +151,7 @@ describe('TreeCalculationHandlerService', () => {
                 let result: Result;
 
                 beforeEach(async () => {
-                    await driver.given.calculateTree(Result.fail()).when.init();
-                    result = await driver.when.execute();
+                    result = await driver.given.calculateTree(Result.fail()).when.execute();
                 });
 
                 it('should log error when error', () => {
