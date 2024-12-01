@@ -1,7 +1,7 @@
 import { BasicFoldersRepositoryTestkit } from '../../interfaces/basic-folders-repository/basic-folders-repository.interface.testkit';
 import { AppLoggerServiceTestkit } from '../../../infra/logging/app-logger.service.testkit';
 import { BasicFolderChangeDetectionService } from './basic-folder-change-detection.service';
-import { BasicFolder } from '../../../domain/entities/BasicFolder';
+import { BasicFolder, BasicFolderProps } from '../../../domain/entities/BasicFolder';
 import { chance } from '../../../utils/Chance/chance';
 import { Result } from 'rich-domain';
 
@@ -13,7 +13,7 @@ export class BasicFolderChangeDetectionServiceDriver {
     private service: BasicFolderChangeDetectionService;
 
     given = {
-        basicFoldersIdsAndUpdatedAt: (result: Result<Pick<BasicFolder, 'id' | 'updatedAt'>[]>): this => {
+        basicFoldersIdsAndUpdatedAt: (result: Result<Pick<BasicFolderProps, 'id' | 'updatedAt'>[]>): this => {
             this.basicFoldersRepositoryTestkit.mockGetBasicFoldersIdsAndsUpdatedAt(Promise.resolve(result));
             return this;
         },

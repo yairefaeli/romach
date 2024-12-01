@@ -1,5 +1,6 @@
 import { aBasicFolder, aBasicFoldersList } from '../../../utils/builders/BasicFolder/basic-folder.builder';
 import { BasicFolderChangeDetectionServiceDriver } from './basic-folder-change-detection.service.driver';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 
 describe('BasicFolderChangeDetectionService', () => {

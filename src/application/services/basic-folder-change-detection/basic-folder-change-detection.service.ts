@@ -28,7 +28,11 @@ export class BasicFolderChangeDetectionService {
 
         const deleted = current.filter((folder) => folder.getProps().deleted).map((folder) => folder.getProps().id);
 
-        const updated = differenceBy(current, previousFoldersIdsAndUpdatedAt, 'id', 'updatedAt');
+        const updated = differenceBy(
+            current.map((folder) => ({ ...folder, key: `${folder.getProps().id}-${folder.getProps().updatedAt}` })),
+            previousFoldersIdsAndUpdatedAt.map((folder) => ({ ...folder, key: `${folder.id}-${folder.updatedAt}` })),
+            'key',
+        );
 
         const inserted = differenceBy(current, [...deleted, ...updated], 'id');
 
