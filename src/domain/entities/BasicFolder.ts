@@ -50,7 +50,7 @@ export class BasicFolder {
             isLocal: z.boolean().default(false),
             isPasswordProtected: z.boolean().default(false),
             creationDate: z.string().nullable(),
-            updatedAt: z.string().default(Timestamp.now().toString()),
+            updatedAt: z.any().nullable(),
         });
         return ValidationUtils.calcValidation(props, schema);
     }

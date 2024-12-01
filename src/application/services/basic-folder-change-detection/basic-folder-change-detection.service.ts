@@ -2,8 +2,8 @@ import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basi
 import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
-import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
-import { differenceBy } from 'lodash';
+import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
+import { keyBy, partition } from 'lodash';
 import { Result } from 'rich-domain';
 
 export interface BasicFolderChangeDetectionServiceOptions {
@@ -18,32 +18,37 @@ export class BasicFolderChangeDetectionService {
     async execute(current: BasicFolder[]): Promise<Result<BasicFolderChange>> {
         const foldersIds = current.map((folder) => folder.getProps().id);
 
-        const previousFoldersResult = await this.getBasicFoldersIdsAndsUpdatedAt(foldersIds);
+        const repositoryBasicFoldersIdsAndUpdatedAt = await this.getRepositoryBasicFoldersIdsAndsUpdatedAt(foldersIds);
 
-        if (previousFoldersResult.isFail()) {
+        if (repositoryBasicFoldersIdsAndUpdatedAt.isFail()) {
             return Result.fail();
         }
 
-        const previousFoldersIdsAndUpdatedAt = previousFoldersResult.value();
+        const previousFoldersIdsAndUpdatedAt = repositoryBasicFoldersIdsAndUpdatedAt.value();
 
-        const deleted = current.filter((folder) => folder.getProps().deleted).map((folder) => folder.getProps().id);
+        // Create a dictionary of previous folders keyed by ID
+        const previousFoldersById = keyBy(previousFoldersIdsAndUpdatedAt, 'id');
 
-        const updated = differenceBy(
-            current.map((folder) => ({ ...folder, key: `${folder.getProps().id}-${folder.getProps().updatedAt}` })),
-            previousFoldersIdsAndUpdatedAt.map((folder) => ({ ...folder, key: `${folder.id}-${folder.updatedAt}` })),
-            'key',
+        // Partition folders into deleted and upserted
+        const [deleted, upserted] = partition(current, (folder) => folder.getProps().deleted);
+
+        const deletedFoldersIds = deleted.map((folder) => folder.getProps().id);
+
+        const [updated, inserted] = partition(
+            upserted,
+            (upsertedFolder) =>
+                previousFoldersById[upsertedFolder.getProps().id] &&
+                previousFoldersById[upsertedFolder.getProps().id].updatedAt !== upsertedFolder.getProps().updatedAt,
         );
-
-        const inserted = differenceBy(current, [...deleted, ...updated], 'id');
 
         return Result.Ok({
             inserted,
-            deleted,
             updated,
+            deleted: deletedFoldersIds,
         });
     }
 
-    private async getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]) {
+    private async getRepositoryBasicFoldersIdsAndsUpdatedAt(folderIds: string[]) {
         this.options.logger.debug(`starting to fetch basic folders ids and updated at`);
         const folderChanges = await RetryUtils.retry(
             () => this.options.basicFolderRepositoryInterface.getBasicFoldersIdsAndsUpdatedAt(folderIds),
