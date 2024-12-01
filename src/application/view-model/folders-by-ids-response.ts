@@ -1,4 +1,5 @@
 import { RegisteredFolderStatus } from '../../domain/entities/RegisteredFolderTypes';
+import { Timestamp } from '../../domain/entities/Timestamp';
 import { Folder } from '../../domain/entities/Folder';
 
 export interface FoldersByIdResponse {
@@ -9,4 +10,4 @@ export interface FoldersByIdResponse {
     status: RegisteredFolderStatus;
 }
 
-export type FoldersIdsAndsUpdatedAt = { id: string; updatedAt: string };
+export type FoldersIdsAndsUpdatedAt = { id: string; updatedAt: Timestamp };

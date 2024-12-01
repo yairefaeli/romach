@@ -36,11 +36,23 @@ export const BasicFoldersRepositoryTestkit = () => {
         basicFoldersRepository.getBasicFolderById = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
+    const mockSaveBasicFolders = (value: Awaited<ReturnType<BasicFoldersRepositoryInterface['saveBasicFolders']>>) => {
+        basicFoldersRepository.saveBasicFolders = jest.fn().mockReturnValue(Promise.resolve(value));
+    };
+
+    const mockDeleteBasicFolderByIds = (
+        value: Awaited<ReturnType<BasicFoldersRepositoryInterface['deleteBasicFolderByIds']>>,
+    ) => {
+        basicFoldersRepository.deleteBasicFolderByIds = jest.fn().mockReturnValue(Promise.resolve(value));
+    };
+
     return {
         mockGetBasicFolders,
         mockGetBasicFolderById,
         mockGetBasicFoldersTimestamp,
         mockGetBasicFoldersIdsAndsUpdatedAt,
+        mockDeleteBasicFolderByIds,
+        mockSaveBasicFolders,
         basicFoldersRepository: () => basicFoldersRepository,
     };
 };

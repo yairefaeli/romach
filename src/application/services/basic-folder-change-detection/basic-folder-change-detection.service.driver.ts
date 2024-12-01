@@ -1,35 +1,37 @@
 import { BasicFoldersRepositoryTestkit } from '../../interfaces/basic-folders-repository/basic-folders-repository.interface.testkit';
+import { aBasicFoldersList } from '../../../utils/builders/BasicFolder/basic-folder.builder';
 import { AppLoggerServiceTestkit } from '../../../infra/logging/app-logger.service.testkit';
 import { BasicFolderChangeDetectionService } from './basic-folder-change-detection.service';
-import { BasicFolder, BasicFolderProps } from '../../../domain/entities/BasicFolder';
+import { BasicFolderChange } from '../../interfaces/basic-folder-changes.interface';
+import { BasicFolder } from '../../../domain/entities/BasicFolder';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { chance } from '../../../utils/Chance/chance';
 import { Result } from 'rich-domain';
 
 export class BasicFolderChangeDetectionServiceDriver {
+    private maxRetry = chance.integer({ min: 1, max: 5 });
     private loggerTestkit = AppLoggerServiceTestkit();
     private basicFoldersRepositoryTestkit = BasicFoldersRepositoryTestkit();
-    private maxRetry = chance.integer({ min: 1, max: 5 });
+    private basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
 
-    private service: BasicFolderChangeDetectionService;
+    constructor() {
+        this.basicFolderChangeDetectionService = new BasicFolderChangeDetectionService({
+            basicFolderRepositoryInterface: this.get.basicFoldersRepository(),
+            logger: this.get.logger(),
+            maxRetry: this.maxRetry,
+        });
+    }
 
     given = {
-        basicFoldersIdsAndUpdatedAt: (result: Result<Pick<BasicFolderProps, 'id' | 'updatedAt'>[]>): this => {
-            this.basicFoldersRepositoryTestkit.mockGetBasicFoldersIdsAndsUpdatedAt(Promise.resolve(result));
+        mockGetBasicFoldersIdsAndsUpdatedAt: (result: Result<{ id: string; updatedAt: Timestamp }[]>): this => {
+            this.basicFoldersRepositoryTestkit.mockGetBasicFoldersIdsAndsUpdatedAt(result);
             return this;
         },
     };
 
     when = {
-        init: (): this => {
-            this.service = new BasicFolderChangeDetectionService({
-                logger: this.get.logger(),
-                maxRetry: this.maxRetry,
-                basicFolderRepositoryInterface: this.get.basicFoldersRepository(),
-            });
-            return this;
-        },
-        execute: async (current: BasicFolder[]) => {
-            return this.service.execute(current);
+        execute: (basicFolder?: BasicFolder[]): Promise<Result<BasicFolderChange>> => {
+            return this.basicFolderChangeDetectionService.execute(basicFolder || aBasicFoldersList());
         },
     };
 
