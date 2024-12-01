@@ -51,7 +51,9 @@ describe('BasicFolderChangeHandlerService', () => {
         });
 
         describe('Basic Folder Updated Fail', () => {
-            beforeEach(() => driver.given.basicFolderUpdated(Result.fail()).when.execute(aBasicFoldersList()));
+            beforeEach(() =>
+                driver.given.mockHandleBasicFoldersChange(Result.fail()).when.execute(aBasicFoldersList()),
+            );
 
             it('should return failed result when basicFolderUpdated fails', () => {
                 expect(result.isFail()).toBe(true);

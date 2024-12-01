@@ -86,7 +86,7 @@ export class BasicFolderChangeHandlerService {
         this.options.logger.debug(`starting to refetch folders`);
 
         const folderChanges = await RetryUtils.retry(
-            () => this.options.updateRegisteredFoldersService.basicFolderUpdated(change),
+            () => this.options.updateRegisteredFoldersService.handleBasicFoldersChange(change),
             this.options.maxRetry,
             this.options.logger,
         );

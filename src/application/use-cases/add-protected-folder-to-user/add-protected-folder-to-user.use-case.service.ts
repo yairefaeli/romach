@@ -1,6 +1,6 @@
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
+import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders/registered-folders.service';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
-import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders.service';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { catchError, switchMap } from 'rxjs/operators';

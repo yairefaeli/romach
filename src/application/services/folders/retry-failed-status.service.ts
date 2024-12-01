@@ -71,8 +71,8 @@ export class RetryFailedStatusService {
         this.options.logger.info(`Retrying a batch of ${failedFolders.length} failed folders.`);
 
         const succeededRegisteredFolders: RegisteredFolder[] = [];
-        const failedRegsiteredFolders: RegisteredFolder[] = [];
-        const removeRegsiteredFolders: RegisteredFolder[] = [];
+        const failedRegisteredFolders: RegisteredFolder[] = [];
+        const removeRegisteredFolders: RegisteredFolder[] = [];
 
         // Process all folders and collect results
         const results = await Promise.all(
@@ -85,9 +85,9 @@ export class RetryFailedStatusService {
             if (result.isOk()) {
                 succeededRegisteredFolders.push(folder);
             } else if (result.error().includes('not-found')) {
-                removeRegsiteredFolders.push(folder);
+                removeRegisteredFolders.push(folder);
             } else {
-                failedRegsiteredFolders.push(folder);
+                failedRegisteredFolders.push(folder);
             }
         });
 
@@ -98,27 +98,27 @@ export class RetryFailedStatusService {
         }
 
         // Handle removals
-        if (!isEmpty(removeRegsiteredFolders)) {
-            const removeRegisterFoldersIds = removeRegsiteredFolders.map(
+        if (!isEmpty(removeRegisteredFolders)) {
+            const removeRegisterFoldersIds = removeRegisteredFolders.map(
                 (foldersIds) => foldersIds.getProps().folderId,
             );
-            this.options.logger.info(`Removing ${removeRegsiteredFolders.length} folders from the database.`);
+            this.options.logger.info(`Removing ${removeRegisteredFolders.length} folders from the database.`);
             await this.deleteRegisterFoldersFromRepository(removeRegisterFoldersIds);
         }
 
         // Handle failures
-        if (!isEmpty(failedRegsiteredFolders)) {
-            this.options.logger.error(`Failed to retry ${failedRegsiteredFolders.length} folders.`);
-            failedRegsiteredFolders.forEach((folder) => {
+        if (!isEmpty(failedRegisteredFolders)) {
+            this.options.logger.error(`Failed to retry ${failedRegisteredFolders.length} folders.`);
+            failedRegisteredFolders.forEach((folder) => {
                 this.options.logger.error(`Folder ID: ${folder.getProps().folderId} failed with error.`);
             });
 
             // Optionally re-queue failed folders for a later retry
-            this.folderRetrySubject.next(failedRegsiteredFolders);
+            this.folderRetrySubject.next(failedRegisteredFolders);
         }
 
         // Return combined result
-        if (!isEmpty(failedRegsiteredFolders)) {
+        if (!isEmpty(failedRegisteredFolders)) {
             return Result.fail(`Failed to retry some folders in batch.`);
         }
 

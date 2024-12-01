@@ -10,8 +10,9 @@ jest.mock('./update-registered-folders.service', () => ({
 export const UpdateRegisteredFoldersServiceTestkit = () => {
     const updateRegisteredFoldersService = new UpdateRegisteredFoldersService(null);
 
-    const mockBasicFolderUpdated = (value: Awaited<ReturnType<UpdateRegisteredFoldersService['basicFolderUpdated']>>) =>
-        (updateRegisteredFoldersService.basicFolderUpdated = jest.fn().mockReturnValue(Promise.resolve(value)));
+    const mockHandleBasicFoldersChange = (
+        value: Awaited<ReturnType<UpdateRegisteredFoldersService['handleBasicFoldersChange']>>,
+    ) => (updateRegisteredFoldersService.handleBasicFoldersChange = jest.fn().mockReturnValue(Promise.resolve(value)));
 
-    return { mockBasicFolderUpdated, updateRegisteredFoldersService: () => updateRegisteredFoldersService };
+    return { mockHandleBasicFoldersChange, updateRegisteredFoldersService: () => updateRegisteredFoldersService };
 };

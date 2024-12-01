@@ -42,8 +42,8 @@ export class BasicFolderChangeHandlerServiceDriver {
             this.updateBasicFolderRepositoryServiceTestkit.mockExecute(result);
             return this;
         },
-        basicFolderUpdated: (result: Result): this => {
-            this.updateRegisteredFoldersServiceTestkit.mockBasicFolderUpdated(result);
+        mockHandleBasicFoldersChange: (result: Result): this => {
+            this.updateRegisteredFoldersServiceTestkit.mockHandleBasicFoldersChange(result);
             return this;
         },
     };

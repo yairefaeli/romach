@@ -17,7 +17,7 @@ export class GarbageCollectorService {
         setInterval(() => this.performGarbageCollection(), this.options.gcInterval);
     }
 
-    private async performGarbageCollection(): Promise<Result<void>> {
+    private async performGarbageCollection(): Promise<Result> {
         this.options.logger.info('Starting garbage collection for registered folders...');
 
         // Query the database to get registered folders matching the conditions
