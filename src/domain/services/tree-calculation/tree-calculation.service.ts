@@ -1,42 +1,62 @@
-import { BasicFolder } from '../../entities/BasicFolder';
+import {
+    folderMapper,
+    RomachEnemyFolder,
+    RomachEnemyFolderDto,
+    RomachEnemyFoldersTree,
+    RomachEnemyFoldersTreeHierarchyDto,
+    RomachEnemyFoldersTreeNode,
+} from '../../romach-enemy-folders';
+import { BasicFolder, RomachEnemyFolderDto } from '../../entities/BasicFolder';
 import { Hierarchy } from '../../entities/Hierarchy';
-import { Timestamp } from '../../entities/Timestamp';
 import { groupBy, isEmpty, isNil } from 'lodash';
-import { Folder } from '../../entities/folder';
 import { Tree } from '../../entities/Tree';
 import { Result } from 'rich-domain';
 
 export class TreeCalculationService {
-    calculateTreeTest(basicFolders: BasicFolder[], hierarchies: Hierarchy[]): Tree {
+    calculateTreeTest(basicFolders: BasicFolder[], hierarchies: Hierarchy[]): Promise<Result<Tree>> {
         return {
-            updatedAt: Timestamp.now(),
-            nodes: [],
+            // updatedAt: Timestamp.now(),
+            // nodes: [],
+            //
         };
     }
 
-    calculateTree(basicFolders: BasicFolder[], hierarchies: Hierarchy[]): Result<Tree> {
-        if (isEmpty(hierarchies) || isNil(basicFolders)) {
+    calculateTree(
+        basicFolderDtos: RomachEnemyFolderDto[],
+        hierarchies: RomachEnemyFoldersTreeHierarchyDto[],
+    ): { tree: RomachEnemyFoldersTree; categoriesCount: number } {
+        if (isEmpty(hierarchies) || isNil(basicFolderDtos)) {
             return { tree: { nodes: [] }, categoriesCount: 0 };
         }
 
         let categoryCount = 0;
 
-        // const folders: Folder[];
+        const folders: RomachEnemyFolder[] = basicFolderDtos.map(folderMapper);
 
-        const foldersByCategory = groupBy((folder) => folder.getProps().basicFolder.getProps().categoryId);
+        const foldersByCategory = groupBy(folders, (folder) => folder.category);
 
         const nodes = hierarchies.map((hierarchy) => transformNode(hierarchy));
 
         return { tree: { nodes }, categoriesCount: categoryCount };
 
-        function transformNode(hierarchy: Hierarchy): Folder {
+        function transformNode(hierarchy: RomachEnemyFoldersTreeHierarchyDto): RomachEnemyFoldersTreeNode {
             categoryCount += 1;
-            if (hierarchy.getProps().children.length === 0) {
+
+            const folderNodes: RomachEnemyFoldersTreeNode[] = (foldersByCategory[hierarchy.name] ?? []).map(
+                (folder) => ({
+                    type: 'category',
+                    id: folder.id,
+                    name: folder.name,
+                    children: [],
+                }),
+            );
+
+            if (hierarchy.children.length === 0) {
                 return {
                     type: 'category',
-                    id: hierarchy.getProps().id,
-                    name: hierarchy.getProps().displayName,
-                    children: foldersByCategory[hierarchy.getProps().displayName] ?? [],
+                    id: hierarchy.id,
+                    name: hierarchy.displayName,
+                    children: folderNodes,
                 };
             }
 
@@ -44,10 +64,7 @@ export class TreeCalculationService {
                 type: 'category',
                 id: hierarchy.id,
                 name: hierarchy.displayName,
-                children: [
-                    ...(foldersByCategory[hierarchy.name] ?? []),
-                    ...(hierarchy.children.map((child) => transformNode(child)) ?? []),
-                ],
+                children: [...folderNodes, ...hierarchy.children.map((child) => transformNode(child))],
             };
         }
     }

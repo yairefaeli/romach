@@ -129,20 +129,23 @@ export class TreeCalculationHandlerService {
 
     private async calculateTree(currentFolders: BasicFolder[], currentHierarchies: Hierarchy[]): Promise<Result<void>> {
         this.options.logger.debug('Starting tree calculation');
-        try {
-            await RetryUtils.retry(
-                async () => {
-                    this.options.treeCalculationService.calculateTree(currentFolders, currentHierarchies);
-                    return Result.Ok();
-                },
-                this.options.maxRetry,
-                this.options.logger,
-            );
-            this.options.logger.info('Tree calculation completed successfully.');
-            return Result.Ok();
-        } catch (error) {
-            this.options.logger.error(`Error calculating tree: ${error.message}`);
-            return Result.fail(`Tree calculation failed: ${error.message}`);
-        }
+        return RetryUtils.retry(
+            async () => {
+                const result = await this.options.treeCalculationService.calculateTreeTest(
+                    currentFolders,
+                    currentHierarchies,
+                );
+
+                if (result.isFail()) {
+                    this.options.logger.error(`Tree calculation failed: ${result.error()}`);
+                    return Result.fail(`Tree calculation failed: ${result.error()}`);
+                }
+
+                this.options.logger.info('Tree calculation completed successfully.');
+                return Result.Ok();
+            },
+            this.options.maxRetry,
+            this.options.logger,
+        );
     }
 }

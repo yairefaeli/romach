@@ -1,3 +1,4 @@
+import { RomachEnemyAreaDto, RomachEnemySinglePointDto } from '../romach-enemy-folders';
 import { ValidationResult } from '../../utils/ValidationUtils/ValidationResult';
 import { ValidationUtils } from '../../utils/ValidationUtils/ValidationUtils';
 import { Timestamp } from './Timestamp';
@@ -16,8 +17,15 @@ export interface BasicFolderProps {
     categoryId: string;
 }
 
+export interface RomachEnemyFoldersDto extends BasicFolder {
+    entities: {
+        areas: RomachEnemyAreaDto[];
+        points: RomachEnemySinglePointDto[];
+    };
+}
+
 export class BasicFolder {
-    private props: BasicFolderProps;
+    private readonly props: BasicFolderProps;
 
     protected constructor(props: BasicFolderProps) {
         this.props = props;

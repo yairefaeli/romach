@@ -7,6 +7,7 @@ import { Area } from './Area';
 import { z } from 'zod';
 
 export interface FolderProps {
+    type: 'folder';
     basicFolder?: BasicFolder;
     entities: {
         areas: Area[];
