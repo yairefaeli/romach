@@ -45,7 +45,9 @@ describe('BasicFolderChangeHandlerService', () => {
                 );
             });
 
-            it('should not call update basic repository folders service', () => {});
+            it('should not call update basic repository folders service', () => {
+                expect(driver.get.updateBasicFoldersRepositoryService().execute).not.toHaveBeenCalled();
+            });
         });
 
         describe('Basic Folder Updated Fail', () => {
@@ -60,113 +62,46 @@ describe('BasicFolderChangeHandlerService', () => {
                     expect.stringContaining('Error to calc folder changes'),
                 );
             });
+
+            it('should not call update basic repository folders service', () => {
+                expect(driver.get.updateBasicFoldersRepositoryService().execute).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('Update Basic Folders Repository', () => {
+            const changes = aBasicFolderChange();
+
+            beforeEach(() => driver.given.detectChanges(Result.Ok(changes)));
+
+            describe('Update Basic Folders Repository Fail', () => {
+                beforeEach(async () => {
+                    result = await driver.given
+                        .updateBasicFoldersRepository(Result.fail())
+                        .when.execute(aBasicFoldersList());
+                });
+
+                it('should call update basic repository folders service with detected changes', () => {
+                    expect(driver.get.updateBasicFoldersRepositoryService().execute).toHaveBeenCalledWith(changes);
+                });
+
+                it('should return fail result when update basic folders repository fails', () => {
+                    expect(result.isFail()).toBe(true);
+                });
+            });
+
+            describe('Update Basic Folders Repository Success', () => {
+                beforeEach(async () => {
+                    result = await driver.when.execute(aBasicFoldersList());
+                });
+
+                it('should call update basic repository folders service with folders list', () => {
+                    expect(driver.get.updateBasicFoldersRepositoryService().execute).toHaveBeenCalledWith(changes);
+                });
+
+                it('should return fail result when update basic folders repository fails', () => {
+                    expect(result.isOk()).toBe(true);
+                });
+            });
         });
     });
-
-    // describe('Detect Changes', () => {
-    //
-    //     describe('Successful detection', () => {
-    //         let result: Result<void>;
-    //
-    //         beforeEach(async () => {
-    //             const changes = aBasicFolderChange();
-    //             await driver.given.detectChanges(Result.Ok(changes)).when.init();
-    //             result = await driver.when.execute([aBasicFolder()]);
-    //         });
-    //
-    //         it('should proceed with processing changes after successful detection', () => {
-    //             expect(result.isOk()).toBe(true);
-    //         });
-    //     });
-    // });
-    //
-    // describe('Tree Calculation', () => {
-    //     describe('Tree calculation failure', () => {
-    //         let result: Result<void>;
-    //
-    //         beforeEach(async () => {
-    //             const changes = aBasicFolderChange();
-    //             await driver
-    //                 .given.detectChanges(Result.Ok(changes))
-    //                 .given.treeCalculationService(Result.fail('Tree calculation error'))
-    //                 .when.init();
-    //
-    //             result = await driver.when.execute([aBasicFolder()]);
-    //         });
-    //
-    //         it('should log an error when tree calculation fails', () => {
-    //             expect(driver.get.logger().error).toHaveBeenCalledWith(
-    //                 expect.stringContaining('error to tree calculator Changes: Tree calculation error'),
-    //             );
-    //         });
-    //
-    //         it('should return a failed result', () => {
-    //             expect(result.isFail()).toBe(true);
-    //         });
-    //     });
-    //
-    //     describe('Successful tree calculation', () => {
-    //         let result: Result<void>;
-    //
-    //         beforeEach(async () => {
-    //             const changes = aBasicFolderChange();
-    //             await driver
-    //                 .given.detectChanges(Result.Ok(changes))
-    //                 .given.treeCalculationService(Result.Ok())
-    //                 .when.init();
-    //
-    //             result = await driver.when.execute([aBasicFolder()]);
-    //         });
-    //
-    //         it('should proceed after successful tree calculation', () => {
-    //             expect(result.isOk()).toBe(true);
-    //         });
-    //     });
-    // });
-    //
-    // describe('Save Changes', () => {
-    //     describe('Failure to save changes', () => {
-    //         let result: Result<void>;
-    //
-    //         beforeEach(async () => {
-    //             const changes = aBasicFolderChange();
-    //             await driver
-    //                 .given.detectChanges(Result.Ok(changes))
-    //                 .given.treeCalculationService(Result.Ok())
-    //                 .given.repositorySave(Result.fail('Save error'))
-    //                 .when.init();
-    //
-    //             result = await driver.when.execute([aBasicFolder()]);
-    //         });
-    //
-    //         it('should log an error when saving fails', () => {
-    //             expect(driver.get.logger().error).toHaveBeenCalledWith(
-    //                 expect.stringContaining('Failed to save changes'),
-    //             );
-    //         });
-    //
-    //         it('should return a failed result', () => {
-    //             expect(result.isFail()).toBe(true);
-    //         });
-    //     });
-    //
-    //     describe('Successful save', () => {
-    //         let result: Result<void>;
-    //
-    //         beforeEach(async () => {
-    //             const changes = aBasicFolderChange();
-    //             await driver
-    //                 .given.detectChanges(Result.Ok(changes))
-    //                 .given.treeCalculationService(Result.Ok())
-    //                 .given.repositorySave(Result.Ok())
-    //                 .when.init();
-    //
-    //             result = await driver.when.execute([aBasicFolder()]);
-    //         });
-    //
-    //         it('should return a success result', () => {
-    //             expect(result.isOk()).toBe(true);
-    //         });
-    //     });
-    // });
 });

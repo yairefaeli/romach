@@ -34,12 +34,16 @@ export class BasicFolderChangeHandlerServiceDriver {
             this.treeCalculationHandlerTestkit.mockExecute(result);
             return this;
         },
-        basicFolderUpdated: (result: Result): this => {
-            this.updateRegisteredFoldersServiceTestkit.mockExecute(result);
-            return this;
-        },
         detectChanges: (result: Result<BasicFolderChange>): this => {
             this.basicFolderChangeDetectionServiceTestkit.mockExecute(result);
+            return this;
+        },
+        updateBasicFoldersRepository: (result: Result): this => {
+            this.updateBasicFolderRepositoryServiceTestkit.mockExecute(result);
+            return this;
+        },
+        basicFolderUpdated: (result: Result): this => {
+            this.updateRegisteredFoldersServiceTestkit.mockBasicFolderUpdated(result);
             return this;
         },
     };
