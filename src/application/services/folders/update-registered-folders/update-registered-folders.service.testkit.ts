@@ -3,7 +3,7 @@ import { Result } from 'rich-domain';
 
 jest.mock('./update-registered-folders.service', () => ({
     UpdateRegisteredFoldersService: jest.fn().mockImplementation(() => ({
-        basicFolderUpdated: jest.fn().mockReturnValue(Promise.resolve(Result.Ok())),
+        handleBasicFoldersChange: jest.fn().mockReturnValue(Promise.resolve(Result.Ok())),
     })),
 }));
 
