@@ -96,7 +96,11 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
-      "!**/*.(mock|driver|module|testkit).ts"
+      "!**/main.(t|j)s",
+      "!**/constants.(t|j)s",
+      "!**/entities/*.(t|j)s",
+      "!**/app-config.service.(t|j)s",
+      "!**/*.(mock|driver|module|testkit|builder).ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
