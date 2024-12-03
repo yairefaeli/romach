@@ -7,7 +7,7 @@ export interface RegisteredFolderRepositoryInterface {
     upsertRegisteredFolder(folders: RegisteredFolder): Promise<Result>;
     upsertRegisteredFolders(folders: RegisteredFolder[]): Promise<Result>;
     getRegisteredFoldersByUpn(upn: string): Promise<Result<RegisteredFolder[]>>;
-    getRegisteredFoldersWithFailedStatuses(): Promise<Result<RegisteredFolder[]>>;
+    getRegisteredFoldersWithFailedStatus(): Promise<Result<RegisteredFolder[]>>;
     getRegisteredFoldersById(folderId: string): Promise<Result<RegisteredFolder[]>>; // why you are return RegisteredFolder array?
     deleteRegisteredFoldersByIdsForUpn(ids: string[], upn: string): Promise<Result>;
     getRegisteredFoldersByIds(folderIds: string[]): Promise<Result<RegisteredFolder[]>>;

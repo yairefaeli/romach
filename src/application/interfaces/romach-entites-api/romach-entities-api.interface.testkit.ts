@@ -1,4 +1,5 @@
 import { RomachEntitiesApiInterface } from './romach-entities-api.interface';
+import { Result } from 'rich-domain';
 
 export const RomachEntitiesApiTestkit = () => {
     const romachEntitiesApiInterface: RomachEntitiesApiInterface = {
@@ -17,9 +18,7 @@ export const RomachEntitiesApiTestkit = () => {
         romachEntitiesApiInterface.fetchHierarchies = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 
-    const mockFetchFolderByIdAndPassword = (
-        value: ReturnType<RomachEntitiesApiInterface['fetchFolderByIdAndPassword']>,
-    ) => {
+    const mockFetchFolderByIdAndPassword = (value: (folder) => Result<void>) => {
         romachEntitiesApiInterface.fetchFolderByIdAndPassword = jest.fn().mockReturnValue(Promise.resolve(value));
     };
 

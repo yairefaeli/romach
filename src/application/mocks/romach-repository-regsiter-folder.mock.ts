@@ -12,6 +12,6 @@ export function repositoryInitialHierarchiesBuilder(): RegisteredFolderRepositor
         deleteRegisteredFoldersByIdsForUpn: jest.fn(),
         updateRegistrationByUpnAndFolderIds: jest.fn(),
         getExpiredRegisteredFolders: jest.fn(),
-        getRegisteredFoldersWithFailedStatuses: jest.fn(),
+        getRegisteredFoldersWithFailedStatus: jest.fn(),
     };
 }

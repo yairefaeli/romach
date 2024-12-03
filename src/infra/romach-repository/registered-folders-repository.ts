@@ -42,7 +42,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
         }
     }
 
-    async getRegisteredFoldersWithFailedStatuses(): Promise<Result<RegisteredFolder[]>> {
+    async getRegisteredFoldersWithFailedStatus(): Promise<Result<RegisteredFolder[]>> {
         try {
             const folders = await this.knex<RegisteredFolder>('registered_folders')
                 .whereIn('status', ['loading', 'general-error', 'not-found'])

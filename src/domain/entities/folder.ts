@@ -8,14 +8,15 @@ import { z } from 'zod';
 
 export interface FolderProps {
     type: 'folder';
-    basicFolder?: BasicFolder;
+    basicFolder: BasicFolder;
     entities: {
         areas: Area[];
         points: Point[];
     };
 }
+
 export class Folder {
-    private constructor(private props: FolderProps) {
+    private constructor(private readonly props: FolderProps) {
         this.props = props;
     }
 

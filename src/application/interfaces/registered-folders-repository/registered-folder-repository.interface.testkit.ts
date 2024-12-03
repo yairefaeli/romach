@@ -18,7 +18,7 @@ export const RegisteredFolderRepositoryTestkit = () => {
         getRegisteredFoldersByIdAndPassword: jest
             .fn()
             .mockReturnValue(Promise.resolve(Result.Ok(aValidRegisteredFoldersList(1)))),
-        getRegisteredFoldersWithFailedStatuses: jest
+        getRegisteredFoldersWithFailedStatus: jest
             .fn()
             .mockReturnValue(Promise.resolve(Result.Ok(aValidRegisteredFoldersList()))),
     };
@@ -73,9 +73,9 @@ export const RegisteredFolderRepositoryTestkit = () => {
             .mockReturnValue(Promise.resolve(value)));
 
     const mockGetRegisteredFoldersWithFailedStatuses = (
-        value: Awaited<ReturnType<RegisteredFolderRepositoryInterface['getRegisteredFoldersWithFailedStatuses']>>,
+        value: Awaited<ReturnType<RegisteredFolderRepositoryInterface['getRegisteredFoldersWithFailedStatus']>>,
     ) =>
-        (registeredFolderRepository.getRegisteredFoldersWithFailedStatuses = jest
+        (registeredFolderRepository.getRegisteredFoldersWithFailedStatus = jest
             .fn()
             .mockReturnValue(Promise.resolve(value)));
 
