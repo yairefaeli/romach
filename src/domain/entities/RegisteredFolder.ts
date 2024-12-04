@@ -174,8 +174,15 @@ export class RegisteredFolder {
         return this.props;
     }
 
-    updateFolder(folder: Folder) {
-        return RegisteredFolder.createValidRegisteredFolder({ ...this.props, folder });
+    updateFolder(folder: Folder): Result<RegisteredFolder> {
+        const { upn, password, lastValidPasswordTimestamp } = this.props;
+
+        return RegisteredFolder.createValidRegisteredFolder({
+            upn,
+            folder,
+            password,
+            lastValidPasswordTimestamp,
+        });
     }
 
     changeStatus(status: RegisteredFolderStatus) {
