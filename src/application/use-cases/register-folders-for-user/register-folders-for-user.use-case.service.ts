@@ -39,6 +39,7 @@ export class RegisterFoldersForUserUseCase {
         );
 
         const deleteResult = await this.deleteIrrelevantFolders(irrelevantFolders, upn);
+
         if (deleteResult.isFail()) {
             return Result.fail(deleteResult.error());
         }

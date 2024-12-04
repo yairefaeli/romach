@@ -5,7 +5,7 @@ import { TreeCalculationService } from 'src/domain/services/tree-calculation/tre
 import { catchError, concatMap, filter, map, retry, switchMap, tap } from 'rxjs/operators';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
-import { EMPTY, Observable, OperatorFunction, from, of, timer } from 'rxjs';
+import { EMPTY, from, Observable, of, OperatorFunction, timer } from 'rxjs';
 import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
 import { RxJsUtils } from '../../../utils/RxJsUtils/RxJsUtils';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';

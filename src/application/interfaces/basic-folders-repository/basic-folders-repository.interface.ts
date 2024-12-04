@@ -7,10 +7,16 @@ export type NullableTimestamp = Timestamp | null;
 
 export interface BasicFoldersRepositoryInterface {
     saveBasicFoldersTimestamp(timestamp: Timestamp): Promise<Result>;
+
     getBasicFoldersTimestamp(): Promise<Result<NullableTimestamp>>;
+
     getBasicFolders(): Promise<Result<BasicFolder[]>>;
+
     getBasicFolderById(id: string): Promise<Result<BasicFolder>>;
+
     saveBasicFolders(basicFolders: BasicFolder[]): Promise<Result>;
-    deleteBasicFolderByIds(ids: string[]): Promise<Result>;
+
+    deleteBasicFolderByIds(ids: string[]): Promise<Result<void, string, {}>>;
+
     getBasicFoldersIdsAndsUpdatedAt(folderIds: string[]): Promise<Result<FoldersIdsAndsUpdatedAt[]>>;
 }

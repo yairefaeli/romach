@@ -1,7 +1,7 @@
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Timestamp } from '../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 
@@ -44,13 +44,13 @@ export class BasicFoldersRepository implements BasicFoldersRepositoryInterface {
         }
     }
 
-    async deleteBasicFolderByIds(ids: string[]): Promise<Result<void[]>> {
+    async deleteBasicFolderByIds(ids: string[]): Promise<Result<void, string, {}>> {
         try {
-            await this.knex('basic_folders').whereIn('id', ids).del();
-            Result.Ok();
+            await this.knex('basic_folders').whereIn('id', ids).delete();
+            return Result.Ok();
         } catch (error) {
-            this.logger.error('Error deleting folders by ID');
-            return Result.fail('DatabaseError');
+            this.logger.error('Failed to delete basic folders', error);
+            return Result.fail('Failed to delete basic folders');
         }
     }
 

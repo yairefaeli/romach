@@ -16,8 +16,8 @@ export interface AddProtectedFolderToUserInput {
 export class AddProtectedFolderToUserUseCase {
     constructor(
         private readonly logger: AppLoggerService,
-        private romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
         private api: RomachEntitiesApiInterface,
+        private romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface,
         private registeredFolderService: RegisteredFoldersService,
     ) {}
 

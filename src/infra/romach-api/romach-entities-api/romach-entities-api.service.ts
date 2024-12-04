@@ -4,7 +4,7 @@ import { FolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
 import { AppLoggerService } from '../../logging/app-logger.service';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../../domain/entities/Hierarchy';
-import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/Folder';
 import { gql } from 'graphql-request';
 import { Result } from 'rich-domain';

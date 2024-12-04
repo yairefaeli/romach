@@ -11,7 +11,7 @@ import { from, switchMap, timer } from 'rxjs';
 import { Result } from 'rich-domain';
 import { reduce } from 'lodash';
 
-export type BasicFolderReplicationHandlerFn = (basicFolders: BasicFolder[]) => Result<void> | Promise<Result<void>>;
+export type BasicFolderReplicationHandlerFn = (basicFolders: BasicFolder[]) => Result<void>;
 
 export interface BasicFoldersReplicationUseCaseOptions {
     romachApi: RomachEntitiesApiInterface;

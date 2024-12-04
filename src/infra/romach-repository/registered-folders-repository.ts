@@ -1,7 +1,7 @@
 import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Timestamp } from '../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 
@@ -34,7 +34,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
                 })
                 .select('*');
 
-            this.logger.info(`Fetched ${folders.length} expired registered folders from repository.`);
+            this.logger.info(`Fetched ${folders} expired registered folders from repository.`);
             return Result.Ok(folders);
         } catch (error) {
             this.logger.error('Error fetching expired registered folders');
@@ -48,7 +48,7 @@ export class RegisteredFoldersRepository implements RegisteredFolderRepositoryIn
                 .whereIn('status', ['loading', 'general-error', 'not-found'])
                 .select('id', 'status');
 
-            this.logger.info(`Fetched ${folders.length} registered folders with failed statuses from repository.`);
+            this.logger.info(`Fetched ${folders} registered folders with failed statuses from repository.`);
             return Result.Ok(folders);
         } catch (error) {
             this.logger.error('Error fetching registered folders with failed statuses');

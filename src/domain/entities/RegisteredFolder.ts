@@ -35,10 +35,6 @@ class PasswordProtectedValidSpecification implements ISpecification<PasswordProt
 export class RegisteredFolder {
     private constructor(private readonly props: RegisteredFolderProps) {}
 
-    getProps(): RegisteredFolderProps {
-        return this.props;
-    }
-
     static createValidRegisteredFolder(
         input: Pick<RegisteredFolderProps, 'upn' | 'folder' | 'password' | 'lastValidPasswordTimestamp'>,
     ): Result<RegisteredFolder> {
@@ -117,34 +113,7 @@ export class RegisteredFolder {
         });
     }
 
-    private static createInvalidRegisteredFolder(
-        input: Pick<
-            RegisteredFolderProps,
-            'upn' | 'folderId' | 'status' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
-        >,
-    ): Result<RegisteredFolder> {
-        const passwordProtectedValidSpecification = new PasswordProtectedValidSpecification().isSatisfiedBy({
-            isPasswordProtected: input.isPasswordProtected,
-            password: input.password,
-            lastValidPasswordTimestamp: input.lastValidPasswordTimestamp,
-        });
-
-        if (passwordProtectedValidSpecification.isFail()) {
-            return Result.fail(passwordProtectedValidSpecification.error());
-        }
-
-        return Result.Ok(
-            new RegisteredFolder({
-                ...input,
-                folder: null,
-                registeredTimestamp: Timestamp.now(),
-                updatedAtTimestamp: Timestamp.now(),
-            }),
-        );
-    }
-
     static getCreateFunctionByStatus(status: RegisteredFolderStatus) {
-        // i think Eyal will not like it :)
         switch (status) {
             case 'valid':
                 return RegisteredFolder.createValidRegisteredFolder;
@@ -173,6 +142,36 @@ export class RegisteredFolder {
         }
 
         return Result.Ok(newRegisteredFoldersResult.map((x) => x.value()));
+    }
+
+    private static createInvalidRegisteredFolder(
+        input: Pick<
+            RegisteredFolderProps,
+            'upn' | 'folderId' | 'status' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
+        >,
+    ): Result<RegisteredFolder> {
+        const passwordProtectedValidSpecification = new PasswordProtectedValidSpecification().isSatisfiedBy({
+            isPasswordProtected: input.isPasswordProtected,
+            password: input.password,
+            lastValidPasswordTimestamp: input.lastValidPasswordTimestamp,
+        });
+
+        if (passwordProtectedValidSpecification.isFail()) {
+            return Result.fail(passwordProtectedValidSpecification.error());
+        }
+
+        return Result.Ok(
+            new RegisteredFolder({
+                ...input,
+                folder: null,
+                registeredTimestamp: Timestamp.now(),
+                updatedAtTimestamp: Timestamp.now(),
+            }),
+        );
+    }
+
+    getProps(): RegisteredFolderProps {
+        return this.props;
     }
 
     updateFolder(folder: Folder) {

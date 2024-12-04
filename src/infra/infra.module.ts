@@ -9,17 +9,17 @@ import { InitModule } from './init/init.module';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [
-    AppConfigModule,
-    LoggingModule,
-    DatabaseModule,
-    HttpModule,
-    RomachApiModule,
-    RomachRepositoryModule,
-    LeaderElectionModule,
-    InitModule,
-  ],
-  providers: [],
-  exports: [],
+    imports: [
+        AppConfigModule,
+        LoggingModule,
+        DatabaseModule,
+        HttpModule,
+        RomachApiModule,
+        RomachRepositoryModule,
+        LeaderElectionModule,
+        InitModule,
+    ],
+    providers: [],
+    exports: [],
 })
 export class InfraModule {}

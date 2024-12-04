@@ -1,7 +1,7 @@
 import { FolderErrorStatus } from 'src/domain/entities/ProtectedFolderStatus';
 import { BasicFolder } from '../../../domain/entities/BasicFolder';
 import { Hierarchy } from '../../../domain/entities/hierarchy';
-import { Timestamp } from 'src/domain/entities/Timestamp';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { Folder } from 'src/domain/entities/folder';
 import { Result } from 'rich-domain';
 
