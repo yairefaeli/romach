@@ -13,10 +13,3 @@ export type InvalidRegisteredFolderInput = Pick<
     RegisteredFolderProps,
     'upn' | 'folderId' | 'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp' | 'status'
 >;
-
-export type RegisteredFolderInput = ValidRegisteredFolderInput | InvalidRegisteredFolderInput;
-
-export type PasswordProtectedValidSpecificationProps = Pick<
-    RegisteredFolderProps,
-    'isPasswordProtected' | 'password' | 'lastValidPasswordTimestamp'
->;
