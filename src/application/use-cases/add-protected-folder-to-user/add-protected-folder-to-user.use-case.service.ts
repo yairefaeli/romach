@@ -60,7 +60,7 @@ export class AddProtectedFolderToUserUseCase {
                 }
 
                 const folder = foldersResponse.value();
-                return this.registeredFolderService.upsertValid(upn, folderId, folder);
+                return this.registeredFolderService.upsertValid({ upn, folderId, folder });
             }),
         );
     }
@@ -96,7 +96,7 @@ export class AddProtectedFolderToUserUseCase {
                         }
 
                         const folder = foldersResponse.value();
-                        return this.registeredFolderService.upsertValid(upn, folderId, folder, password);
+                        return this.registeredFolderService.upsertValid({ upn, folderId, folder, password });
                     }),
                 );
             }),

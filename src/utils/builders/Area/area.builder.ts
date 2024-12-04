@@ -1,5 +1,6 @@
 import { Area, AreaProps } from '../../../domain/entities/Area';
 import { chance } from '../../Chance/chance';
+import { aList } from '../list.builder';
 
 export const anArea = (overrides?: Partial<AreaProps>) =>
     Area.create({
@@ -9,7 +10,4 @@ export const anArea = (overrides?: Partial<AreaProps>) =>
         ...overrides,
     }).value();
 
-export const aAreasList = (length?: number) =>
-    Array(length ?? chance.integer({ min: 1, max: 10 }))
-        .fill(undefined)
-        .map(anArea);
+export const aAreasList = (length?: number) => aList({ length, anItem: anArea });

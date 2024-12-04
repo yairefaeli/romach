@@ -1,5 +1,6 @@
 import { Point, PointProps } from '../../../domain/entities/Point';
 import { chance } from '../../Chance/chance';
+import { aList } from '../list.builder';
 
 export const aPoint = (overrides?: Partial<PointProps>) =>
     Point.create({
@@ -9,7 +10,4 @@ export const aPoint = (overrides?: Partial<PointProps>) =>
         ...overrides,
     }).value();
 
-export const aPointsList = (length?: number) =>
-    Array(length ?? chance.integer({ min: 1, max: 10 }))
-        .fill(undefined)
-        .map(aPoint);
+export const aPointsList = (length?: number) => aList({ length, anItem: aPoint });

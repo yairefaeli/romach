@@ -1,5 +1,6 @@
 import { Hierarchy, HierarchyProps } from '../../../domain/entities/hierarchy';
 import { chance } from '../../Chance/chance';
+import { aList } from '../list.builder';
 
 export const aHierarchy = (overrides?: Partial<HierarchyProps>) =>
     Hierarchy.create({
@@ -9,3 +10,5 @@ export const aHierarchy = (overrides?: Partial<HierarchyProps>) =>
         children: [],
         ...overrides,
     }).value();
+
+export const aHierarchyList = (length?: number) => aList({ length, anItem: aHierarchy });

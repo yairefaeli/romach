@@ -2,11 +2,10 @@ import { RegisteredFolderRepositoryInterface } from '../../../interfaces/registe
 import { RegisteredFolder, RegisteredFolderProps } from '../../../../domain/entities/RegisteredFolder';
 import { RegisteredFolderErrorStatus } from '../../../../domain/entities/RegisteredFolderTypes';
 import { AppLoggerService } from '../../../../infra/logging/app-logger.service';
-import { ResultUtils } from '../../../../utils/ResultUtils/ResultUtils';
 import { Timestamp } from '../../../../domain/entities/Timestamp';
 import { Folder } from '../../../../domain/entities/folder';
+import { isEmpty, keyBy } from 'lodash';
 import { Result } from 'rich-domain';
-import { keyBy } from 'lodash';
 
 interface RegisteredFoldersServiceOptions {
     logger: AppLoggerService;
@@ -44,27 +43,30 @@ export class RegisteredFoldersService {
         return Result.Ok() as Result<void, RegisteredFolderErrorStatus>;
     }
 
-    public async upsertValid(
-        upn: string,
-        folderId: string,
-        folder: Folder,
-        password?: string,
-    ): Promise<Result<void, RegisteredFolderErrorStatus>> {
+    public async upsertValid({
+        upn,
+        folder,
+        folderId,
+        password,
+    }: Pick<RegisteredFolderProps, 'upn' | 'folder' | 'password' | 'folderId'>): Promise<
+        Result<void, RegisteredFolderErrorStatus>
+    > {
         const registeredFoldersResult =
             await this.options.registeredFoldersRepository.getRegisteredFoldersByIdAndPassword(folderId, password);
 
         const currentRegisteredFolders = registeredFoldersResult.value();
 
-        if (!currentRegisteredFolders) {
-            this.options.logger.error('failed to get registeredFolders with same folderId and password');
+        if (isEmpty(currentRegisteredFolders)) {
+            this.options.logger.error(`Failed to get registeredFolders with ${{ folderId, password }}`);
             return Result.fail('general-error');
         }
 
         const changedValidRegisteredFoldersResult = this.updateFoldersToRegisteredFolders(currentRegisteredFolders, [
             folder,
         ]);
+
         if (changedValidRegisteredFoldersResult.isFail()) {
-            this.options.logger.error('failed to update registeredFolders');
+            this.options.logger.error('Failed to update registeredFolders');
             return Result.fail('general-error');
         }
 
@@ -150,14 +152,10 @@ export class RegisteredFoldersService {
     public updateFoldersToRegisteredFolders(registeredFolders: RegisteredFolder[], folders: Folder[]) {
         const foldersById = keyBy(folders, (folder) => folder.getProps().basicFolder.getProps().id);
 
-        const updatedRegisteredFoldersResult = registeredFolders.map((registeredFolder) =>
-            registeredFolder.updateFolder(foldersById[registeredFolder.getProps().folderId]),
+        return Result.combine(
+            registeredFolders.map((registeredFolder) =>
+                registeredFolder.updateFolder(foldersById[registeredFolder.getProps().folderId]),
+            ),
         );
-
-        if (Result.combine(updatedRegisteredFoldersResult).isFail()) return Result.fail();
-
-        const newRegisteredFolders = ResultUtils.resultsToValues(updatedRegisteredFoldersResult);
-
-        return Result.Ok(newRegisteredFolders);
     }
 }

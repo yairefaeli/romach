@@ -1,4 +1,4 @@
-import { aValidRegisteredFoldersList } from '../../../../utils/builders/RegisteredFolder/registered-folder.builder';
+import { aValidRegisteredFoldersList } from '../../../../utils/builders/RegisteredFolder/valid-registered-folder.builder';
 import { RetryFailedStatusServiceDriver } from './retry-failed-status.service.driver';
 import { Result } from 'rich-domain';
 

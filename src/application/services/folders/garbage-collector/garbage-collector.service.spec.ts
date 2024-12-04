@@ -1,4 +1,4 @@
-import { aValidRegisteredFoldersList } from '../../../../utils/builders/RegisteredFolder/registered-folder.builder';
+import { aValidRegisteredFoldersList } from '../../../../utils/builders/RegisteredFolder/valid-registered-folder.builder';
 import { GarbageCollectorServiceDriver } from './garbage-collector.service.driver';
 import { Result } from 'rich-domain';
 

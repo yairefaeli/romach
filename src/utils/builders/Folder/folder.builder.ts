@@ -2,7 +2,7 @@ import { Folder, FolderProps } from '../../../domain/entities/folder';
 import { aBasicFolder } from '../BasicFolder/basic-folder.builder';
 import { aPointsList } from '../Point/point.builder';
 import { aAreasList } from '../Area/area.builder';
-import { chance } from '../../Chance/chance';
+import { aList } from '../list.builder';
 
 export const aFolder = (overrides?: Partial<FolderProps>) =>
     Folder.create({
@@ -12,7 +12,4 @@ export const aFolder = (overrides?: Partial<FolderProps>) =>
         ...overrides,
     }).value();
 
-export const aFoldersList = (length?: number) =>
-    Array(length ?? chance.integer({ min: 1, max: 10 }))
-        .fill(undefined)
-        .map(aFolder);
+export const aFoldersList = (length?: number) => aList({ length, anItem: aFolder });
