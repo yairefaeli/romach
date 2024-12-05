@@ -1,6 +1,6 @@
 import { GetUserRegisteredFoldersUseCase } from './get-user-registered-folders-use-case.service';
-import { Result } from 'rich-domain';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
+import { Result } from 'rich-domain';
 
 describe('GetUserRegisteredFoldersUseCase', () => {
     function mockRegisteredFolder(folderId: string): RegisteredFolder {
@@ -9,24 +9,19 @@ describe('GetUserRegisteredFoldersUseCase', () => {
         } as unknown as RegisteredFolder;
     }
 
-    function mockRomachRepositoryInterfaceBuilder(
-        registeredFolders: RegisteredFolder[] = [],
-    ) {
-        const getRegisteredFoldersByUpn = jest
-            .fn()
-            .mockResolvedValue(Result.Ok(registeredFolders));
+    function mockRomachRepositoryInterfaceBuilder(registeredFolders: RegisteredFolder[] = []) {
+        const getRegisteredFoldersByUpn = jest.fn().mockResolvedValue(Result.Ok(registeredFolders));
         return {
             ...mockRomachRepositoryInterfaceBuilder(),
             getRegisteredFoldersByUpn,
         };
     }
 
-    async function testingModuleBuilder(
-        input?: { registeredFolders: RegisteredFolder[]; getRegisteredFoldersByUpnError?: string },
-    ) {
-        const romachRepository = mockRomachRepositoryInterfaceBuilder(
-            input?.registeredFolders || [],
-        );
+    async function testingModuleBuilder(input?: {
+        registeredFolders: RegisteredFolder[];
+        getRegisteredFoldersByUpnError?: string;
+    }) {
+        const romachRepository = mockRomachRepositoryInterfaceBuilder(input?.registeredFolders || []);
 
         if (input?.getRegisteredFoldersByUpnError) {
             romachRepository.getRegisteredFoldersByUpn = jest
@@ -76,12 +71,10 @@ describe('GetUserRegisteredFoldersUseCase', () => {
                                     expect(result.error()).toBe(expectedResult.error());
                                 }
 
-                                expect(
-                                    romachRepository.getRegisteredFoldersByUpn,
-                                ).toHaveBeenCalledTimes(getRegisteredFoldersExpectedCalls);
-                                expect(
-                                    romachRepository.getRegisteredFoldersByUpn,
-                                ).toHaveBeenCalledWith(upn);
+                                expect(romachRepository.getRegisteredFoldersByUpn).toHaveBeenCalledTimes(
+                                    getRegisteredFoldersExpectedCalls,
+                                );
+                                expect(romachRepository.getRegisteredFoldersByUpn).toHaveBeenCalledWith(upn);
 
                                 done();
                             } catch (error) {

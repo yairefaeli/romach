@@ -1,4 +1,4 @@
-import { UpdateBasicFolderRepositoryServiceTestkit } from '../update-basic-folder-repository/update-basic-folder-repository.testkit.service';
+import { UpdateBasicFolderRepositoryServiceTestkit } from '../update-basic-folder-repository/update-basic-folders-repository.testkit.service';
 import { BasicFolderChangeDetectionServiceTestkit } from '../basic-folder-change-detection/basic-folder-change-detection.service.testkit';
 import { UpdateRegisteredFoldersServiceTestkit } from '../folders/update-registered-folders/update-registered-folders.service.testkit';
 import { TreeCalculationHandlerServiceTestkit } from '../tree-calculation-handler/tree-calculation-handler.service.testkit';
@@ -17,18 +17,6 @@ export class BasicFolderChangeHandlerServiceDriver {
     private updateRegisteredFoldersServiceTestkit = UpdateRegisteredFoldersServiceTestkit();
     private basicFolderChangeDetectionServiceTestkit = BasicFolderChangeDetectionServiceTestkit();
     private updateBasicFolderRepositoryServiceTestkit = UpdateBasicFolderRepositoryServiceTestkit();
-
-    constructor() {
-        this.basicFolderChangeHandlerService = new BasicFolderChangeHandlerService({
-            maxRetry: this.maxRetry,
-            logger: this.get.logger(),
-            treeCalculatorService: this.get.treeCalculationHandlerService(),
-            updateRegisteredFoldersService: this.get.updateRegisteredFoldersService(),
-            basicFolderChangeDetectionService: this.get.basicFolderChangeDetectionService(),
-            updateBasicFoldersRepositoryService: this.get.updateBasicFoldersRepositoryService(),
-        });
-    }
-
     given = {
         executeTreeCalculation: (result: Result): this => {
             this.treeCalculationHandlerTestkit.mockExecute(result);
@@ -47,7 +35,16 @@ export class BasicFolderChangeHandlerServiceDriver {
             return this;
         },
     };
-
+    get = {
+        logger: () => this.loggerTestkit.appLoggerService(),
+        updateRegisteredFoldersService: () =>
+            this.updateRegisteredFoldersServiceTestkit.updateRegisteredFoldersService(),
+        basicFolderChangeDetectionService: () =>
+            this.basicFolderChangeDetectionServiceTestkit.basicFolderChangeDetectionService(),
+        updateBasicFoldersRepositoryService: () =>
+            this.updateBasicFolderRepositoryServiceTestkit.basicFolderChangeDetectionService(),
+        treeCalculationHandlerService: () => this.treeCalculationHandlerTestkit.treeCalculationHandlerService(),
+    };
     when = {
         init: (): this => {
             this.basicFolderChangeHandlerService = new BasicFolderChangeHandlerService({
@@ -64,14 +61,14 @@ export class BasicFolderChangeHandlerServiceDriver {
         execute: (folders: BasicFolder[]) => this.basicFolderChangeHandlerService.execute(folders),
     };
 
-    get = {
-        logger: () => this.loggerTestkit.appLoggerService(),
-        updateRegisteredFoldersService: () =>
-            this.updateRegisteredFoldersServiceTestkit.updateRegisteredFoldersService(),
-        basicFolderChangeDetectionService: () =>
-            this.basicFolderChangeDetectionServiceTestkit.basicFolderChangeDetectionService(),
-        updateBasicFoldersRepositoryService: () =>
-            this.updateBasicFolderRepositoryServiceTestkit.basicFolderChangeDetectionService(),
-        treeCalculationHandlerService: () => this.treeCalculationHandlerTestkit.treeCalculationHandlerService(),
-    };
+    constructor() {
+        this.basicFolderChangeHandlerService = new BasicFolderChangeHandlerService({
+            maxRetry: this.maxRetry,
+            logger: this.get.logger(),
+            treeCalculatorService: this.get.treeCalculationHandlerService(),
+            updateRegisteredFoldersService: this.get.updateRegisteredFoldersService(),
+            basicFolderChangeDetectionService: this.get.basicFolderChangeDetectionService(),
+            updateBasicFoldersRepositoryService: this.get.updateBasicFoldersRepositoryService(),
+        });
+    }
 }

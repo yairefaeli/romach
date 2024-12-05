@@ -53,6 +53,12 @@ export interface RomachRefreshTokenApiConfig {
 
 export interface RomachBasicFolderConfig {
     pollInterval: number;
+    maxRetry: number;
+    retryInterval;
+}
+
+export interface RegsiteredFolderConfig {
+    maxRetry: number;
 }
 
 export interface RomachRefetchFoldersConfig {
@@ -65,6 +71,16 @@ export interface GarbageCollectorConfig {
     gcInterval: number;
 }
 
+export interface AddProtectedFolderToUserUseCaseConfig {
+    maxRetry: number;
+    gcInterval: number;
+}
+
+export interface RetryIntervalConfig {
+    maxRetry: number;
+    retryInterval: number;
+}
+
 export interface RomachConfig {
     realities: string[];
     hierarchy: RomachHierarchyConfig;
@@ -73,5 +89,8 @@ export interface RomachConfig {
     loginApi: RomachLoginApiConfig;
     refreshTokenApi: RomachRefreshTokenApiConfig;
     basicFolder: RomachBasicFolderConfig;
-    garbageCollector: GarbageCollectorConfig;
+    garbageCollectorConfig: GarbageCollectorConfig;
+    addProtectedFolderToUserUseCaseConfig: AddProtectedFolderToUserUseCaseConfig;
+    regsiteredFolderConfig: RegsiteredFolderConfig;
+    retryIntervalConfig: RetryIntervalConfig;
 }

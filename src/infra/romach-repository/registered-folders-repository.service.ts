@@ -5,7 +5,7 @@ import { Timestamp } from '../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 
-export class RegisteredFoldersRepository implements RegisteredFolderRepositoryInterface {
+export class RegisteredFoldersRepositoryService implements RegisteredFolderRepositoryInterface {
     constructor(
         private readonly knex: Knex,
         private readonly logger: AppLoggerService,

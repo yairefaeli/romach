@@ -2,6 +2,6 @@ import { TreeCalculationService } from './services/tree-calculation/tree-calcula
 import { Module } from '@nestjs/common';
 
 @Module({
-  providers: [TreeCalculationService],
+    providers: [TreeCalculationService],
 })
 export class DomainModule {}

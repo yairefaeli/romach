@@ -1,4 +1,4 @@
-import { AddProtectedFolderToUserUseCaseFactory } from '../../../../application/use-cases/add-protected-folder-to-user/add-protected-folder-to-user-use-case-factory.service';
+import { AddProtectedFolderToUserUseCaseFactory } from '../../../../application/use-cases/add-protected-folder-to-user/add-protected-folder-to-user-use-case.factory.service';
 import { BadRequestException, Body, Controller, Headers, HttpException, HttpStatus, Post } from '@nestjs/common';
 import { isNil } from 'lodash';
 

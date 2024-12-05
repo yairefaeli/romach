@@ -1,9 +1,14 @@
-import { RomachRepositoryFactoryService } from './repository-factory/romach-repository-factory.service';
-import { BasicFoldersFactoryService } from './repository-factory/basic-folders-factory.service';
+import { RegisteredFoldersServiceFactory } from '../../application/services/folders/registered-folders/registered-folders.service.factory';
+import { BasicFoldersRepositoryFactoryService } from './repository-factory/basic-folders-repository-factory.service';
+import { HierarchyRepositoryFactoryService } from './repository-factory/hierarchy-repository-factory.service';
 import { Module } from '@nestjs/common';
 
 @Module({
-    providers: [RomachRepositoryFactoryService, BasicFoldersFactoryService],
-    exports: [RomachRepositoryFactoryService, BasicFoldersFactoryService],
+    providers: [
+        HierarchyRepositoryFactoryService,
+        BasicFoldersRepositoryFactoryService,
+        RegisteredFoldersServiceFactory,
+    ],
+    exports: [HierarchyRepositoryFactoryService, BasicFoldersRepositoryFactoryService, RegisteredFoldersServiceFactory],
 })
 export class RomachRepositoryModule {}

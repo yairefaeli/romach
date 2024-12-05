@@ -1,32 +1,21 @@
 import {
     folderMapper,
     RomachEnemyFolder,
-    RomachEnemyFolderDto,
     RomachEnemyFoldersTree,
-    RomachEnemyFoldersTreeHierarchyDto,
     RomachEnemyFoldersTreeNode,
 } from '../../romach-enemy-folders';
-import { BasicFolder, RomachEnemyFolderDto } from '../../entities/BasicFolder';
-import { Hierarchy } from '../../entities/Hierarchy';
+import { BasicFolder } from '../../entities/BasicFolder';
+import { Hierarchy } from '../../entities/hierarchy';
 import { groupBy, isEmpty, isNil } from 'lodash';
-import { Tree } from '../../entities/Tree';
 import { Result } from 'rich-domain';
 
 export class TreeCalculationService {
-    calculateTreeTest(basicFolders: BasicFolder[], hierarchies: Hierarchy[]): Promise<Result<Tree>> {
-        return {
-            // updatedAt: Timestamp.now(),
-            // nodes: [],
-            //
-        };
-    }
-
     calculateTree(
-        basicFolderDtos: RomachEnemyFolderDto[],
-        hierarchies: RomachEnemyFoldersTreeHierarchyDto[],
-    ): { tree: RomachEnemyFoldersTree; categoriesCount: number } {
+        basicFolderDtos: BasicFolder[],
+        hierarchies: Hierarchy[],
+    ): Result<{ tree: RomachEnemyFoldersTree; categoriesCount: number }> {
         if (isEmpty(hierarchies) || isNil(basicFolderDtos)) {
-            return { tree: { nodes: [] }, categoriesCount: 0 };
+            return Result.Ok({ tree: { nodes: [] }, categoriesCount: 0 });
         }
 
         let categoryCount = 0;
@@ -37,12 +26,12 @@ export class TreeCalculationService {
 
         const nodes = hierarchies.map((hierarchy) => transformNode(hierarchy));
 
-        return { tree: { nodes }, categoriesCount: categoryCount };
+        return Result.Ok({ tree: { nodes }, categoriesCount: categoryCount });
 
-        function transformNode(hierarchy: RomachEnemyFoldersTreeHierarchyDto): RomachEnemyFoldersTreeNode {
+        function transformNode(hierarchy: Hierarchy): RomachEnemyFoldersTreeNode {
             categoryCount += 1;
 
-            const folderNodes: RomachEnemyFoldersTreeNode[] = (foldersByCategory[hierarchy.name] ?? []).map(
+            const folderNodes: RomachEnemyFoldersTreeNode[] = (foldersByCategory[hierarchy.getProps().name] ?? []).map(
                 (folder) => ({
                     type: 'category',
                     id: folder.id,
@@ -51,20 +40,20 @@ export class TreeCalculationService {
                 }),
             );
 
-            if (hierarchy.children.length === 0) {
+            if (hierarchy.getProps().children.length === 0) {
                 return {
                     type: 'category',
-                    id: hierarchy.id,
-                    name: hierarchy.displayName,
+                    id: hierarchy.getProps().id,
+                    name: hierarchy.getProps().displayName,
                     children: folderNodes,
                 };
             }
 
             return {
                 type: 'category',
-                id: hierarchy.id,
-                name: hierarchy.displayName,
-                children: [...folderNodes, ...hierarchy.children.map((child) => transformNode(child))],
+                id: hierarchy.getProps().id,
+                name: hierarchy.getProps().displayName,
+                children: [...folderNodes, ...hierarchy.getProps().children.map((child) => transformNode(child))],
             };
         }
     }

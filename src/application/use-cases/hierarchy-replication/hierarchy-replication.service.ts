@@ -13,15 +13,15 @@ import { RealityId } from '../../entities/reality-id';
 import { isEqual } from 'lodash';
 
 export interface HierarchyReplicationServiceOptions {
-    reality: RealityId;
     interval: number;
+    maxRetry: number;
+    reality: RealityId;
     logger: AppLoggerService;
-    romachEntitiesApi: RomachEntitiesApiInterface;
     leaderElection: LeaderElectionInterface;
+    romachEntitiesApi: RomachEntitiesApiInterface;
+    treeCalculationService: TreeCalculationService;
     hierarchyRepositoryInterface: HierarchiesRepositoryInterface;
     basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
-    treeCalculationService: TreeCalculationService;
-    maxRetry: number;
 }
 
 export class HierarchyReplicationService {

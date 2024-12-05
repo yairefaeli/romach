@@ -12,9 +12,9 @@ import { Result } from 'rich-domain';
 export interface TreeCalculationHandlerServiceOptions {
     maxRetry: number;
     logger: AppLoggerService;
-    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
-    hierarchiesRepositoryInterface: HierarchiesRepositoryInterface;
     treeCalculationService: TreeCalculationService;
+    hierarchiesRepositoryInterface: HierarchiesRepositoryInterface;
+    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
 }
 
 export class TreeCalculationHandlerService {
@@ -99,53 +99,58 @@ export class TreeCalculationHandlerService {
 
     private async getCurrentFoldersFromRepository(): Promise<Result<BasicFolder[]>> {
         return RetryUtils.retry(
-            async () => {
-                const result = await this.options.basicFolderRepositoryInterface.getBasicFolders();
-                if (result.isFail()) {
-                    return Result.fail(`Failed to fetch current folders from repository: ${result.error()}`);
-                }
-                this.options.logger.info(`Fetched ${result.value().length} current folders from repository.`);
-                return result;
-            },
+            async () => this.options.basicFolderRepositoryInterface.getBasicFolders(),
             this.options.maxRetry,
             this.options.logger,
-        );
+        ).then((result) => {
+            if (result.isFail()) {
+                return Result.fail(`Failed to fetch current folders from repository: ${result.error()}`);
+            }
+            this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
+            return result;
+        });
     }
 
     private async getCurrentHierarchiesFromRepository(): Promise<Result<Hierarchy[]>> {
         return RetryUtils.retry(
-            async () => {
-                const result = await this.options.hierarchiesRepositoryInterface.getHierarchies();
-                if (result.isFail()) {
-                    return Result.fail(`Failed to fetch current hierarchies from repository: ${result.error()}`);
-                }
-                this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
-                return result;
-            },
+            async () => this.options.hierarchiesRepositoryInterface.getHierarchies(),
             this.options.maxRetry,
             this.options.logger,
-        );
+        ).then((result) => {
+            if (result.isFail()) {
+                return Result.fail(`Failed to fetch current hierarchies from repository: ${result.error()}`);
+            }
+            this.options.logger.info(`Fetched ${result.value().length} current hierarchies from repository.`);
+            return result;
+        });
     }
 
     private async calculateTree(currentFolders: BasicFolder[], currentHierarchies: Hierarchy[]): Promise<Result<void>> {
         this.options.logger.debug('Starting tree calculation');
+
         return RetryUtils.retry(
             async () => {
-                const result = await this.options.treeCalculationService.calculateTreeTest(
-                    currentFolders,
-                    currentHierarchies,
-                );
+                try {
+                    const result = this.options.treeCalculationService.calculateTree(
+                        currentFolders,
+                        currentHierarchies,
+                    );
 
-                if (result.isFail()) {
-                    this.options.logger.error(`Tree calculation failed: ${result.error()}`);
-                    return Result.fail(`Tree calculation failed: ${result.error()}`);
+                    return Result.Ok(result);
+                } catch (error) {
+                    this.options.logger.error(`Tree calculation failed: ${error.message}`);
+                    return Result.fail(`Tree calculation failed: ${error.message}`);
                 }
-
-                this.options.logger.info('Tree calculation completed successfully.');
-                return Result.Ok();
             },
             this.options.maxRetry,
             this.options.logger,
-        );
+        ).then((result) => {
+            if (result.isFail()) {
+                this.options.logger.error(`Tree calculation failed: ${result.error()}`);
+                return Result.fail(`Tree calculation failed: ${result.error()}`);
+            }
+            this.options.logger.info('Tree calculation completed successfully.');
+            return Result.Ok();
+        });
     }
 }

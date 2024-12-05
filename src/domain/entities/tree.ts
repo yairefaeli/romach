@@ -14,6 +14,7 @@ export interface TreeNodeType<T> {
 export interface BasicFolderTreeNode extends TreeNodeType<BasicFolder>, BasicFolder {
     type: 'folder';
 }
+
 export interface BaseCategoryTreeNode extends TreeNodeType<BaseCategory>, BaseCategory {
     type: 'category';
 }

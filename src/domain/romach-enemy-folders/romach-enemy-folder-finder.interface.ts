@@ -1,6 +1,6 @@
-import { RomachEnemyAreaDto, RomachEnemySinglePointDto } from './romach-enemy.dto';
 import { RomachEnemyFolderErrorType } from './romach-enemy.interface';
-import { RomachEnemyFolderDto } from './romach-enemy-folder.dto';
+import { BasicFolder } from '../entities/BasicFolder';
+import { Timestamp } from '../entities/Timestamp';
 
 export const RomachEnemyFoldersFinderTypename = 'RomachEnemyFolderFinder';
 
@@ -21,12 +21,12 @@ export interface RomachEnemyFolder extends RomachEnemyFoldersTreeBaseNode {
     type: 'folder';
     name: string;
     isViewProtected: boolean;
-    updatedAt: string;
+    updatedAt: Timestamp;
     category: string;
-    entities: {
-        areas: RomachEnemyAreaDto[];
-        points: RomachEnemySinglePointDto[];
-    };
+    // entities: {
+    //     areas: RomachEnemyAreaDto[];
+    //     points: RomachEnemySinglePointDto[];
+    // };
 }
 
 export interface RomachEnemyErrorFolder
@@ -42,14 +42,14 @@ export interface RomachEnemyFoldersTree {
     nodes: RomachEnemyFoldersTreeNode[];
 }
 
-export const folderMapper = (folder: RomachEnemyFolderDto): RomachEnemyFolder => {
+export const folderMapper = (folder: BasicFolder): RomachEnemyFolder => {
     return {
         type: 'folder',
-        id: folder.id,
-        name: folder.name,
-        category: folder.category,
-        updatedAt: folder.updatedAt,
-        isViewProtected: folder.isViewProtected,
-        entities: folder.entities,
+        id: folder.getProps().id,
+        name: folder.getProps().name,
+        category: folder.getProps().categoryId,
+        updatedAt: folder.getProps().updatedAt,
+        isViewProtected: folder.getProps().isViewProtected,
+        // entities: folder.getProps().entities,
     };
 };

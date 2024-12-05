@@ -2,7 +2,7 @@ import { LeaderElectionFactoryService } from './leader-election/postgres-based-l
 import { Module } from '@nestjs/common';
 
 @Module({
-  providers: [LeaderElectionFactoryService],
-  exports: [LeaderElectionFactoryService],
+    providers: [LeaderElectionFactoryService],
+    exports: [LeaderElectionFactoryService],
 })
 export class LeaderElectionModule {}

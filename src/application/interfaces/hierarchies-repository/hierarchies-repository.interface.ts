@@ -6,5 +6,6 @@ export type NullableTimestamp = Timestamp | null;
 
 export interface HierarchiesRepositoryInterface {
     saveHierarchies(hierarchy: Hierarchy[]): Promise<Result>;
+
     getHierarchies(): Promise<Result<Hierarchy[]>>;
 }

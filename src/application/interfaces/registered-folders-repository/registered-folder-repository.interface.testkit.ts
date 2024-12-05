@@ -1,4 +1,5 @@
 import { aValidRegisteredFoldersList } from '../../../utils/builders/RegisteredFolder/registered-folder.builder';
+
 import { RegisteredFolderRepositoryInterface } from './registered-folder-repository.interface';
 import { Result } from 'rich-domain';
 

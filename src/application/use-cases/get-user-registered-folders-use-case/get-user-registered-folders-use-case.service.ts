@@ -11,6 +11,7 @@ export interface GetUserRegisteredFoldersUseCaseOutput {
 
 export class GetUserRegisteredFoldersUseCase {
     constructor(private RegisteredFolderRepositoryInterface: RegisteredFolderRepositoryInterface) {}
+
     async execute(input: GetUserRegisteredFoldersUseCaseInput): Promise<Result<GetUserRegisteredFoldersUseCaseOutput>> {
         const { upn } = input;
         const result = await this.RegisteredFolderRepositoryInterface.getRegisteredFoldersByUpn(upn);

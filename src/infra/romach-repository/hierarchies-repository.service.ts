@@ -5,7 +5,7 @@ import { Hierarchy } from 'src/domain/entities/Hierarchy';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 
-export class HierarchiesRepository implements HierarchiesRepositoryInterface {
+export class HierarchiesRepositoryService implements HierarchiesRepositoryInterface {
     constructor(
         private readonly knex: Knex,
         private readonly logger: AppLoggerService,

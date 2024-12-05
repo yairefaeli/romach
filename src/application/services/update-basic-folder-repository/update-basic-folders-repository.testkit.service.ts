@@ -1,7 +1,7 @@
-import { UpdateBasicFoldersRepositoryService } from './update-basic-folder-repository.service';
+import { UpdateBasicFoldersRepositoryService } from './update-basic-folders-repository.service';
 import { Result } from 'rich-domain';
 
-jest.mock('./update-basic-folder-repository.service', () => ({
+jest.mock('./update-basic-folders-repository.service', () => ({
     UpdateBasicFoldersRepositoryService: jest.fn().mockImplementation(() => ({
         execute: jest.fn().mockReturnValue(Promise.resolve(Result.Ok())),
     })),

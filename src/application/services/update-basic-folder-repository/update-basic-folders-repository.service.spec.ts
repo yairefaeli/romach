@@ -1,4 +1,4 @@
-import { UpdateBasicFoldersRepositoryServiceDriver } from './update-basic-folder-repository.service.driver';
+import { UpdateBasicFoldersRepositoryServiceDriver } from './update-basic-folders-repository.service.driver';
 import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/basic-folder-change.builder';
 import { Result } from 'rich-domain';
 

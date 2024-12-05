@@ -1,4 +1,4 @@
-import { UpdateBasicFoldersRepositoryService } from '../update-basic-folder-repository/update-basic-folder-repository.service';
+import { UpdateBasicFoldersRepositoryService } from '../update-basic-folder-repository/update-basic-folders-repository.service';
 import { BasicFolderChangeDetectionService } from '../basic-folder-change-detection/basic-folder-change-detection.service';
 import { UpdateRegisteredFoldersService } from '../folders/update-registered-folders/update-registered-folders.service';
 import { TreeCalculationHandlerService } from '../tree-calculation-handler/tree-calculation-handler.service';
@@ -11,7 +11,7 @@ import { Result } from 'rich-domain';
 export interface BasicFolderChangeHandlerServiceOptions {
     maxRetry: number;
     logger: AppLoggerService;
-    treeCalculatorService: TreeCalculationHandlerService;
+    treeCalculatorHandlerService: TreeCalculationHandlerService;
     updateRegisteredFoldersService: UpdateRegisteredFoldersService;
     basicFolderChangeDetectionService: BasicFolderChangeDetectionService;
     updateBasicFoldersRepositoryService: UpdateBasicFoldersRepositoryService;

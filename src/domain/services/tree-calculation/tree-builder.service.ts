@@ -18,12 +18,11 @@ import { Logger } from 'af-logger';
 
 @Injectable()
 export class TreeBuilderService {
+    romachConfig: RomachConfig;
     private treeLastUpdateTimeMap: Map<RealityId, Date>;
     private foldersLastUpdateTimeMap: Map<RealityId, Date>;
     private lastBuildTimeMap: Map<RealityId, Date>;
     private aggregatedTree: Map<RealityId, RomachEnemyFoldersTree>;
-
-    romachConfig: RomachConfig;
     private categoryCount: Map<RealityId, number>;
 
     constructor(
@@ -42,32 +41,6 @@ export class TreeBuilderService {
         this.romachConfig.realities.forEach((reality) => {
             this.categoryCount.set(reality, 0);
         });
-    }
-
-    private async checkForUpdates(realityId: RealityId) {
-        if (
-            this.hierarchyPollerService.getLastUpdateTime(realityId) !== this.treeLastUpdateTimeMap.get(realityId) ||
-            this.foldersPollerService.getLastUpdateTime(realityId) !== this.foldersLastUpdateTimeMap.get(realityId)
-        ) {
-            const hierarchyBuilder = this.hierarchyBuilder(
-                this.foldersPollerService.getDataAsArray(realityId),
-                this.hierarchyPollerService.getDataAsArray(realityId),
-            );
-            this.aggregatedTree.set(realityId, hierarchyBuilder.tree);
-            this.categoryCount.set(realityId, hierarchyBuilder.categoriesCount);
-
-            this.logger.debug('hierarchy built');
-            this.lastBuildTimeMap.set(realityId, new Date());
-            this.treeLastUpdateTimeMap.set(realityId, this.hierarchyPollerService.getLastUpdateTime(realityId));
-            this.foldersLastUpdateTimeMap.set(realityId, this.foldersPollerService.getLastUpdateTime(realityId));
-        }
-    }
-
-    private run() {
-        const realities = this.romachConfig.realities;
-        for (const realityId of realities) {
-            this.checkForUpdates(realityId).catch((error) => this.logger.error('hierarchy builder failed' + error));
-        }
     }
 
     init() {
@@ -132,5 +105,31 @@ export class TreeBuilderService {
 
     getHierarchyAndUpdatedAt(realityId: RealityId) {
         return { ...this.getHierarchy(realityId), updatedAt: this.getLastUpdateTime(realityId) };
+    }
+
+    private async checkForUpdates(realityId: RealityId) {
+        if (
+            this.hierarchyPollerService.getLastUpdateTime(realityId) !== this.treeLastUpdateTimeMap.get(realityId) ||
+            this.foldersPollerService.getLastUpdateTime(realityId) !== this.foldersLastUpdateTimeMap.get(realityId)
+        ) {
+            const hierarchyBuilder = this.hierarchyBuilder(
+                this.foldersPollerService.getDataAsArray(realityId),
+                this.hierarchyPollerService.getDataAsArray(realityId),
+            );
+            this.aggregatedTree.set(realityId, hierarchyBuilder.tree);
+            this.categoryCount.set(realityId, hierarchyBuilder.categoriesCount);
+
+            this.logger.debug('hierarchy built');
+            this.lastBuildTimeMap.set(realityId, new Date());
+            this.treeLastUpdateTimeMap.set(realityId, this.hierarchyPollerService.getLastUpdateTime(realityId));
+            this.foldersLastUpdateTimeMap.set(realityId, this.foldersPollerService.getLastUpdateTime(realityId));
+        }
+    }
+
+    private run() {
+        const realities = this.romachConfig.realities;
+        for (const realityId of realities) {
+            this.checkForUpdates(realityId).catch((error) => this.logger.error('hierarchy builder failed' + error));
+        }
     }
 }

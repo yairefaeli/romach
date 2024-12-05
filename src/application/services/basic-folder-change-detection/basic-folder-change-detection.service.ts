@@ -7,9 +7,9 @@ import { keyBy, partition } from 'lodash';
 import { Result } from 'rich-domain';
 
 export interface BasicFolderChangeDetectionServiceOptions {
-    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
-    logger: AppLoggerService;
     maxRetry: number;
+    logger: AppLoggerService;
+    basicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
 }
 
 export class BasicFolderChangeDetectionService {

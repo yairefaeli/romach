@@ -2,7 +2,7 @@ import { LeaderElectionFactoryService } from '../leader-election/leader-election
 import { RomachApiJwtIssuerFactoryService } from '../romach-api/romach-api-jwt-issuer/romach-api-jwt-issuer-factory.service';
 import { PostgresBasedLeaderElection } from '../leader-election/leader-election/postgres-based-leader-election';
 import { RomachApiJwtIssuerService } from '../romach-api/romach-api-jwt-issuer/romach-api-jwt-issuer.service';
-import { HierarchyReplicationFactoryService } from './hierarchy-replication-factory.service';
+import { HierarchyReplicationServiceFactory } from './hierarchy-replication.service.factory';
 import { LeaderElectionModule } from '../leader-election/leader-election.module';
 import { RomachRepositoryModule } from '../romach-repository/repository.module';
 import { AppConfigService } from '../config/app-config/app-config.service';
@@ -15,7 +15,7 @@ import { Knex } from 'knex';
 
 @Module({
     imports: [LeaderElectionModule, RomachApiModule, RomachRepositoryModule],
-    providers: [HierarchyReplicationFactoryService],
+    providers: [HierarchyReplicationServiceFactory],
 })
 export class InitModule implements OnModuleInit, OnModuleDestroy {
     private romachApiJwtIssuerService: RomachApiJwtIssuerService;
@@ -25,7 +25,7 @@ export class InitModule implements OnModuleInit, OnModuleDestroy {
     constructor(
         private leaderElectionFactoryService: LeaderElectionFactoryService,
         private romachApiJwtIssuerFactoryService: RomachApiJwtIssuerFactoryService,
-        private hierarchyReplicationFactoryService: HierarchyReplicationFactoryService,
+        private hierarchyReplicationFactoryService: HierarchyReplicationServiceFactory,
         private configService: AppConfigService,
         private logger: AppLoggerService,
         @InjectKnex() private readonly knex: Knex,

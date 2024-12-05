@@ -1,4 +1,3 @@
-import { RomachEnemyAreaDto, RomachEnemySinglePointDto } from '../romach-enemy-folders';
 import { ValidationResult } from '../../utils/ValidationUtils/ValidationResult';
 import { ValidationUtils } from '../../utils/ValidationUtils/ValidationUtils';
 import { Timestamp } from './Timestamp';
@@ -17,12 +16,12 @@ export interface BasicFolderProps {
     categoryId: string;
 }
 
-export interface RomachEnemyFoldersDto extends BasicFolder {
-    entities: {
-        areas: RomachEnemyAreaDto[];
-        points: RomachEnemySinglePointDto[];
-    };
-}
+// export interface BasicFolderDto extends BasicFolderProps {
+//     entities: {
+//         areas: RomachEnemyAreaDto[];
+//         points: RomachEnemySinglePointDto[];
+//     };
+// }
 
 export class BasicFolder {
     private readonly props: BasicFolderProps;
@@ -37,10 +36,6 @@ export class BasicFolder {
         return Result.Ok(new BasicFolder(props));
     }
 
-    getProps(): BasicFolderProps {
-        return this.props;
-    }
-
     private static isValid(props: BasicFolderProps): ValidationResult {
         const schema = z.object({
             id: ValidationUtils.MANDATORY_STRING,
@@ -53,5 +48,9 @@ export class BasicFolder {
             updatedAt: z.any().nullable(),
         });
         return ValidationUtils.calcValidation(props, schema);
+    }
+
+    getProps(): BasicFolderProps {
+        return this.props;
     }
 }

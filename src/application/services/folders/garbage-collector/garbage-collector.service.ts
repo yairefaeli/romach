@@ -6,10 +6,10 @@ import { Result } from 'rich-domain';
 import { isEmpty } from 'lodash';
 
 export interface GarbageCollectorServiceOptions {
-    logger: AppLoggerService;
-    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface;
     maxRetry: number;
     gcInterval: number;
+    logger: AppLoggerService;
+    registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface;
 }
 
 export class GarbageCollectorService {
