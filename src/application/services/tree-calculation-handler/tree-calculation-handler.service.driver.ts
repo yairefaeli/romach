@@ -5,10 +5,10 @@ import { aBasicFolderChange } from '../../../utils/builders/BasicFolderChange/ba
 import { BasicFolderChange } from 'src/application/interfaces/basic-folder-changes.interface';
 import { AppLoggerServiceTestkit } from '../../../infra/logging/app-logger.service.testkit';
 import { TreeCalculationHandlerService } from './tree-calculation-handler.service';
+import { RomachEnemyFoldersTree } from '../../../domain/romach-enemy-folders';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Hierarchy } from 'src/domain/entities/Hierarchy';
 import { chance } from '../../../utils/Chance/chance';
-import { Tree } from '../../../domain/entities/tree';
 import { Result } from 'rich-domain';
 
 export class TreeCalculationHandlerServiceDriver {
@@ -38,7 +38,7 @@ export class TreeCalculationHandlerServiceDriver {
             this.hierarchiesRepositoryTestkit.mockGetHierarchies(result);
             return this;
         },
-        calculateTree: (result: Result<Tree>): this => {
+        calculateTree: (result: Result<{ tree: RomachEnemyFoldersTree; categoriesCount: number }>): this => {
             this.treeCalculationServiceTestkit.mockCalculateTree(result);
             return this;
         },

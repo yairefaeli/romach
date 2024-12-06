@@ -1,11 +1,11 @@
-import { Geometries, LineString, Point } from '@turf/helpers';
+// import { Geometry } from '@turf/helpers';
 
 export interface RomachEnemyDto {
     id: string;
     name: string;
     fillColor: string;
     entityColor: string;
-    geometry: Geometries;
+    // geometry: Geometry;
     lastUpdateDate: string;
     borderWidth?: number;
     borderStyle?: BorderStyle;
@@ -27,13 +27,13 @@ export interface RomachAids {
 }
 
 export interface RomachEnemyAreaDto extends RomachEnemyDto {
-    geometry: LineString;
+    // geometry: LineString;
     creationDate: string;
 }
 
 export interface RomachEnemySinglePointDto extends RomachEnemyDto {
     angle: number;
-    geometry: Point;
+    // geometry: Point;
     mainRadius: number;
     secondaryRadius: number;
 }

@@ -6,7 +6,6 @@ import { RetryFailedStatusService } from './retry-failed-status.service';
 import { RealityId } from '../../../entities/reality-id';
 
 export class RetryFailedStatusFactoryService {
-    private configService: AppConfigService;
     private perRealityMap: Map<RealityId, RetryFailedStatusService>;
 
     constructor(

@@ -5,7 +5,6 @@ import { GarbageCollectorService } from './garbage-collector.service';
 import { RealityId } from '../../../entities/reality-id';
 
 export class GarbageCollectorFactoryService {
-    private configService: AppConfigService;
     private perRealityMap: Map<RealityId, GarbageCollectorService>;
 
     constructor(

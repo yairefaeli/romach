@@ -39,26 +39,43 @@ export const configFactory: ConfigFactory<{ config: Configuration }> = () => {
             romach: {
                 realities: env.get('ROMACH_REALITIES').default('reality1').asArray(),
                 hierarchy: {
-                    pollInterval: env.get('ROMACH_HIERARCHY_POLL_INTERVAL').default('2s').asMs(),
+                    pollInterval: env.get('ROMACH_HIERARCHY_POLL_INTERVAL').default('2000ms').asMs(),
                 },
                 entitiesApi: {
                     url: env.get('ROMACH_ENTITIES_API_URL').required().asString(),
-                    timeout: env.get('ROMACH_ENTITIES_API_TIMEOUT').default('10s').asMs(),
+                    timeout: env.get('ROMACH_ENTITIES_API_TIMEOUT').default('10000ms').asMs(),
                 },
                 loginApi: {
                     url: env.get('ROMACH_LOGIN_API_URL').required().asString(),
                     clientId: env.get('ROMACH_LOGIN_API_CLIENT_ID').required().asString(),
                     clientSecret: env.get('ROMACH_LOGIN_API_CLIENT_SECRET').required().asString(),
-                    timeout: env.get('ROMACH_LOGIN_API_TIMEOUT').default('10s').asMs(),
-                    interval: env.get('ROMACH_LOGIN_API_INTERVAL').default('5s').asMs(),
+                    timeout: env.get('ROMACH_LOGIN_API_TIMEOUT').default('10000ms').asMs(),
+                    interval: env.get('ROMACH_LOGIN_API_INTERVAL').default('5000ms').asMs(),
                 },
                 refreshTokenApi: {
                     url: env.get('ROMACH_REFRESH_TOKEN_API_URL').required().asString(),
-                    timeout: env.get('ROMACH_REFRESH_TOKEN_API_TIMEOUT').default('10s').asMs(),
-                    interval: env.get('ROMACH_REFRESH_TOKEN_API_INTERVAL').default('1h').asMs(),
+                    timeout: env.get('ROMACH_REFRESH_TOKEN_API_TIMEOUT').default('10000ms').asMs(),
+                    interval: env.get('ROMACH_REFRESH_TOKEN_API_INTERVAL').default('3600000ms').asMs(),
                 },
                 basicFolder: {
-                    pollInterval: env.get('ROMACH_BASIC_FOLDER_POLL_INTERVAL').default('1m').asMs(),
+                    pollInterval: env.get('ROMACH_BASIC_FOLDER_POLL_INTERVAL').default('60000ms').asMs(),
+                    maxRetry: env.get('ROMACH_BASIC_FOLDER_MAX_RETRY').default(3).asIntPositive(),
+                    retryInterval: env.get('ROMACH_BASIC_FOLDER_RETRY_INTERVAL').default('5000ms').asMs(),
+                },
+                garbageCollectorConfig: {
+                    maxRetry: env.get('ROMACH_GARBAGE_COLLECTOR_MAX_RETRY').default(3).asIntPositive(),
+                    gcInterval: env.get('ROMACH_GARBAGE_COLLECTOR_INTERVAL').default('3600000ms').asMs(),
+                },
+                addProtectedFolderToUserUseCaseConfig: {
+                    maxRetry: env.get('ROMACH_ADD_PROTECTED_FOLDER_MAX_RETRY').default(3).asIntPositive(),
+                    gcInterval: env.get('ROMACH_ADD_PROTECTED_FOLDER_GC_INTERVAL').default('3600000ms').asMs(),
+                },
+                registeredFolderConfig: {
+                    maxRetry: env.get('ROMACH_REGISTERED_FOLDER_MAX_RETRY').default(3).asIntPositive(),
+                },
+                retryIntervalConfig: {
+                    maxRetry: env.get('ROMACH_RETRY_INTERVAL_MAX_RETRY').default(3).asIntPositive(),
+                    retryInterval: env.get('ROMACH_RETRY_INTERVAL').default('5000ms').asMs(),
                 },
             },
         },

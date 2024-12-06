@@ -68,7 +68,7 @@ export class BasicFolderChangeHandlerService {
     private async treeCalculatorServiceChanges(change: BasicFolderChange) {
         this.options.logger.debug(`Starting to calculate tree`);
         const treeCalculatorChanges = await RetryUtils.retry(
-            () => this.options.treeCalculatorService.execute(change),
+            () => this.options.treeCalculatorHandlerService.execute(change),
             this.options.maxRetry,
             this.options.logger,
         );

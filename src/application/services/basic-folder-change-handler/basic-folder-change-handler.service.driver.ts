@@ -50,7 +50,7 @@ export class BasicFolderChangeHandlerServiceDriver {
             this.basicFolderChangeHandlerService = new BasicFolderChangeHandlerService({
                 maxRetry: this.maxRetry,
                 logger: this.get.logger(),
-                treeCalculatorService: this.get.treeCalculationHandlerService(),
+                treeCalculatorHandlerService: this.get.treeCalculationHandlerService(),
                 updateRegisteredFoldersService: this.get.updateRegisteredFoldersService(),
                 basicFolderChangeDetectionService: this.get.basicFolderChangeDetectionService(),
                 updateBasicFoldersRepositoryService: this.get.updateBasicFoldersRepositoryService(),
@@ -65,7 +65,7 @@ export class BasicFolderChangeHandlerServiceDriver {
         this.basicFolderChangeHandlerService = new BasicFolderChangeHandlerService({
             maxRetry: this.maxRetry,
             logger: this.get.logger(),
-            treeCalculatorService: this.get.treeCalculationHandlerService(),
+            treeCalculatorHandlerService: this.get.treeCalculationHandlerService(),
             updateRegisteredFoldersService: this.get.updateRegisteredFoldersService(),
             basicFolderChangeDetectionService: this.get.basicFolderChangeDetectionService(),
             updateBasicFoldersRepositoryService: this.get.updateBasicFoldersRepositoryService(),

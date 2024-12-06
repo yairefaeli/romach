@@ -15,13 +15,11 @@ export class BasicFolderChangeHandlerServiceFactory {
 
     constructor(
         private logger: AppLoggerService,
-        private configService: AppConfigService,
         private treeCalculationHandlerFactoryService: TreeCalculationHandlerFactoryService,
         private updatedRegisterFolderFactoryService: UpdatedRegisterFolderFactoryService,
         private basicFolderChangeDetectionFactoryService: BasicFolderChangeDetectionFactoryService,
         private updateBasicFoldersRepositoryFactoryService: UpdateBasicFoldersRepositoryFactoryService,
     ) {
-        this.configService = configService;
         this.perRealityMap = new Map<RealityId, BasicFolderChangeHandlerService>();
     }
 

@@ -1,9 +1,9 @@
 import { BasicFoldersRepositoryFactoryService } from '../../../infra/romach-repository/repository-factory/basic-folders-repository-factory.service';
-import { RomachEntitiesApiFactoryService } from '../../../infra/romach-api/romach-entities-api/romach-entities-api-factory.service';
 import {
     BasicFolderReplicationHandlerFn,
     BasicFoldersReplicationUseCase,
 } from './basic-folder-replication-use-case.service';
+import { RomachEntitiesApiFactoryService } from '../../../infra/romach-api/romach-entities-api/romach-entities-api-factory.service';
 import { AppConfigService } from '../../../infra/config/app-config/app-config.service';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
@@ -13,7 +13,6 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class BasicFolderServiceFactoryService {
     private perRealityMap: Map<string, BasicFoldersReplicationUseCase>;
-    private configService: AppConfigService;
 
     constructor(
         private romachEntitiesApiFactoryService: RomachEntitiesApiFactoryService,
@@ -25,7 +24,6 @@ export class BasicFolderServiceFactoryService {
         private handler: BasicFolderReplicationHandlerFn,
         private logger: AppLoggerService,
     ) {
-        this.configService = configService;
         this.perRealityMap = new Map<string, BasicFoldersReplicationUseCase>();
     }
 

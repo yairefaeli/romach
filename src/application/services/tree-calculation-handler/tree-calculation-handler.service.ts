@@ -131,12 +131,11 @@ export class TreeCalculationHandlerService {
         return RetryUtils.retry(
             async () => {
                 try {
-                    const result = this.options.treeCalculationService.calculateTree(
-                        currentFolders,
-                        currentHierarchies,
-                    );
+                    // Call the treeCalculationService and ensure it doesn't return a nested Result
+                    this.options.treeCalculationService.calculateTree(currentFolders, currentHierarchies);
 
-                    return Result.Ok(result);
+                    // Return a success Result with no payload (Result<void>)
+                    return Result.Ok();
                 } catch (error) {
                     this.options.logger.error(`Tree calculation failed: ${error.message}`);
                     return Result.fail(`Tree calculation failed: ${error.message}`);

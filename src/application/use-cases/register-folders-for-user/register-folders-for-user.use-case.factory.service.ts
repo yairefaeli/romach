@@ -8,7 +8,6 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class RegisterFoldersForUserUseCaseFactoryService {
     private perRealityMap: Map<RealityId, RegisterFoldersForUserUseCase>;
-    private configService: AppConfigService;
 
     constructor(
         private logger: AppLoggerService,
@@ -21,7 +20,7 @@ export class RegisterFoldersForUserUseCaseFactoryService {
     create(reality: RealityId): RegisterFoldersForUserUseCase {
         if (this.perRealityMap.has(reality)) return this.perRealityMap.get(reality);
 
-        const maxRetry = this.configService.get().romach.regsiteredFolderConfig.maxRetry;
+        const maxRetry = this.configService.get().romach.registeredFolderConfig.maxRetry;
         const registeredFoldersFactory = this.registeredFoldersFactory.create(reality);
 
         const RegisterFoldersForUser = new RegisterFoldersForUserUseCase({

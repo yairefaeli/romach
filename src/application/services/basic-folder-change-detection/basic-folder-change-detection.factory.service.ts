@@ -8,14 +8,12 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class BasicFolderChangeDetectionFactoryService {
     private perRealityMap: Map<RealityId, BasicFolderChangeDetectionService>;
-    private configService: AppConfigService;
 
     constructor(
         private logger: AppLoggerService,
         private configService: AppConfigService,
         private basicFoldersRepositoryFactoryService: BasicFoldersRepositoryFactoryService,
     ) {
-        this.configService = configService;
         this.perRealityMap = new Map<RealityId, BasicFolderChangeDetectionService>();
     }
 
