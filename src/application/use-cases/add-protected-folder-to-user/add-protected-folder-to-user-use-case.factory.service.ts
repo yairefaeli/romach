@@ -12,9 +12,9 @@ export class AddProtectedFolderToUserUseCaseFactory {
 
     constructor(
         private logger: AppLoggerService,
-        private apiFactory: RomachEntitiesApiFactoryService,
         private basicFoldersRepositoryFactoryService: BasicFoldersRepositoryFactoryService,
         private registeredFoldersFactory: RegisteredFoldersServiceFactory,
+        private romachEntitiesApiFactoryService: RomachEntitiesApiFactoryService,
     ) {
         this.perRealityMap = new Map<RealityId, AddProtectedFolderToUserUseCase>();
     }
@@ -22,10 +22,15 @@ export class AddProtectedFolderToUserUseCaseFactory {
     create(reality: RealityId): AddProtectedFolderToUserUseCase {
         if (this.perRealityMap.has(reality)) return this.perRealityMap.get(reality);
 
-        const api = this.apiFactory.create(reality);
-        const repo = this.basicFoldersRepositoryFactoryService.create(reality);
+        const romachEntitiesApi = this.romachEntitiesApiFactoryService.create(reality);
         const registerFolderFactoryService = this.registeredFoldersFactory.create(reality);
+        const basicFoldersRepositoryFactoryService = this.basicFoldersRepositoryFactoryService.create(reality);
 
-        return new AddProtectedFolderToUserUseCase(this.logger, api, repo, registerFolderFactoryService);
+        return new AddProtectedFolderToUserUseCase({
+            logger: this.logger,
+            api: romachEntitiesApi,
+            romachBasicFolderRepositoryInterface: basicFoldersRepositoryFactoryService,
+            registeredFolderService: registerFolderFactoryService,
+        });
     }
 }

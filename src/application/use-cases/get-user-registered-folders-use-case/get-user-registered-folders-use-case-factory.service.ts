@@ -1,13 +1,16 @@
 import { RegisteredFolderRepositoryInterface } from '../../interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { GetUserRegisteredFoldersUseCase } from './get-user-registered-folders-use-case.service';
 import { RealityId } from '../../entities/reality-id';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class GetUserRegisteredFoldersUseCaseFactoryService {
     private perRealityMap: Map<RealityId, GetUserRegisteredFoldersUseCase>;
 
-    constructor(private registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface) {
+    constructor(
+        @Inject('RegisteredFolderRepository')
+        private registeredFolderRepositoryInterface: RegisteredFolderRepositoryInterface,
+    ) {
         this.perRealityMap = new Map<RealityId, GetUserRegisteredFoldersUseCase>();
     }
 
