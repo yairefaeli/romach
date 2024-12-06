@@ -1,7 +1,6 @@
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { AddProtectedFolderToUserUseCase } from './add-protected-folder-to-user.use-case.service';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { folderMock } from '../../mocks/entities.mock';
 import { Result } from 'rich-domain';
 
 describe('AddProtectedFolderToUserUseCase', () => {

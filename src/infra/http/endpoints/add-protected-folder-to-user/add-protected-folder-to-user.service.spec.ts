@@ -1,5 +1,5 @@
 import { AddProtectedFolderToUserUseCaseFactory } from '../../../../application/use-cases/add-protected-folder-to-user/add-protected-folder-to-user-use-case.factory.service';
-import { AddProtectedFolderToUserController } from './add-protected-folder-to-user.service';
+import { AddProtectedFolderToUserController } from './add-protected-folder-to-user.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { Result } from 'rich-domain';

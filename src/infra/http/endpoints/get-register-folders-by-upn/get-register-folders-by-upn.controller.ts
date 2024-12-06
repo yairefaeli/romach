@@ -2,7 +2,7 @@ import { GetUserRegisteredFoldersUseCaseFactoryService } from '../../../../appli
 import { BadRequestException, Controller, Get, Headers, Query } from '@nestjs/common';
 
 @Controller('protected-folder')
-export class GetRegisterFoldersByUpnService {
+export class GetRegisterFoldersByUpnController {
     constructor(
         private readonly getUserRegisteredFoldersUseCaseFactory: GetUserRegisteredFoldersUseCaseFactoryService,
     ) {}

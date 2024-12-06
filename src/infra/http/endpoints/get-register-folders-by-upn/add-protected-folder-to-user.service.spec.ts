@@ -1,10 +1,10 @@
 import { GetUserRegisteredFoldersUseCaseFactoryService } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case-factory.service';
-import { GetRegisterFoldersByUpnService } from './get-register-folders-by-upn.service';
+import { GetRegisterFoldersByUpnController } from './get-register-folders-by-upn.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Result } from 'rich-domain';
 
 describe('GetRegsiterFoldersByUpnService', () => {
-    let controller: GetRegisterFoldersByUpnService;
+    let controller: GetRegisterFoldersByUpnController;
 
     beforeEach(async () => {
         const mockUseCaseFactory = {
@@ -14,7 +14,7 @@ describe('GetRegsiterFoldersByUpnService', () => {
         };
 
         const module: TestingModule = await Test.createTestingModule({
-            controllers: [GetRegisterFoldersByUpnService],
+            controllers: [GetRegisterFoldersByUpnController],
             providers: [
                 {
                     provide: GetUserRegisteredFoldersUseCaseFactoryService,
@@ -23,7 +23,7 @@ describe('GetRegsiterFoldersByUpnService', () => {
             ],
         }).compile();
 
-        controller = module.get<GetRegisterFoldersByUpnService, any>(GetRegisterFoldersByUpnService);
+        controller = module.get<GetRegisterFoldersByUpnController, any>(GetRegisterFoldersByUpnController);
     });
 
     it('should return folder IDs when valid upn and realityId are provided', async () => {
