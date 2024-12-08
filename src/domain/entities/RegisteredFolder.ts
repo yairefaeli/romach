@@ -57,6 +57,7 @@ export class RegisteredFolder {
             registeredTimestamp: Timestamp.now(),
             updatedAtTimestamp: Timestamp.now(),
         };
+
         if (!basicFolderProps.isPasswordProtected) {
             props.lastValidPasswordTimestamp = null;
             props.password = null;

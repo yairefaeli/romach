@@ -2,7 +2,6 @@ import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basi
 import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-repository/hierarchies-repository.interface';
 import { HierarchyReplicationService, HierarchyReplicationServiceOptions } from './hierarchy-replication.service';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
-import { TreeCalculationService } from 'src/domain/services/tree-calculation/tree-calculation.service';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
 import { leaderElectionInterfaceMockBuilder } from '../../mocks/leader-election-interface.mock';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
@@ -81,7 +80,7 @@ describe('HierarchyReplicationService', () => {
 
     function mockTreeCalculationServiceBuilder(options?: {
         calculateTree?: (basicFolders: BasicFolder[], hierarchies: Hierarchy[]) => Tree;
-    }): TreeCalculationService {
+    }): { calculateTree: (basicFolders: BasicFolder[], hierarchies: Hierarchy[]) => Tree } {
         return {
             calculateTree:
                 options?.calculateTree ??
@@ -106,7 +105,7 @@ describe('HierarchyReplicationService', () => {
             treeCalculationService: mockTreeCalculationServiceBuilder(),
             maxRetry: 3,
             ...input,
-        };
+        } as HierarchyReplicationServiceOptions;
 
         return {
             service: new HierarchyReplicationService(options),
@@ -180,7 +179,6 @@ describe('HierarchyReplicationService', () => {
             });
         };
     }
-
     it(
         'when leader is true, should call fetchHierarchies',
         scenarioTestBuilder({

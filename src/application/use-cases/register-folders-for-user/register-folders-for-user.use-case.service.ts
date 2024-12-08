@@ -1,9 +1,9 @@
-import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
-import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
-import { RetryUtils } from 'src/utils/RetryUtils/RetryUtils';
+import { RegisteredFolderRepositoryInterface } from '../../interfaces/registered-folders-repository/registered-folder-repository.interface';
+import { RegisteredFolder } from '../../../domain/entities/RegisteredFolder';
+import { AppLoggerService } from '../../../infra/logging/app-logger.service';
+import { RetryUtils } from '../../../utils/RetryUtils/RetryUtils';
 import { RealityId } from '../../entities/reality-id';
-import { UPN } from 'src/domain/entities/UPN';
+import { UPN } from '../../../domain/entities/UPN';
 import { isEmpty, partition } from 'lodash';
 import { Result } from 'rich-domain';
 
@@ -31,26 +31,28 @@ export class RegisterFoldersForUserUseCase {
 
         if (registeredFoldersResult.isFail()) {
             return Result.fail(`Failed to fetch registered folders for user ${upn}`);
+        } else {
+            const { relevantFolders, irrelevantFolders } = this.partitionFolders(
+                registeredFoldersResult.value(),
+                folderIds,
+            );
+
+            const deleteResult = await this.deleteIrrelevantFolders(irrelevantFolders, upn);
+
+            if (deleteResult.isFail()) {
+                return Result.fail(deleteResult.error());
+            }
+
+            const updateResult = await this.updateRelevantFolders(relevantFolders, upn);
+            if (updateResult.isFail()) {
+                return Result.fail(updateResult.error());
+            }
+
+            this.options.logger.info(
+                `Folder registration process completed for user ${registerFoldersForUserInput.upn}`,
+            );
+            return Result.Ok();
         }
-
-        const { relevantFolders, irrelevantFolders } = this.partitionFolders(
-            registeredFoldersResult.value(),
-            folderIds,
-        );
-
-        const deleteResult = await this.deleteIrrelevantFolders(irrelevantFolders, upn);
-
-        if (deleteResult.isFail()) {
-            return Result.fail(deleteResult.error());
-        }
-
-        const updateResult = await this.updateRelevantFolders(relevantFolders, upn);
-        if (updateResult.isFail()) {
-            return Result.fail(updateResult.error());
-        }
-
-        this.options.logger.info(`Folder registration process completed for user ${registerFoldersForUserInput.upn}`);
-        return Result.Ok();
     }
 
     private async getRegisteredFolders(upn: UPN): Promise<Result<RegisteredFolder[]>> {

@@ -7,7 +7,7 @@ import { Folder } from '../../../../domain/entities/folder';
 import { isEmpty, keyBy } from 'lodash';
 import { Result } from 'rich-domain';
 
-interface RegisteredFoldersServiceOptions {
+export interface RegisteredFoldersServiceOptions {
     logger: AppLoggerService;
     registeredFoldersRepository: RegisteredFolderRepositoryInterface;
 }
@@ -38,9 +38,9 @@ export class RegisteredFoldersService {
         if (upsertFolderResult.isFail()) {
             this.options.logger.error('Failed to upsert registered folder to repository');
             return Result.fail('general-error');
+        } else {
+            return Result.Ok() as Result<void, RegisteredFolderErrorStatus>;
         }
-
-        return Result.Ok() as Result<void, RegisteredFolderErrorStatus>;
     }
 
     public async upsertValid({
