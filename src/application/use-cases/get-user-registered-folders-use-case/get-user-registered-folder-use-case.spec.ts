@@ -1,4 +1,4 @@
-import { GetUserRegisteredFoldersUseCase } from './get-user-registered-folders-use-case.service';
+import { GetUserRegisteredFoldersUseCaseService } from './get-user-registered-folders-use-case.service';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { Result } from 'rich-domain';
 
@@ -30,7 +30,7 @@ describe('GetUserRegisteredFoldersUseCase', () => {
         }
 
         return {
-            useCase: new GetUserRegisteredFoldersUseCase(romachRepository),
+            useCase: new GetUserRegisteredFoldersUseCaseService(romachRepository),
             romachRepository,
         };
     }

@@ -17,8 +17,8 @@ interface apiInput {
 
 export class RomachEntitiesApiService implements RomachEntitiesApiInterface {
     constructor(
-        private romachApiGraphqlClientService: RomachApiGraphqlClientService,
         private logger: AppLoggerService,
+        private romachApiGraphqlClientService: RomachApiGraphqlClientService,
     ) {}
 
     async fetchFolderByIdAndPassword(input: apiInput): Promise<Result<Folder, FolderErrorStatus>> {

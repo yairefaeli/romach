@@ -1,5 +1,5 @@
+import { RomachRepositoryModule } from './romach-repository/romach-repository.module';
 import { LeaderElectionModule } from './leader-election/leader-election.module';
-import { RomachRepositoryModule } from './romach-repository/repository.module';
 import { RomachApiModule } from './romach-api/romach-api.module';
 import { DatabaseModule } from './database/database.module';
 import { LoggingModule } from './logging/logging.module';

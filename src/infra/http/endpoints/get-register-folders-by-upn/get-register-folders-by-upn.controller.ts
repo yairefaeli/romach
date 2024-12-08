@@ -1,11 +1,9 @@
-import { GetUserRegisteredFoldersUseCaseFactoryService } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case-factory.service';
+import { GetUserRegisteredFoldersUseCaseService } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case.service';
 import { BadRequestException, Controller, Get, Headers, Query } from '@nestjs/common';
 
 @Controller('protected-folder')
 export class GetRegisterFoldersByUpnController {
-    constructor(
-        private readonly getUserRegisteredFoldersUseCaseFactory: GetUserRegisteredFoldersUseCaseFactoryService,
-    ) {}
+    constructor(private readonly getUserRegisteredFoldersUseCaseService: GetUserRegisteredFoldersUseCaseService) {}
 
     @Get('registered-folders')
     async getRegisteredFoldersByUpn(
@@ -19,8 +17,7 @@ export class GetRegisterFoldersByUpnController {
             throw new BadRequestException('Header "realityId" is required.');
         }
 
-        const service = this.getUserRegisteredFoldersUseCaseFactory.create(realityId);
-        const result = await service.execute({ upn });
+        const result = await this.getUserRegisteredFoldersUseCaseService.execute({ upn });
 
         if (result.isFail()) {
             throw new BadRequestException(result.error());

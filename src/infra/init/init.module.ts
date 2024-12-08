@@ -1,10 +1,9 @@
 import { LeaderElectionFactoryService } from '../leader-election/leader-election/postgres-based-leader-election-factory.service';
-import { RomachApiJwtIssuerFactoryService } from '../romach-api/romach-api-jwt-issuer/romach-api-jwt-issuer-factory.service';
 import { PostgresBasedLeaderElection } from '../leader-election/leader-election/postgres-based-leader-election';
 import { RomachApiJwtIssuerService } from '../romach-api/romach-api-jwt-issuer/romach-api-jwt-issuer.service';
 import { HierarchyReplicationServiceFactory } from './hierarchy-replication.service.factory';
+import { RomachRepositoryModule } from '../romach-repository/romach-repository.module';
 import { LeaderElectionModule } from '../leader-election/leader-election.module';
-import { RomachRepositoryModule } from '../romach-repository/repository.module';
 import { AppConfigService } from '../config/app-config/app-config.service';
 import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { RomachApiModule } from '../romach-api/romach-api.module';
@@ -18,20 +17,17 @@ import { Knex } from 'knex';
     providers: [HierarchyReplicationServiceFactory],
 })
 export class InitModule implements OnModuleInit, OnModuleDestroy {
-    private romachApiJwtIssuerService: RomachApiJwtIssuerService;
     private hierarchyReplicationSubscription: Subscription;
     private replicationLeaderElection: PostgresBasedLeaderElection;
 
     constructor(
         private leaderElectionFactoryService: LeaderElectionFactoryService,
-        private romachApiJwtIssuerFactoryService: RomachApiJwtIssuerFactoryService,
+        private romachApiJwtIssuerService: RomachApiJwtIssuerService,
         private hierarchyReplicationFactoryService: HierarchyReplicationServiceFactory,
         private configService: AppConfigService,
         private logger: AppLoggerService,
         @InjectKnex() private readonly knex: Knex,
-    ) {
-        this.romachApiJwtIssuerService = this.romachApiJwtIssuerFactoryService.create();
-    }
+    ) {}
 
     async onModuleDestroy() {
         this.logger.info('Init module destroyed');

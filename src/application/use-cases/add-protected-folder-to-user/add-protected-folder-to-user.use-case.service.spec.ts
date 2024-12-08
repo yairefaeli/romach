@@ -1,5 +1,5 @@
+import { AddProtectedFolderToUserUseCaseService } from './add-protected-folder-to-user.use-case.service';
 import { romachEntitiesApiInterfaceMockBuilder } from '../../mocks/romach-entities-interface.mock';
-import { AddProtectedFolderToUserUseCase } from './add-protected-folder-to-user.use-case.service';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { Result } from 'rich-domain';
 
@@ -35,7 +35,7 @@ describe('AddProtectedFolderToUserUseCase', () => {
             return Result.Ok({ getProps: jest.fn().mockReturnValue({ isPasswordProtected: true }) });
         });
 
-        const service = new AddProtectedFolderToUserUseCase(mockLogger, mockRepo, mockApi, mockFolderService);
+        const service = new AddProtectedFolderToUserUseCaseService(mockLogger, mockRepo, mockApi, mockFolderService);
 
         return { service, mockRepo, mockApi, mockLogger, mockFolderService };
     }

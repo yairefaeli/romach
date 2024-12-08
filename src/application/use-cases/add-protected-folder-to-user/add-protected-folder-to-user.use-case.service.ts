@@ -3,9 +3,9 @@ import { RegisteredFoldersService } from 'src/application/services/folders/regis
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { catchError, switchMap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { Result } from 'rich-domain';
-import { from, of } from 'rxjs';
+import { from } from 'rxjs';
 
 export interface AddProtectedFolderToUserInput {
     upn: string;
@@ -16,35 +16,37 @@ export interface AddProtectedFolderToUserInput {
 export interface AddProtectedFolderToUserUseCaseOptions {
     logger: AppLoggerService;
     api: RomachEntitiesApiInterface;
-    romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
     registeredFolderService: RegisteredFoldersService;
+    romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
 }
 
-export class AddProtectedFolderToUserUseCase {
+export class AddProtectedFolderToUserUseCaseService {
     constructor(private readonly options: AddProtectedFolderToUserUseCaseOptions) {}
 
-    execute(input: AddProtectedFolderToUserInput) {
-        return from(this.options.romachBasicFolderRepositoryInterface.getBasicFolderById(input.folderId)).pipe(
-            switchMap((basicFolderResult) => {
-                if (basicFolderResult.isFail()) {
-                    this.options.logger.error('Failed to fetch basic folder from repo by folderId', { input });
-                    return this.options.registeredFolderService.upsertGeneralError({
-                        ...input,
-                        isPasswordProtected: false,
-                    });
-                }
+    async execute(input: AddProtectedFolderToUserInput) {
+        try {
+            const basicFolderResult = await this.options.romachBasicFolderRepositoryInterface.getBasicFolderById(
+                input.folderId,
+            );
 
-                const basicFolder = basicFolderResult.value();
-                return this.handleNewFolder(input, basicFolder);
-            }),
-            catchError((error) => {
-                this.options.logger.error('Unexpected error during AddProtectedFolderToUserUseCase execution', {
-                    error,
-                    input,
+            if (basicFolderResult.isFail()) {
+                this.options.logger.error('Failed to fetch basic folder from repo by folderId', { input });
+
+                return this.options.registeredFolderService.upsertGeneralError({
+                    ...input,
+                    isPasswordProtected: false,
                 });
-                return of(Result.fail('general-error'));
-            }),
-        );
+            }
+
+            const basicFolder = basicFolderResult.value();
+            return this.handleNewFolder(input, basicFolder);
+        } catch (error) {
+            this.options.logger.error('Unexpected error during AddProtectedFolderToUserUseCase execution', {
+                error,
+                input,
+            });
+            return Result.fail('general-error');
+        }
     }
 
     private handleNewFolder(input: AddProtectedFolderToUserInput, basicFolder: BasicFolder) {

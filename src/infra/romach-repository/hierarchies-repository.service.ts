@@ -12,7 +12,7 @@ export class HierarchiesRepositoryService implements HierarchiesRepositoryInterf
         private readonly reality: RealityId,
     ) {}
 
-    async saveHierarchies(hierarchy: Hierarchy[]): Promise<Result<void>> {
+    async saveHierarchies(hierarchy: Hierarchy[]): Promise<Result> {
         try {
             await this.knex('hierarchy').insert(hierarchy).onConflict('id').merge();
             this.logger.info(`Saved ${hierarchy.length} hierarchies for reality ${this.reality}`);
