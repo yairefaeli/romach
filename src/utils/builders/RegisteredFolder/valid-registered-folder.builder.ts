@@ -8,7 +8,7 @@ export const aValidRegisteredFolder = (
     overrides?: Partial<Pick<RegisteredFolderProps, 'upn' | 'folder' | 'password' | 'lastValidPasswordTimestamp'>>,
 ) =>
     RegisteredFolder.createValidRegisteredFolder({
-        upn: chance.upn(),
+        upn: 'test',
         folder: aFolder(),
         password: chance.string(),
         lastValidPasswordTimestamp: Timestamp.fromString(chance.date().toString()),

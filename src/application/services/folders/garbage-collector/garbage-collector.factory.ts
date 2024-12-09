@@ -1,18 +1,21 @@
-import { RegisteredFoldersRepositoryFactoryService } from '../../../../infra/romach-repository/repository-factory/regsiterd-folders-repository-factory.service';
+import { RegisteredFoldersRepositoryFactory } from '../../../../infra/romach-repository/registered-folders/regsiterd-folders-repository-factory';
 import { AppConfigService } from '../../../../infra/config/app-config/app-config.service';
 import { AppLoggerService } from '../../../../infra/logging/app-logger.service';
 import { GarbageCollectorService } from './garbage-collector.service';
 import { RealityId } from '../../../entities/reality-id';
+import { Injectable } from '@nestjs/common';
 
-export class GarbageCollectorFactoryService {
+@Injectable()
+export class GarbageCollectorFactory {
     private perRealityMap: Map<RealityId, GarbageCollectorService>;
 
     constructor(
         private logger: AppLoggerService,
         private configService: AppConfigService,
-        private registeredFoldersRepositoryFactoryService: RegisteredFoldersRepositoryFactoryService,
+        private registeredFoldersRepositoryFactoryService: RegisteredFoldersRepositoryFactory,
     ) {
         this.perRealityMap = new Map<RealityId, GarbageCollectorService>();
+        console.log('RegisteredFoldersRepositoryFactory:', registeredFoldersRepositoryFactoryService);
     }
 
     create(reality: RealityId): GarbageCollectorService {

@@ -6,20 +6,14 @@ import { Knex } from 'knex';
 
 @Injectable()
 export class LeaderElectionFactoryService {
-  constructor(
-    @InjectKnex() private readonly knex: Knex,
-    private readonly logger: AppLoggerService,
-  ) {}
+    constructor(
+        @InjectKnex() private readonly knex: Knex,
+        private readonly logger: AppLoggerService,
+    ) {}
 
-  async create(
-    options: LeaderElectionOptions,
-  ): Promise<PostgresBasedLeaderElection> {
-    const postgresBasedLeaderElection = new PostgresBasedLeaderElection(
-      this.knex,
-      this.logger,
-      options,
-    );
-    await postgresBasedLeaderElection.start();
-    return postgresBasedLeaderElection;
-  }
+    async create(options: LeaderElectionOptions): Promise<PostgresBasedLeaderElection> {
+        const postgresBasedLeaderElection = new PostgresBasedLeaderElection(this.knex, this.logger, options);
+        await postgresBasedLeaderElection.start();
+        return postgresBasedLeaderElection;
+    }
 }

@@ -1,7 +1,7 @@
 import { HierarchiesRepositoryInterface } from 'src/application/interfaces/hierarchies-repository/hierarchies-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
 import { RealityId } from 'src/application/entities/reality-id';
-import { Hierarchy } from 'src/domain/entities/Hierarchy';
+import { Hierarchy } from 'src/domain/entities/hierarchy';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 

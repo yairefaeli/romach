@@ -1,5 +1,5 @@
-import { BasicFoldersRepositoryFactoryService } from '../../../infra/romach-repository/repository-factory/basic-folders-repository-factory.service';
-import { HierarchyRepositoryFactoryService } from '../../../infra/romach-repository/repository-factory/hierarchy-repository-factory.service';
+import { BasicFoldersRepositoryFactory } from '../../../infra/romach-repository/basic-folders/basic-folders-repository-factory';
+import { HierarchyRepositoryFactory } from '../../../infra/romach-repository/hierarchy/hierarchy-repository-factory';
 import { TreeCalculationService } from '../../../domain/services/tree-calculation/tree-calculation.service';
 import { AppConfigService } from '../../../infra/config/app-config/app-config.service';
 import { TreeCalculationHandlerService } from './tree-calculation-handler.service';
@@ -8,14 +8,14 @@ import { RealityId } from '../../entities/reality-id';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class TreeCalculationHandlerFactoryService {
+export class TreeCalculationHandlerFactory {
     private configService: AppConfigService;
     private perRealityMap: Map<RealityId, TreeCalculationHandlerService>;
 
     constructor(
         private logger: AppLoggerService,
-        private hierarchiesRepositoryFactoryService: HierarchyRepositoryFactoryService,
-        private basicFoldersRepositoryFactoryService: BasicFoldersRepositoryFactoryService,
+        private hierarchiesRepositoryFactoryService: HierarchyRepositoryFactory,
+        private basicFoldersRepositoryFactoryService: BasicFoldersRepositoryFactory,
     ) {
         this.perRealityMap = new Map<RealityId, TreeCalculationHandlerService>();
     }

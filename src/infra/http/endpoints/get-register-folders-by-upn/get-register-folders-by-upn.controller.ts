@@ -1,11 +1,9 @@
-import { GetUserRegisteredFoldersUseCaseFactoryService } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case-factory.service';
+import { GetUserRegisteredFoldersUseCaseFactory } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case-factory';
 import { BadRequestException, Controller, Get, Headers, Query } from '@nestjs/common';
 
 @Controller('protected-folder')
 export class GetRegisterFoldersByUpnController {
-    constructor(
-        private readonly getUserRegisteredFoldersUseCaseFactory: GetUserRegisteredFoldersUseCaseFactoryService,
-    ) {}
+    constructor(private readonly getUserRegisteredFoldersUseCaseFactory: GetUserRegisteredFoldersUseCaseFactory) {}
 
     @Get('registered-folders')
     async getRegisteredFoldersByUpn(

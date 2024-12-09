@@ -1,4 +1,4 @@
-import { RegisteredFolderRepositoryInterface as RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
+import { RegisteredFolderRepositoryInterface as RegisteredFoldersRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { Result } from 'rich-domain';
 
 export interface GetUserRegisteredFoldersUseCaseInput {
@@ -10,11 +10,11 @@ export interface GetUserRegisteredFoldersUseCaseOutput {
 }
 
 export class GetUserRegisteredFoldersUseCase {
-    constructor(private RegisteredFolderRepositoryInterface: RegisteredFolderRepositoryInterface) {}
+    constructor(private RegisteredFoldersRepositoryInterface: RegisteredFoldersRepositoryInterface) {}
 
     async execute(input: GetUserRegisteredFoldersUseCaseInput): Promise<Result<GetUserRegisteredFoldersUseCaseOutput>> {
         const { upn } = input;
-        const result = await this.RegisteredFolderRepositoryInterface.getRegisteredFoldersByUpn(upn);
+        const result = await this.RegisteredFoldersRepositoryInterface.getRegisteredFoldersByUpn(upn);
         if (result.isFail()) {
             return Result.fail(result.error());
         }

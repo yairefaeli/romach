@@ -1,17 +1,17 @@
-import { RegisteredFoldersRepositoryFactoryService } from '../../../../infra/romach-repository/repository-factory/regsiterd-folders-repository-factory.service';
+import { RegisteredFoldersRepositoryFactory } from '../../../../infra/romach-repository/registered-folders/regsiterd-folders-repository-factory';
 import { RomachEntitiesApiFactoryService } from '../../../../infra/romach-api/romach-entities-api/romach-entities-api-factory.service';
 import { AppConfigService } from '../../../../infra/config/app-config/app-config.service';
 import { AppLoggerService } from '../../../../infra/logging/app-logger.service';
 import { RetryFailedStatusService } from './retry-failed-status.service';
 import { RealityId } from '../../../entities/reality-id';
 
-export class RetryFailedStatusFactoryService {
+export class RetryFailedStatusFactory {
     private perRealityMap: Map<RealityId, RetryFailedStatusService>;
 
     constructor(
         private logger: AppLoggerService,
         private configService: AppConfigService,
-        private registeredFoldersRepositoryFactoryService: RegisteredFoldersRepositoryFactoryService,
+        private registeredFoldersRepositoryFactoryService: RegisteredFoldersRepositoryFactory,
         private romachEntitiesApiFactoryService: RomachEntitiesApiFactoryService,
     ) {
         this.perRealityMap = new Map<RealityId, RetryFailedStatusService>();

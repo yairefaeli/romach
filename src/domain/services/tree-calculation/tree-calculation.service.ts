@@ -7,8 +7,10 @@ import {
 import { BasicFolder } from '../../entities/BasicFolder';
 import { Hierarchy } from '../../entities/hierarchy';
 import { groupBy, isEmpty, isNil } from 'lodash';
+import { Injectable } from '@nestjs/common';
 import { Result } from 'rich-domain';
 
+@Injectable()
 export class TreeCalculationService {
     calculateTree(
         basicFolderDtos: BasicFolder[],

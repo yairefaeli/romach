@@ -33,7 +33,7 @@ export class RetryFailedStatusServiceDriver {
     };
 
     when = {
-        execute: async (): Promise<Result<void>> => {
+        execute: async (): Promise<void> => {
             this.retryFailedStatusService = new RetryFailedStatusService({
                 logger: this.loggerTestkit.appLoggerService(),
                 registeredFolderRepositoryInterface:

@@ -1,7 +1,7 @@
 import { RegisteredFolderRepositoryInterface } from 'src/application/interfaces/registered-folders-repository/registered-folder-repository.interface';
 import { RegisteredFolder } from 'src/domain/entities/RegisteredFolder';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
-import { Timestamp } from '../../domain/entities/Timestamp';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 

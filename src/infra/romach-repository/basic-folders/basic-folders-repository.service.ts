@@ -1,7 +1,7 @@
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
 import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { Timestamp } from '../../../domain/entities/Timestamp';
 import { BasicFolder } from 'src/domain/entities/BasicFolder';
-import { Timestamp } from '../../domain/entities/Timestamp';
 import { Result } from 'rich-domain';
 import { Knex } from 'knex';
 

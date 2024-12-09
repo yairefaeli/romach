@@ -1,4 +1,5 @@
 import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
+import { BasicFolderChangeHandlerService } from '../../services/basic-folder-change-handler/basic-folder-change-handler.service';
 import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
 import { LeaderElectionInterface } from '../../interfaces/leader-election.interface';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
@@ -20,7 +21,7 @@ export interface BasicFoldersReplicationUseCaseOptions {
     pollInterval: number;
     retryInterval: number;
     maxRetry: number;
-    handler: BasicFolderReplicationHandlerFn;
+    basicFolderChangeHandlerService: BasicFolderChangeHandlerService;
     logger: AppLoggerService;
 }
 
@@ -57,7 +58,7 @@ export class BasicFoldersReplicationUseCase {
 
         const basicFolders = result.value();
 
-        const handlerResult = await this.options.handler(basicFolders);
+        const handlerResult = await this.options.basicFolderChangeHandlerService.execute(basicFolders);
 
         if (handlerResult.isFail()) {
             await FlowUtils.delay(this.options.retryInterval);

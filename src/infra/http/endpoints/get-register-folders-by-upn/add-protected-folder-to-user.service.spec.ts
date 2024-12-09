@@ -1,4 +1,4 @@
-import { GetUserRegisteredFoldersUseCaseFactoryService } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case-factory.service';
+import { GetUserRegisteredFoldersUseCaseFactory } from '../../../../application/use-cases/get-user-registered-folders-use-case/get-user-registered-folders-use-case-factory';
 import { GetRegisterFoldersByUpnController } from './get-register-folders-by-upn.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Result } from 'rich-domain';
@@ -17,7 +17,7 @@ describe('GetRegsiterFoldersByUpnService', () => {
             controllers: [GetRegisterFoldersByUpnController],
             providers: [
                 {
-                    provide: GetUserRegisteredFoldersUseCaseFactoryService,
+                    provide: GetUserRegisteredFoldersUseCaseFactory,
                     useValue: mockUseCaseFactory,
                 },
             ],

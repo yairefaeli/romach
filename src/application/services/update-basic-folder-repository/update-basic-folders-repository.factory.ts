@@ -1,16 +1,16 @@
-import { BasicFoldersRepositoryFactoryService } from '../../../infra/romach-repository/repository-factory/basic-folders-repository-factory.service';
+import { BasicFoldersRepositoryFactory } from '../../../infra/romach-repository/basic-folders/basic-folders-repository-factory';
 import { UpdateBasicFoldersRepositoryService } from './update-basic-folders-repository.service';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
 import { RealityId } from '../../entities/reality-id';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class UpdateBasicFoldersRepositoryFactoryService {
+export class UpdateBasicFoldersRepositoryFactory {
     private perRealityMap: Map<RealityId, UpdateBasicFoldersRepositoryService>;
 
     constructor(
         private logger: AppLoggerService,
-        private basicFoldersRepositoryFactoryService: BasicFoldersRepositoryFactoryService,
+        private basicFoldersRepositoryFactoryService: BasicFoldersRepositoryFactory,
     ) {
         this.perRealityMap = new Map<RealityId, UpdateBasicFoldersRepositoryService>();
     }

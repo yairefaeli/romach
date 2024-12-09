@@ -5,6 +5,7 @@ import { aList } from '../list.builder';
 
 export const anIdAndUpdatedAt = (overrides?: Partial<FoldersIdsAndsUpdatedAt>): FoldersIdsAndsUpdatedAt => ({
     id: chance.guid(),
+
     updatedAt: Timestamp.fromString(chance.date().toString()),
     ...overrides,
 });

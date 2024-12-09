@@ -13,7 +13,9 @@ export interface GarbageCollectorServiceOptions {
 }
 
 export class GarbageCollectorService {
-    constructor(private options: GarbageCollectorServiceOptions) {
+    constructor(private options: GarbageCollectorServiceOptions) {}
+
+    execute(): void {
         void this.performGarbageCollection();
     }
 
@@ -41,7 +43,7 @@ export class GarbageCollectorService {
         setTimeout(this.performGarbageCollection, this.options.gcInterval);
     }
 
-    private async fetchExpiredFolders(): Promise<Result<RegisteredFolder[]>> {
+    async fetchExpiredFolders(): Promise<Result<RegisteredFolder[]>> {
         return RetryUtils.retry(
             () => this.options.registeredFolderRepositoryInterface.getExpiredRegisteredFolders(),
             this.options.maxRetry,

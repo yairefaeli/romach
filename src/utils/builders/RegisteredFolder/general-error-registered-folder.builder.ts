@@ -12,7 +12,7 @@ export const aGeneralErrorRegisteredFolder = (
     >,
 ) =>
     RegisteredFolder.createGeneralErrorRegisteredFolder({
-        upn: chance.upn(),
+        upn: 'test',
         folderId: chance.guid(),
         password: chance.string(),
         isPasswordProtected: chance.bool(),

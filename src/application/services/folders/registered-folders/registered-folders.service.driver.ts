@@ -47,14 +47,14 @@ export class RegisteredFoldersServiceDriver {
 
     when = {
         upsertGeneralError: ({
-            upn = chance.upn(),
+            upn = 'chance.upn()',
             folderId = chance.guid(),
             password = chance.string(),
             isPasswordProtected = chance.bool(),
         }: Partial<Pick<RegisteredFolderProps, 'upn' | 'password' | 'folderId' | 'isPasswordProtected'>> = {}) =>
             this.registeredFoldersService.upsertGeneralError({ upn, password, folderId, isPasswordProtected }),
         upsertValid: ({
-            upn = chance.upn(),
+            upn = 'chance.upn()',
             folder = aFolder(),
             folderId = chance.string(),
             password = chance.string(),

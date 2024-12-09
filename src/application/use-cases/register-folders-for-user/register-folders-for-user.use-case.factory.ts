@@ -1,4 +1,4 @@
-import { RegisteredFoldersRepositoryFactoryService } from '../../../infra/romach-repository/repository-factory/regsiterd-folders-repository-factory.service';
+import { RegisteredFoldersRepositoryFactory } from '../../../infra/romach-repository/registered-folders/regsiterd-folders-repository-factory';
 import { RegisterFoldersForUserUseCase } from './register-folders-for-user.use-case.service';
 import { AppConfigService } from '../../../infra/config/app-config/app-config.service';
 import { AppLoggerService } from '../../../infra/logging/app-logger.service';
@@ -6,12 +6,12 @@ import { RealityId } from '../../entities/reality-id';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class RegisterFoldersForUserUseCaseFactoryService {
+export class RegisterFoldersForUserUseCaseFactory {
     private perRealityMap: Map<RealityId, RegisterFoldersForUserUseCase>;
 
     constructor(
         private logger: AppLoggerService,
-        private registeredFoldersFactory: RegisteredFoldersRepositoryFactoryService,
+        private registeredFoldersFactory: RegisteredFoldersRepositoryFactory,
         private configService: AppConfigService,
     ) {
         this.perRealityMap = new Map<RealityId, RegisterFoldersForUserUseCase>();

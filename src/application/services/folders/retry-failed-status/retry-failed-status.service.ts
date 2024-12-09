@@ -17,7 +17,7 @@ export interface RetryFailedStatusServiceOptions {
 export class RetryFailedStatusService {
     constructor(private options: RetryFailedStatusServiceOptions) {}
 
-    async retryFailedStatus(): Promise<Result<void>> {
+    async retryFailedStatus() {
         this.options.logger.info('Starting retry process for registered folders with failed statuses');
 
         const failedFoldersResult = await this.fetchFailedRegisteredFolders();
@@ -32,8 +32,9 @@ export class RetryFailedStatusService {
         }
 
         const batchResult = await this.retryFoldersInBatch(failedFolders);
+
         if (batchResult?.isFail()) {
-            return batchResult;
+            this.options.logger.error('Failed to do retry folders');
         }
 
         setTimeout(() => this.retryFailedStatus(), this.options.retryInterval);
