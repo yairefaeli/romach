@@ -5,5 +5,5 @@ type FolderStatus {
 
 type Query {
   checkFolder(folderId: String!, password: String!): [FolderStatus]
-  registerFolders(idd: [ID]!): [FolderStatus]
+  registerFolders(id: [ID]!): [FolderStatus]
 }

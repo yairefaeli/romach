@@ -1,58 +1,105 @@
-import { RegisteredFolderErrorStatus } from '../../../domain/entities/RegisteredFolderStatus';
-import { RomachEntitiesApiInterface } from '../../interfaces/romach-entities-api.interface';
-import { RomachRepositoryInterface } from '../../interfaces/romach-repository.interface';
-import { RegisteredFolder } from '../../../domain/entities/RegisteredFolder';
-import { Timestamp } from '../../../domain/entities/Timestamp';
-import { Folder } from '../../../domain/entities/Folder';
+import { BasicFoldersRepositoryInterface } from 'src/application/interfaces/basic-folders-repository/basic-folders-repository.interface';
+import { RegisteredFoldersService } from 'src/application/services/folders/registered-folders/registered-folders.service';
+import { RomachEntitiesApiInterface } from '../../interfaces/romach-entites-api/romach-entities-api.interface';
+import { AppLoggerService } from 'src/infra/logging/app-logger.service';
+import { BasicFolder } from 'src/domain/entities/BasicFolder';
 import { Result } from 'rich-domain';
 
+export interface AddProtectedFolderToUserUseCaseOptions {
+    logger: AppLoggerService;
+    api: RomachEntitiesApiInterface;
+    romachBasicFolderRepositoryInterface: BasicFoldersRepositoryInterface;
+    registeredFolderService: RegisteredFoldersService;
+}
 export interface AddProtectedFolderToUserInput {
-  upn: string;
-  password: string;
-  folderId: string;
+    upn: string;
+    password?: string;
+    folderId: string;
 }
 
 export class AddProtectedFolderToUserUseCase {
-  constructor(
-    private repo: RomachRepositoryInterface,
-    private api: RomachEntitiesApiInterface,
-  ) {}
+    constructor(private options: AddProtectedFolderToUserUseCaseOptions) {}
 
-  async execute(
-    input: AddProtectedFolderToUserInput,
-  ): Promise<Result<Folder, RegisteredFolderErrorStatus>> {
-    const { upn, password, folderId } = input;
-    const checkPasswordResult = await this.api.checkPassword(
-      folderId,
-      password,
-    );
+    async execute(input: AddProtectedFolderToUserInput): Promise<Result<void>> {
+        try {
+            const basicFolderResult = await this.options.romachBasicFolderRepositoryInterface.getBasicFolderById(
+                input.folderId,
+            );
+            if (basicFolderResult.isFail()) {
+                this.options.logger.error('Failed to fetch basic folder from repo by folderId', { input });
+                return this.options.registeredFolderService.upsertGeneralError({
+                    ...input,
+                    isPasswordProtected: false,
+                });
+            }
 
-    if (checkPasswordResult.isFail()) {
-      return Result.fail(checkPasswordResult.error());
+            const basicFolder = basicFolderResult.value();
+
+            return await this.handleNewFolder(input, basicFolder);
+        } catch (error) {
+            this.options.logger.error('Unexpected error during AddProtectedFolderToUserUseCase execution', {
+                error,
+                input,
+            });
+            return Result.fail('general-error');
+        }
     }
 
-    const folder = checkPasswordResult.value();
-    const createValidRegisteredFolderResult =
-      RegisteredFolder.createValidRegisteredFolder({
-        folder,
-        upn,
-        lastValidPasswordTimestamp: Timestamp.now(),
-        password,
-      });
+    private async handleProtectedFolders(input: AddProtectedFolderToUserInput): Promise<Result<void>> {
+        const { upn, password, folderId } = input;
 
-    if (createValidRegisteredFolderResult.isFail()) {
-      return Result.fail('general-error');
+        const checkPasswordResult = await this.options.api.checkPassword(folderId, password);
+        if (checkPasswordResult.isFail()) {
+            this.options.logger.error('Failed to check password for folder', { folderId, upn });
+            return this.options.registeredFolderService.upsertGeneralError({
+                upn,
+                folderId,
+                isPasswordProtected: true,
+            });
+        }
+
+        const isPasswordCorrect = checkPasswordResult.value();
+        if (!isPasswordCorrect) {
+            await this.options.registeredFolderService.upsertWrongPassword(upn, folderId);
+            return Result.fail();
+        }
+
+        const foldersResponse = await this.options.api.fetchFolderByIdAndPassword({ folderId, password });
+        if (foldersResponse.isFail()) {
+            this.options.logger.error('Failed to fetch folders from API', { folderId });
+            return this.options.registeredFolderService.upsertGeneralError({
+                upn,
+                folderId,
+                isPasswordProtected: true,
+            });
+        }
+
+        const folder = foldersResponse.value();
+        await this.options.registeredFolderService.upsertValid({ upn, folderId, folder, password });
+        return Result.Ok();
     }
 
-    const upsertRegisteredFoldersResult =
-      await this.repo.upsertRegisteredFolders([
-        createValidRegisteredFolderResult.value(),
-      ]);
+    private async handleNewFolder(
+        input: AddProtectedFolderToUserInput,
+        basicFolder: BasicFolder,
+    ): Promise<Result<void>> {
+        if (basicFolder.getProps().isPasswordProtected) {
+            return this.handleProtectedFolders(input);
+        }
 
-    if (upsertRegisteredFoldersResult.isFail()) {
-      return Result.fail('general-error');
+        const { upn, folderId, password } = input;
+
+        const foldersResponse = await this.options.api.fetchFolderByIdAndPassword({ folderId, password });
+        if (foldersResponse.isFail()) {
+            this.options.logger.error('Failed to fetch folders from API', { folderId });
+            return this.options.registeredFolderService.upsertGeneralError({
+                ...input,
+                isPasswordProtected: false,
+            });
+        }
+
+        const folder = foldersResponse.value();
+        await this.options.registeredFolderService.upsertValid({ upn, folderId, folder });
+        return Result.Ok();
     }
-
-    return Result.Ok(folder);
-  }
 }
